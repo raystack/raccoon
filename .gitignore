@@ -1,0 +1,12 @@
+vendor/
+out/
+*.log
+*.out
+.DS_Store
+*tags
+*.swp
+.tern-port
+.idea
+coverage
+*.html
+*.iml

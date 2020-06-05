@@ -2,12 +2,14 @@ package main
 
 import (
 	"clickstream-service/app"
-	"log"
+	"clickstream-service/config"
+	"clickstream-service/logger"
 )
 
 func main() {
+	config.Load()
 	err := app.Run()
 	if err != nil {
-		log.Fatal("init failure", err)
+		logger.Fatal("init failure", err)
 	}
 }

@@ -10,3 +10,7 @@ out/
 coverage
 *.html
 *.iml
+.vscode
+*.env
+*.idea/
+application.yml

@@ -23,8 +23,10 @@ func TestAppPort(t *testing.T) {
 
 func TestNewKafkaConfig(t *testing.T) {
 	os.Setenv("KAFKA_BROKER_LIST", "kafka:6668")
+	os.Setenv("KAFKA_TOPIC", "test1")
 	expectedKafkaConfig := KafkaConfig{
 		brokerList: "kafka:6668",
+		topic: "test1",
 	}
 	kafkaConfig := NewKafkaConfig()
 	viper.AutomaticEnv()

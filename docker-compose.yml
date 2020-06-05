@@ -1,0 +1,54 @@
+version: '3.2'
+
+networks:
+  cs-network:
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.1.2
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - cs-network
+
+  kafka:
+    image: confluentinc/cp-kafka:5.1.2
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "6668:6668"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://localhost:6668
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:6668
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: 1000000000
+      CONFLUENT_METRICS_ENABLE: 'false'
+    links:
+      - zookeeper
+    networks:
+      - cs-network
+  cs:
+    build:
+      context: .
+    command: ["/bin/sh", "-c", "./out/clickstream-service"]
+    hostname: cs
+    container_name: cs
+    stdin_open: true
+    tty: true
+    depends_on:
+      - kafka
+    ports:
+      - "8080:8080"
+    networks:
+      - cs-network

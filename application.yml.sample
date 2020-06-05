@@ -1,3 +1,4 @@
 APP_PORT: "8080"
 LOG_LEVEL: "DEBUG"
 KAFKA_BROKER_LIST: "kafka:6668"
+KAFKA_TOPIC: "test-cs-stream1"

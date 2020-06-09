@@ -1,8 +1,6 @@
 package app
 
 import (
-	"clickstream-service/config"
-	"clickstream-service/publisher"
 	"clickstream-service/logger"
 	ws "clickstream-service/websocket"
 	"context"
@@ -24,14 +22,6 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	wssServer := ws.CreateServer()
 	logger.Info("Start Server -->")
 	wssServer.StartHTTPServer(ctx, cancel)
-	logger.Info("Start publisher -->")
-
-	publisher, err := publisher.NewProducer(ctx, config.NewKafkaConfig())
-	if err != nil {
-		logger.Error("Error while creating new producer", err)
-	}
-
-	publisher.PublishMessage([]byte("myvalue"), []byte("mykey"))
 	go shutDownServer(ctx, cancel)
 }
 

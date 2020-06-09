@@ -2,7 +2,7 @@ package logger
 
 import (
 	"os"
-	"clickstream-service/config"
+	"raccoon/config"
 	log "github.com/sirupsen/logrus"
 )
 

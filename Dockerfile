@@ -8,4 +8,4 @@ RUN go mod download && \
 EXPOSE 8080
 
 # Command to run the executable
-CMD ["./out/clickstream-service"]
+CMD ["./out/raccoon"]

@@ -1,9 +1,9 @@
 package logger
 
 import (
-	"os"
 	"clickstream-service/config"
 	log "github.com/sirupsen/logrus"
+	"os"
 )
 
 var logger *log.Logger

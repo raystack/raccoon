@@ -7,8 +7,6 @@ import (
 
 type KafkaProducer interface {
 	Produce(*kafka.Message, chan kafka.Event) error
-	Events() chan kafka.Event
-	Flush(int) int
 	Close()
 }
 

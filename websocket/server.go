@@ -19,7 +19,7 @@ type Server struct {
 }
 
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
-	port := fmt.Sprintf(":%s",config.AppPort())
+	port := fmt.Sprintf(":%s", config.AppPort())
 	go s.server.Run(port)
 	logger.Info("WebSocket Server --> startHttpServer")
 	go shutDownGracefully(ctx, cancel)

@@ -9,8 +9,8 @@ import (
 func Run() error {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
-	
-	//@TODO - init config 
+
+	//@TODO - init config
 
 	//start server
 	StartServer(ctx, cancel)

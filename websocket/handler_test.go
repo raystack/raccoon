@@ -37,10 +37,10 @@ func TestWSHandlerSendsAcknowledgement(t *testing.T) {
 	}
 	ts := httptest.NewServer(Router(hlr))
 	defer ts.Close()
-	
-	url := "ws" + strings.TrimPrefix(ts.URL + "/api/v1/events", "http")
+
+	url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 	header := http.Header{
-		"User-ID":	[]string{"test1-user1"},
+		"User-ID": []string{"test1-user1"},
 	}
 	log.Println(fmt.Sprintf("%s", ts.URL))
 	wss, _, err := websocket.DefaultDialer.Dial(url, header)

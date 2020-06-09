@@ -20,17 +20,16 @@ func TestAppPort(t *testing.T) {
 	assert.Equal(t, "8080", AppPort())
 }
 
-
 func TestNewKafkaConfig(t *testing.T) {
 	os.Setenv("KAFKA_BROKER_LIST", "kafka:6668")
 	os.Setenv("KAFKA_TOPIC", "test1")
 	os.Setenv("KAFKA_ACKS", "1")
-    os.Setenv("KAFKA_QUEUE_SIZE", "10000")
+	os.Setenv("KAFKA_QUEUE_SIZE", "10000")
 
 	expectedKafkaConfig := KafkaConfig{
-		brokerList: "kafka:6668",
-		topic: "test1",
-		acks: 1,
+		brokerList:   "kafka:6668",
+		topic:        "test1",
+		acks:         1,
 		maxQueueSize: 10000,
 	}
 	kafkaConfig := NewKafkaConfig()

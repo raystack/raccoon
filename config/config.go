@@ -1,6 +1,8 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
 var loaded bool
 
@@ -10,6 +12,7 @@ func Load() {
 	}
 	loaded = true
 	viper.SetDefault("APP_PORT", "8080")
+	viper.SetDefault("kafka_queue_size", "100000")
 	viper.SetConfigName("application")
 	viper.AddConfigPath("./")
 	viper.AddConfigPath("../")

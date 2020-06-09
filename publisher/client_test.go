@@ -37,7 +37,7 @@ func TestProducer_Produce(suite *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	suite.Run("MessageOnChan_FailedProduce", func(t *testing.T) {
+	suite.Run("MessageFailedToProduce", func(t *testing.T) {
 		kafkaproducer := &publisher.MockKafkaProducer{}
 		kafkaproducer.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("Error while producing into kafka"))
 		publisher.NewProducer(&kafka.Producer{}, config.KafkaConfig{})

@@ -5,30 +5,11 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MockKafkaProducer struct {
+type MockProducer struct {
 	mock.Mock
 }
 
-func (p *MockKafkaProducer) Produce(m *kafka.Message, eventsChan chan kafka.Event) error {
-	args := p.Called(m, eventsChan)
+func (p *MockProducer) Produce(msg *kafka.Message) error {
+	args := p.Called(msg)
 	return args.Error(0)
-}
-
-func (p *MockKafkaProducer) Len() int {
-	args := p.Called()
-	return args.Int(0)
-}
-
-func (p *MockKafkaProducer) Events() chan kafka.Event {
-	args := p.Called()
-	return args.Get(0).(chan kafka.Event)
-}
-
-func (p *MockKafkaProducer) Flush(num int) int {
-	args := p.Called(num)
-	return args.Int(0)
-}
-
-func (p *MockKafkaProducer) Close() {
-	p.Called()
 }

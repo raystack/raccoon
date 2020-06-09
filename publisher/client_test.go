@@ -32,8 +32,8 @@ func TestProducer_Produce(suite *testing.T) {
 		kafkaproducer := &publisher.MockKafkaProducer{}
 		kafkaproducer.On("Produce", mock.Anything, mock.Anything).Return(nil)
 		publisher.NewProducer(&kafka.Producer{}, config.KafkaConfig{})
-		err := kafkaproducer.Produce(&kafkaMessage,nil)
-		
+		err := kafkaproducer.Produce(&kafkaMessage, nil)
+
 		assert.NoError(t, err)
 	})
 
@@ -41,7 +41,7 @@ func TestProducer_Produce(suite *testing.T) {
 		kafkaproducer := &publisher.MockKafkaProducer{}
 		kafkaproducer.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("Error while producing into kafka"))
 		publisher.NewProducer(&kafka.Producer{}, config.KafkaConfig{})
-		err := kafkaproducer.Produce(&kafkaMessage,nil)
+		err := kafkaproducer.Produce(&kafkaMessage, nil)
 
 		assert.Error(t, err)
 	})

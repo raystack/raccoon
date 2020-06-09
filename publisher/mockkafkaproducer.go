@@ -14,11 +14,6 @@ func (p *MockKafkaProducer) Produce(m *kafka.Message, eventsChan chan kafka.Even
 	return args.Error(0)
 }
 
-func (p *MockKafkaProducer) Flush(num int) int {
-	args := p.Called(num)
-	return args.Int(0)
-}
-
 func (p *MockKafkaProducer) Close() {
 	p.Called()
 }

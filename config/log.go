@@ -1,6 +1,5 @@
 package config
 
-func LogLevel() string  {
+func LogLevel() string {
 	return mustGetString("LOG_LEVEL")
 }
-

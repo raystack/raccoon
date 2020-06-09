@@ -3,11 +3,11 @@ package websocket
 import (
 	"clickstream-service/logger"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
-	"github.com/gorilla/websocket"
 )
- 
+
 type Handler struct {
 	websocketUpgrader websocket.Upgrader
 	//@TODO - events-channel here
@@ -34,10 +34,10 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseGoingAway, 
-				websocket.CloseNormalClosure, 
-				websocket.CloseNoStatusReceived, 
-					websocket.CloseAbnormalClosure) {
+			if websocket.IsCloseError(err, websocket.CloseGoingAway,
+				websocket.CloseNormalClosure,
+				websocket.CloseNoStatusReceived,
+				websocket.CloseAbnormalClosure) {
 				logger.Info(fmt.Sprintf("[websocket.Handler] Connection Closed Abruptly: %v", err))
 				break
 			}
@@ -45,7 +45,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 			break
 		}
 		// text message @TODO - remove this once we deserialize and get the batch ID
-		conn.WriteMessage(websocket.TextMessage, []byte("batch-id: " + userID))
+		conn.WriteMessage(websocket.TextMessage, []byte("batch-id: "+userID))
 		//@TODO - Deserialize and send this proto to the events-channel.
 		//@TODO - Send the acknowledgement with the batch-id to the client
 		fmt.Printf("%+v\n", message)
@@ -59,7 +59,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 	* 6. Add ping/pong handlers on this connection, readtimeout deadline
 	* 6. Handle the message and send it to the events-channel - For now, as a go routine, deserialize protos
 	* 7. Remove connection/user at the end of this function
-	*/
+	 */
 }
 
 func calculateSessionTime(userID string, connectedAt time.Time) {

@@ -1,8 +1,8 @@
 package publisher
 
 import (
-	"clickstream-service/config"
-	"clickstream-service/logger"
+	"raccoon/config"
+	"raccoon/logger"
 	"context"
 	"fmt"
 	"os"

@@ -1,7 +1,7 @@
 package websocket
 
 import (
-	"clickstream-service/logger"
+	"raccoon/logger"
 	"fmt"
 	"net/http"
 	"time"

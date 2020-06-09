@@ -1,10 +1,10 @@
 package app
 
 import (
-	"clickstream-service/config"
-	"clickstream-service/publisher"
-	"clickstream-service/logger"
-	ws "clickstream-service/websocket"
+	"raccoon/config"
+	"raccoon/publisher"
+	"raccoon/logger"
+	ws "raccoon/websocket"
 	"context"
 	"fmt"
 	"os"

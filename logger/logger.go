@@ -59,3 +59,7 @@ func Fatal(args ...interface{}) {
 func Panic(args ...interface{}) {
 	log.Panic(args...)
 }
+
+func Set(log *log.Logger) {
+	logger = log
+}

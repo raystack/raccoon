@@ -3,76 +3,47 @@ package publisher
 import (
 	"raccoon/config"
 	"raccoon/logger"
-	"context"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
-
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"gopkg.in/errgo.v2/errors"
 )
 
-// check producer is already created or not, if already
+func NewProducer(kp KafkaProducer, config config.KafkaConfig) *Producer {
+	return &Producer{
+		kp:               kp,
+		Config:           config,
+	}
+}
 
 type Producer struct {
-	producer *kafka.Producer
-	topic    string
+	kp               KafkaProducer
+	InflightMessages chan *kafka.Message
+	Config           config.KafkaConfig
 }
 
-func NewProducer(ctx context.Context, kc config.KafkaConfig) (*Producer, error) {
+func (pr *Producer) Produce(msg *kafka.Message) error {
+	deliveryChan := make(chan kafka.Event)
 
-	kafkaConfigMap := &kafka.ConfigMap{
-		"bootstrap.servers": kc.BrokerList(),
+	produceErr := pr.kp.Produce(msg, deliveryChan)
+
+	if produceErr != nil {
+		return produceErr
 	}
 
-	producer, err := kafka.NewProducer(kafkaConfigMap)
+	e := <-deliveryChan
+	m := e.(*kafka.Message)
 
-	if err != nil {
-		logger.Error(fmt.Sprintf("Error while creating new kafka producer. %s", err))
-		return nil, errors.New(fmt.Sprintf("Error while creating new kafka producer. %s", err))
-	}
-	logger.Info("kafka producer created", producer)
-
-	newProducer := &Producer{
-		producer: producer,
-		topic: kc.Topic(),
-	}
-	go shutProducerGracefully(ctx, newProducer)
-	return newProducer, nil
-}
-
-func shutProducerGracefully(ctx context.Context, p *Producer) {
-	signalChan := make(chan os.Signal)
-	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	for {
-		sig := <-signalChan
-		switch sig {
-		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-			logger.Info(fmt.Sprintf("[Kafka.Producer] Received a signal %s", sig))
-			p.producer.Close()
-			logger.Info("Closed Producer")
-		default:
-			logger.Info(fmt.Sprintf("[Kafka.Producer] Received a unexpected signal %s", sig))
-		}
-	}
-}
-
-func (p *Producer) PublishMessage(msg, key []byte) error {
-	err := p.producer.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{
-			Topic:     &p.topic,
-			Partition: kafka.PartitionAny,
-		},
-		Value: msg,
-		Key:   key,
-	}, nil)
-
-	if err != nil {
-		logger.Error("Failed to publish message to kafka", err)
-		return err
+	if m.TopicPartition.Error != nil {
+		logger.Info(fmt.Sprintf("Kafka message delivery failed.%s",m.TopicPartition.Error))
+	} else {
+		 	logger.Info(fmt.Sprintf("Delivered message to topic %s [%d] at offset %s",
+			*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset))
+		 	return m.TopicPartition.Error
 	}
 
-	logger.Info("Message published to topic", p.topic)
+	close(deliveryChan)
 	return nil
+}
+
+func (pr *Producer) Close() {
+	pr.kp.Close()
 }

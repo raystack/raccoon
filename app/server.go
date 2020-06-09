@@ -13,7 +13,7 @@ import (
 
 // StartServer starts the server
 func StartServer(ctx context.Context, cancel context.CancelFunc) {
-	
+
 	//@TODO - create publisher with ctx
 
 	//@TODO - create events-channels, workers (go routines) with ctx
@@ -22,6 +22,24 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	wssServer := ws.CreateServer()
 	logger.Info("Start Server -->")
 	wssServer.StartHTTPServer(ctx, cancel)
+
+	//kafka sample config
+	//
+	//kafkaConfig := config.NewKafkaConfig()
+	//topic := kafkaConfig.Topic()
+	//
+	//kafkaMessage := &kafka.Message{
+	//	TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+	//	Value:          []byte("Test"),
+	//}
+	//
+	//kafkaProducer, err := publisher.NewKafkaProducer(kafkaConfig)
+	//
+	//if err != nil {
+	//	logger.Error("Erorr creating kafka producer", err)
+	//}
+	//kafkaProducer.Produce(kafkaMessage,nil)
+
 	go shutDownServer(ctx, cancel)
 }
 

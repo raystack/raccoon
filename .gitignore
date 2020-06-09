@@ -14,3 +14,4 @@ coverage
 *.env
 *.idea/
 application.yml
+clickstream-service

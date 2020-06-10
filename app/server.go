@@ -47,14 +47,11 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 		logger.Error("Error creating kafka producer", err)
 	}
 
-	_ = publisher.NewProducer(kafkaProducer, config.NewKafkaConfig())
-
-	//newProducer.Produce(kafkaMessage,deliveryChan)
-
-	go shutDownServer(ctx, cancel)
+	publisher.PublishMessage([]byte("myvalue"), []byte("mykey"))
+	go shutDownServer(ctx, cancel, &workerPool)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, workerPool *buffer.Worker) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
@@ -63,6 +60,8 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc) {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 			logger.Info(fmt.Sprintf("[App.Server] Received a signal %s", sig))
 			time.Sleep(3 * time.Second)
+			// Temporary graceful shutdown mechanism
+			workerPool.Flush()
 			logger.Info("Exiting server")
 			os.Exit(0)
 		default:

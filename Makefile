@@ -1,7 +1,7 @@
 .PHONY: all
 
 ALL_PACKAGES=$(shell go list ./... | grep -v "vendor")
-APP_EXECUTABLE="out/clickstream-service"
+APP_EXECUTABLE="out/raccoon"
 
 setup:
 	go mod tidy -v

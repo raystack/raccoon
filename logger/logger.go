@@ -1,9 +1,9 @@
 package logger
 
 import (
-	"clickstream-service/config"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"raccoon/config"
 )
 
 var logger *log.Logger

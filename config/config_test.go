@@ -32,6 +32,7 @@ func TestNewKafkaConfig(t *testing.T) {
 		acks:         1,
 		maxQueueSize: 10000,
 	}
+
 	kafkaConfig := NewKafkaConfig()
 	viper.AutomaticEnv()
 	assert.Equal(t, expectedKafkaConfig, kafkaConfig)

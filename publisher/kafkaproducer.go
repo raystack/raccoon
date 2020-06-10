@@ -1,8 +1,8 @@
 package publisher
 
 import (
-	"clickstream-service/config"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"raccoon/config"
 )
 
 type KafkaProducer interface {

@@ -1,8 +1,8 @@
 package app
 
 import (
-	"clickstream-service/logger"
 	"context"
+	"raccoon/logger"
 )
 
 //Run the server

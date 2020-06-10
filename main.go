@@ -1,9 +1,9 @@
 package main
 
 import (
-	"clickstream-service/app"
-	"clickstream-service/config"
-	"clickstream-service/logger"
+	"raccoon/app"
+	"raccoon/config"
+	"raccoon/logger"
 )
 
 func main() {

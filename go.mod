@@ -1,4 +1,4 @@
-module clickstream-service
+module raccoon
 
 go 1.14
 

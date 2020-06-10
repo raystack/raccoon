@@ -41,7 +41,7 @@ services:
   cs:
     build:
       context: .
-    command: ["/bin/sh", "-c", "./out/clickstream-service"]
+    command: ["/bin/sh", "-c", "./out/raccoon"]
     hostname: cs
     container_name: cs
     stdin_open: true

@@ -1,8 +1,6 @@
 package websocket
 
 import (
-	"clickstream-service/config"
-	"clickstream-service/logger"
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -11,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"raccoon/config"
+	"raccoon/logger"
 	"syscall"
 )
 

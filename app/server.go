@@ -1,12 +1,12 @@
 package app
 
 import (
-	"clickstream-service/logger"
-	ws "clickstream-service/websocket"
 	"context"
 	"fmt"
 	"os"
 	"os/signal"
+	"raccoon/logger"
+	ws "raccoon/websocket"
 	"syscall"
 	"time"
 )

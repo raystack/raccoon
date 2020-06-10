@@ -1,14 +1,14 @@
 package publisher_test
 
 import (
-	"clickstream-service/config"
-	"clickstream-service/logger"
-	"clickstream-service/publisher"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"raccoon/config"
+	"raccoon/logger"
+	"raccoon/publisher"
 	"testing"
 )
 

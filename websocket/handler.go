@@ -1,10 +1,10 @@
 package websocket
 
 import (
-	"clickstream-service/logger"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"net/http"
+	"raccoon/logger"
 	"time"
 )
 

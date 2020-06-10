@@ -13,3 +13,4 @@ func (p *MockProducer) Produce(msg *kafka.Message) error {
 	args := p.Called(msg)
 	return args.Error(0)
 }
+

@@ -25,12 +25,14 @@ func TestNewKafkaConfig(t *testing.T) {
 	os.Setenv("KAFKA_TOPIC", "test1")
 	os.Setenv("KAFKA_ACKS", "1")
 	os.Setenv("KAFKA_QUEUE_SIZE", "10000")
+	os.Setenv("KAFKA_FLUSH_INTERVAL", "1000")
 
 	expectedKafkaConfig := KafkaConfig{
 		brokerList:   "kafka:6668",
 		topic:        "test1",
 		acks:         1,
 		maxQueueSize: 10000,
+		flushInterval: 1000,
 	}
 
 	kafkaConfig := NewKafkaConfig()

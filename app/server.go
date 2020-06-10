@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"raccoon/buffer"
 	"raccoon/config"
 	"raccoon/logger"
 	"raccoon/publisher"
@@ -21,9 +22,14 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	//@TODO - create events-channels, workers (go routines) with ctx
 
 	//start server @TODOD - the wss handler should be passed with the events-channel
-	wssServer := ws.CreateServer()
+	wssServer, bufferChannel := ws.CreateServer()
 	logger.Info("Start Server -->")
 	wssServer.StartHTTPServer(ctx, cancel)
+	logger.Info("Start publisher -->")
+	//@TODO - Change mock publisher to concrete publisher once it's ready
+	workerPool := buffer.NewWorker(config.BufferConfigLoader().PoolNumbers(), bufferChannel, buffer.DummyPublisher{})
+	workerPool.StartWorker()
+	logger.Info("Start buffer -->")
 
 	//deliveryChan := make(chan kafka.Event)
 	//

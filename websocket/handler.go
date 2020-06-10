@@ -10,7 +10,7 @@ import (
 
 type Handler struct {
 	websocketUpgrader websocket.Upgrader
-	//@TODO - events-channel here
+	bufferChannel     chan []byte
 }
 
 func PingHandler(w http.ResponseWriter, r *http.Request) {
@@ -45,9 +45,13 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 			break
 		}
 		// text message @TODO - remove this once we deserialize and get the batch ID
-		conn.WriteMessage(websocket.TextMessage, []byte("batch-id: "+userID))
-		//@TODO - Deserialize and send this proto to the events-channel.
-		//@TODO - Send the acknowledgement with the batch-id to the client
+		go func() {
+			//@TODO - Deserialize and send this proto to the events-channel.
+			//@TODO - Send the acknowledgement with the batch-id to the client
+			conn.WriteMessage(websocket.TextMessage, []byte("batch-id: "+userID))
+			//@TODO - Replace this message with deserialized one.
+			wsHandler.bufferChannel <- message
+		}()
 		fmt.Printf("%+v\n", message)
 	}
 	/**

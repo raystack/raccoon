@@ -61,10 +61,11 @@ func ShutdownProducer(ctx context.Context, pr *Producer) {
 		switch sig {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 			logger.Debug(fmt.Sprintf("[Kafka.Producer] Received a signal %s", sig))
+			flushInterval := config.NewKafkaConfig().FlushInterval()
+			logger.Debug(fmt.Sprintf("Wait %s ms for all messages to be delivered",flushInterval))
+			pr.Flush(flushInterval)
 			logger.Debug("Closing Producer")
 			pr.Close()
-			flushInterval := config.NewKafkaConfig().FlushInterval()
-			pr.Flush(flushInterval)
 		default:
 			logger.Error(fmt.Sprintf("[Kafka.Producer] Received a unexpected signal %s", sig))
 		}

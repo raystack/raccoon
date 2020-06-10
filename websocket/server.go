@@ -16,14 +16,15 @@ import (
 )
 
 type Server struct {
-	server *negroni.Negroni
+	server        *negroni.Negroni
+	bufferChannel chan []byte
 }
 
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
 	port := fmt.Sprintf(":%s", config.AppPort())
 	go s.server.Run(port)
 	logger.Info("WebSocket Server --> startHttpServer")
-	go shutDownGracefully(ctx, cancel)
+	go shutDownGracefully(ctx, cancel, s.bufferChannel)
 }
 
 //CreateServer - instantiates the http server
@@ -39,7 +40,8 @@ func CreateServer() (*Server, chan []byte) {
 	negRoniServer.UseHandler(Router(wsHandler))
 	//Wrap the handler with a Server instance and return it
 	return &Server{
-		server: negRoniServer,
+		server:        negRoniServer,
+		bufferChannel: bufferChannel,
 	}, bufferChannel
 }
 
@@ -66,7 +68,7 @@ func getWebSocketUpgrader() websocket.Upgrader {
 	return ug
 }
 
-func shutDownGracefully(ctx context.Context, cancel context.CancelFunc) {
+func shutDownGracefully(ctx context.Context, cancel context.CancelFunc, bufferChannel chan []byte) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
@@ -75,6 +77,7 @@ func shutDownGracefully(ctx context.Context, cancel context.CancelFunc) {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 			logger.Info(fmt.Sprintf("[Websocket.server] Received signal %s, shutting down http server", sig))
 			//@TODO - Should see a way to stop the http negroni server
+			close(bufferChannel)
 		default:
 			logger.Info(fmt.Sprintf("[Websocket.server] Received a unexpected signal %s", sig))
 		}

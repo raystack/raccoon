@@ -20,7 +20,6 @@ func NewProducer(kp KafkaProducer, config config.KafkaConfig) *Producer {
 
 type Producer struct {
 	kp               KafkaProducer
-	InflightMessages chan *kafka.Message
 	Config           config.KafkaConfig
 }
 

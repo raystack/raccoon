@@ -51,7 +51,6 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc) {
 		switch sig {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 			logger.Info(fmt.Sprintf("[App.Server] Received a signal %s", sig))
-			logger.Info(fmt.Sprintf("[App.Server] waiting for 3 secs grace period before shutdown "))
 			time.Sleep(3 * time.Second)
 			logger.Info("Exiting server")
 			os.Exit(0)

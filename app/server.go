@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"raccoon/config"
 	"raccoon/logger"
+	"raccoon/publisher"
 	ws "raccoon/websocket"
 	"syscall"
 	"time"
@@ -23,29 +25,25 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	logger.Info("Start Server -->")
 	wssServer.StartHTTPServer(ctx, cancel)
 
-	//kafka sample config
-
 	//deliveryChan := make(chan kafka.Event)
 	//
-	//kafkaConfig := config.NewKafkaConfig()
+	kafkaConfig := config.NewKafkaConfig()
 	//topic := kafkaConfig.Topic()
-	//
+
 	//kafkaMessage := &kafka.Message{
 	//	TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 	//	Value:          []byte("Test"),
 	//}
-	//
-	//kafkaProducer, err := publisher.NewKafkaProducer(kafkaConfig)
-	//
-	//if err != nil {
-	//	logger.Error("Erorr creating kafka producer", err)
-	//}
-	//
-	//err := kafkaProducer.Produce(kafkaMessage,deliveryChan)
 
-	//if err != nil {
-	//	logger.Error("Erorr producing message", err)
-	//}
+	kafkaProducer, err := publisher.NewKafkaProducer(kafkaConfig)
+
+	if err != nil {
+		logger.Error("Error creating kafka producer", err)
+	}
+
+	_ = publisher.NewProducer(kafkaProducer, config.NewKafkaConfig())
+
+	//newProducer.Produce(kafkaMessage,deliveryChan)
 
 	go shutDownServer(ctx, cancel)
 }

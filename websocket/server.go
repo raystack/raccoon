@@ -3,15 +3,16 @@ package websocket
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
-	"github.com/urfave/negroni"
 	"net/http"
 	"os"
 	"os/signal"
 	"raccoon/config"
 	"raccoon/logger"
 	"syscall"
+
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
+	"github.com/urfave/negroni"
 )
 
 type Server struct {
@@ -26,11 +27,12 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 }
 
 //CreateServer - instantiates the http server
-func CreateServer() *Server {
+func CreateServer() (*Server, chan []byte) {
 	//create the websocket handler that upgrades the http request
+	bufferChannel := make(chan []byte, config.BufferConfigLoader().ChannelSize())
 	wsHandler := &Handler{
 		websocketUpgrader: getWebSocketUpgrader(),
-		//@TODO - init with the events-channel
+		bufferChannel:     bufferChannel,
 	}
 	negRoniServer := negroni.New(negroni.NewRecovery())
 	//create & set the router
@@ -38,8 +40,7 @@ func CreateServer() *Server {
 	//Wrap the handler with a Server instance and return it
 	return &Server{
 		server: negRoniServer,
-	}
-
+	}, bufferChannel
 }
 
 // Router sets up the routes

@@ -25,4 +25,5 @@ func Load() {
 	AppPort()
 	LogLevel()
 	NewKafkaConfig()
+	BufferConfigLoader()
 }

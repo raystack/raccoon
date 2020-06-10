@@ -18,3 +18,8 @@ func (p *MockKafkaProducer) Close() {
 	p.Called()
 }
 
+func (p *MockKafkaProducer) Flush(config int) int {
+	args := p.Called(config)
+	return args.Int(0)
+}
+

@@ -30,18 +30,16 @@ func TestProducer_Produce(suite *testing.T) {
 	suite.Run("MessageSuccessfulProduce", func(t *testing.T) {
 		kafkaproducer := &MockKafkaProducer{}
 		kafkaproducer.On("Produce", mock.Anything, mock.Anything).Return(nil)
-		newProducer(&kafka.Producer{}, config.KafkaConfig{})
 		err := kafkaproducer.Produce(&kafkaMessage, nil)
-
+		NewProducer(kafkaproducer, config.KafkaConfig{})
 		assert.NoError(t, err)
 	})
 
 	suite.Run("MessageFailedToProduce", func(t *testing.T) {
 		kafkaproducer := &MockKafkaProducer{}
 		kafkaproducer.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("Error while producing into kafka"))
-		newProducer(&kafka.Producer{}, config.KafkaConfig{})
 		err := kafkaproducer.Produce(&kafkaMessage, nil)
-
+		NewProducer(kafkaproducer, config.KafkaConfig{})
 		assert.Error(t, err)
 	})
 }

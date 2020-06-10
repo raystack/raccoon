@@ -11,7 +11,7 @@ import (
 	"syscall"
 )
 
-func newProducer(kp KafkaProducer, config config.KafkaConfig) *Producer {
+func NewProducer(kp KafkaProducer, config config.KafkaConfig) *Producer {
 	return &Producer{
 		kp:     kp,
 		Config: config,
@@ -23,12 +23,12 @@ type Producer struct {
 	Config           config.KafkaConfig
 }
 
-func (pr *Producer) produce(msg *kafka.Message, deliveryChannel chan kafka.Event) error {
+func (pr *Producer) Produce(msg *kafka.Message, deliveryChannel chan kafka.Event) error {
 
 	produceErr := pr.kp.Produce(msg, deliveryChannel)
 
 	if produceErr != nil {
-		logger.Error("Kafka producer creation failed", produceErr)
+		logger.Error("Producer failed to send message", produceErr)
 		return produceErr
 	}
 
@@ -42,7 +42,6 @@ func (pr *Producer) produce(msg *kafka.Message, deliveryChannel chan kafka.Event
 		logger.Debug(fmt.Sprintf("Delivered message to topic %s [%d] at offset %s",
 			*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset))
 	}
-	close(deliveryChannel)
 	return nil
 }
 

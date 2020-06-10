@@ -17,3 +17,4 @@ func (p *MockKafkaProducer) Produce(m *kafka.Message, eventsChan chan kafka.Even
 func (p *MockKafkaProducer) Close() {
 	p.Called()
 }
+

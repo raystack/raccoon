@@ -1,4 +1,4 @@
-package publisher_test
+package publisher
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"raccoon/config"
 	"raccoon/logger"
-	"raccoon/publisher"
 	"testing"
 )
 
@@ -29,18 +28,18 @@ func TestProducer_Produce(suite *testing.T) {
 		},
 	}
 	suite.Run("MessageSuccessfulProduce", func(t *testing.T) {
-		kafkaproducer := &publisher.MockKafkaProducer{}
+		kafkaproducer := &MockKafkaProducer{}
 		kafkaproducer.On("Produce", mock.Anything, mock.Anything).Return(nil)
-		publisher.NewProducer(&kafka.Producer{}, config.KafkaConfig{})
+		newProducer(&kafka.Producer{}, config.KafkaConfig{})
 		err := kafkaproducer.Produce(&kafkaMessage, nil)
 
 		assert.NoError(t, err)
 	})
 
 	suite.Run("MessageFailedToProduce", func(t *testing.T) {
-		kafkaproducer := &publisher.MockKafkaProducer{}
+		kafkaproducer := &MockKafkaProducer{}
 		kafkaproducer.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("Error while producing into kafka"))
-		publisher.NewProducer(&kafka.Producer{}, config.KafkaConfig{})
+		newProducer(&kafka.Producer{}, config.KafkaConfig{})
 		err := kafkaproducer.Produce(&kafkaMessage, nil)
 
 		assert.Error(t, err)

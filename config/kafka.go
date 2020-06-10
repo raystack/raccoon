@@ -7,6 +7,7 @@ type KafkaConfig struct {
 	topic        string
 	acks         int
 	maxQueueSize int
+	flushInterval int
 }
 
 func (kc KafkaConfig) BrokerList() string {
@@ -25,12 +26,17 @@ func (kc KafkaConfig) MaxQueueSize() int {
 	return kc.maxQueueSize
 }
 
+func (kc KafkaConfig) FlushInterval() int {
+	return kc.maxQueueSize
+}
+
 func NewKafkaConfig() KafkaConfig {
 	kc := KafkaConfig{
 		brokerList:   mustGetString("KAFKA_BROKER_LIST"),
 		topic:        mustGetString("KAFKA_TOPIC"),
 		acks:         mustGetInt("KAFKA_ACKS"),
 		maxQueueSize: mustGetInt("KAFKA_QUEUE_SIZE"),
+		flushInterval: mustGetInt("KAFKA_FLUSH_INTERVAL"),
 	}
 	return kc
 }

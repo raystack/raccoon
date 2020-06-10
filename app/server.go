@@ -24,6 +24,8 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	wssServer.StartHTTPServer(ctx, cancel)
 
 	//kafka sample config
+
+	//deliveryChan := make(chan kafka.Event)
 	//
 	//kafkaConfig := config.NewKafkaConfig()
 	//topic := kafkaConfig.Topic()
@@ -38,7 +40,12 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	//if err != nil {
 	//	logger.Error("Erorr creating kafka producer", err)
 	//}
-	//kafkaProducer.Produce(kafkaMessage,nil)
+	//
+	//err := kafkaProducer.Produce(kafkaMessage,deliveryChan)
+
+	//if err != nil {
+	//	logger.Error("Erorr producing message", err)
+	//}
 
 	go shutDownServer(ctx, cancel)
 }

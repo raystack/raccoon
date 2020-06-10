@@ -8,6 +8,7 @@ import (
 type KafkaProducer interface {
 	Produce(*kafka.Message, chan kafka.Event) error
 	Close()
+	Flush(int) int
 }
 
 func NewKafkaProducer(cfg config.KafkaConfig) (KafkaProducer, error) {

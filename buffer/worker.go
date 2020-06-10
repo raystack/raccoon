@@ -32,7 +32,7 @@ func NewWorker(poolNumber int, inChannel <-chan []byte, kafkaProducer KafkaProdu
 // StartWorker initialize worker pool as much as Worker.poolNumber
 func (w *Worker) StartWorker() {
 	w.wg.Add(w.PoolNumbers)
-	for i := 0; i <= w.PoolNumbers; i++ {
+	for i := 0; i < w.PoolNumbers; i++ {
 		go func() {
 			deliveryChan := make(chan kafka.Event, 1)
 			for event := range w.In {

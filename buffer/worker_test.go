@@ -21,18 +21,6 @@ func (m mockKakfaPublisher) Produce(message *kafka.Message, deliveryChannel chan
 
 func TestWorker(t *testing.T) {
 	t.Run("StartWorker", func(t *testing.T) {
-		t.Run("Should run worker as much as poolNumbers", func(t *testing.T) {
-			m := mockKakfaPublisher{}
-			bc := make(chan []byte, 2)
-			worker := NewWorker(1, bc, &m)
-			worker.StartWorker()
-
-			m.On("Produce", mock.Anything, mock.Anything).Return(nil).After(3 * time.Millisecond)
-			bc <- []byte{}
-			bc <- []byte{}
-			assert.Equal(t, 1, len(bc))
-		})
-
 		t.Run("Should publish message on bufferChannel to kafka", func(t *testing.T) {
 			m := mockKakfaPublisher{}
 			bc := make(chan []byte, 2)

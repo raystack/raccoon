@@ -26,28 +26,18 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	logger.Info("Start Server -->")
 	wssServer.StartHTTPServer(ctx, cancel)
 	logger.Info("Start publisher -->")
-	//@TODO - Change mock publisher to concrete publisher once it's ready
-	workerPool := buffer.NewWorker(config.BufferConfigLoader().PoolNumbers(), bufferChannel, buffer.DummyPublisher{})
-	workerPool.StartWorker()
-	logger.Info("Start buffer -->")
 
-	//deliveryChan := make(chan kafka.Event)
-	//
 	kafkaConfig := config.NewKafkaConfig()
-	//topic := kafkaConfig.Topic()
-
-	//kafkaMessage := &kafka.Message{
-	//	TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-	//	Value:          []byte("Test"),
-	//}
-
 	kafkaProducer, err := publisher.NewKafkaProducer(kafkaConfig)
-
 	if err != nil {
 		logger.Error("Error creating kafka producer", err)
 	}
+	kPublisher := publisher.NewProducer(kafkaProducer, config.NewKafkaConfig())
 
-	publisher.PublishMessage([]byte("myvalue"), []byte("mykey"))
+	logger.Info("Start buffer -->")
+	workerPool := buffer.NewWorker(config.BufferConfigLoader().PoolNumbers(), bufferChannel, kPublisher)
+	workerPool.StartWorker()
+
 	go shutDownServer(ctx, cancel, &workerPool)
 }
 

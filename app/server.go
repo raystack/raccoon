@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"raccoon/buffer"
 	"raccoon/config"
 	"raccoon/logger"
 	"raccoon/publisher"
 	ws "raccoon/websocket"
+	"raccoon/worker"
 	"syscall"
 	"time"
 )
@@ -34,14 +34,14 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	}
 	kPublisher := publisher.NewProducer(kafkaProducer, config.NewKafkaConfig())
 
-	logger.Info("Start buffer -->")
-	workerPool := buffer.NewWorker(config.BufferConfigLoader().PoolNumbers(), bufferChannel, kPublisher)
-	workerPool.StartWorker()
+	logger.Info("Start worker -->")
+	workerPool := worker.CreateWorker(config.BufferConfigLoader().WorkersPoolSize(), bufferChannel, kPublisher)
+	workerPool.StartWorkers()
 
 	go shutDownServer(ctx, cancel, &workerPool)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, workerPool *buffer.Worker) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, workerPool *worker.Pool) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {

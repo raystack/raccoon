@@ -35,7 +35,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	kPublisher := publisher.NewProducer(kafkaProducer, config.NewKafkaConfig())
 
 	logger.Info("Start worker -->")
-	workerPool := worker.CreateWorker(config.BufferConfigLoader().WorkersPoolSize(), bufferChannel, kPublisher)
+	workerPool := worker.CreateWorkerPool(config.BufferConfigLoader().WorkersPoolSize(), bufferChannel, kPublisher)
 	workerPool.StartWorkers()
 
 	go shutDownServer(ctx, cancel, &workerPool)

@@ -19,8 +19,8 @@ type Pool struct {
 	wg            sync.WaitGroup
 }
 
-// CreateWorker create new Pool struct given size and EventsChannel worker.
-func CreateWorker(size int, eventsChannel <-chan []byte, kafkaProducer KafkaProducer) Pool {
+// CreateWorkerPool create new Pool struct given size and EventsChannel worker.
+func CreateWorkerPool(size int, eventsChannel <-chan []byte, kafkaProducer KafkaProducer) Pool {
 	return Pool{
 		Size:          size,
 		EventsChannel: eventsChannel,

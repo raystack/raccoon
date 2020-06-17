@@ -11,6 +11,10 @@ func mustGetString(key string) string {
 	return viper.GetString(key)
 }
 
+func allSettings() map[string]interface{} {
+	return viper.AllSettings()
+}
+
 func mustGetInt(key string) int {
 	mustHave(key)
 	v, err := strconv.Atoi(viper.GetString(key))

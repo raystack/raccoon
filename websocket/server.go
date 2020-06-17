@@ -30,7 +30,7 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 //CreateServer - instantiates the http server
 func CreateServer() (*Server, chan []byte) {
 	//create the websocket handler that upgrades the http request
-	bufferChannel := make(chan []byte, config.BufferConfigLoader().ChannelSize())
+	bufferChannel := make(chan []byte, config.WorkerConfigLoader().ChannelSize())
 	wsHandler := &Handler{
 		websocketUpgrader: getWebSocketUpgrader(),
 		bufferChannel:     bufferChannel,

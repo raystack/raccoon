@@ -21,25 +21,37 @@ func TestAppPort(t *testing.T) {
 }
 
 func TestNewKafkaConfig(t *testing.T) {
-	os.Setenv("KAFKA_BROKER_LIST", "kafka:6668")
 	os.Setenv("KAFKA_TOPIC", "test1")
-	os.Setenv("KAFKA_ACKS", "1")
-	os.Setenv("KAFKA_QUEUE_SIZE", "10000")
 	os.Setenv("KAFKA_FLUSH_INTERVAL", "1000")
-	os.Setenv("KAFKA_RETRIES", "2")
-	os.Setenv("KAFKA_RETRY_BACKOFF_MS", "100")
 
 	expectedKafkaConfig := KafkaConfig{
-		brokerList:     "kafka:6668",
-		topic:          "test1",
-		acks:           1,
-		maxQueueSize:   10000,
-		flushInterval:  1000,
-		retries:        2,
-		retryBackoffMs: 100,
+		topic:         "test1",
+		flushInterval: 1000,
 	}
 
-	kafkaConfig := NewKafkaConfig()
 	viper.AutomaticEnv()
+	kafkaConfig := NewKafkaConfig()
 	assert.Equal(t, expectedKafkaConfig, kafkaConfig)
+}
+
+func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
+	os.Setenv("KAFKA_TOPIC", "test1")
+	os.Setenv("KAFKA_FLUSH_INTERVAL", "1000")
+	os.Setenv("KAFKA_CLIENT_BOOTSTRAP_SERVERS", "kafka:6668")
+	os.Setenv("KAFKA_CLIENT_ACKS", "1")
+	os.Setenv("KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES", "10000")
+
+	viper.AutomaticEnv()
+	viper.BindEnv("KAFKA_TOPIC")
+	viper.BindEnv("KAFKA_FLUSH_INTERVAL")
+	viper.BindEnv("KAFKA_CLIENT_BOOTSTRAP_SERVERS")
+	viper.BindEnv("KAFKA_CLIENT_ACKS")
+	viper.BindEnv("KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES")
+
+	kafkaConfig := NewKafkaConfig().ToKafkaConfigMap()
+	bootstrapServer, _ := kafkaConfig.Get("bootstrap.servers", "")
+	topic, _ := kafkaConfig.Get("topic", "")
+	assert.Equal(t, "kafka:6668", bootstrapServer)
+	assert.Equal(t, "", topic)
+	assert.Equal(t, 3, len(*kafkaConfig))
 }

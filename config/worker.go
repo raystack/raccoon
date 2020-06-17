@@ -4,7 +4,6 @@ package config
 type WorkerConfig struct {
 	workersPoolSize int
 	channelSize     int
-	outputTopic     string
 }
 
 // WorkerPoolSize number of worker to push to kafka initiated at the start of Raccoon
@@ -17,15 +16,10 @@ func (bc WorkerConfig) ChannelSize() int {
 	return bc.channelSize
 }
 
-func (bc WorkerConfig) OutputTopic() string {
-	return bc.outputTopic
-}
-
-func BufferConfigLoader() WorkerConfig {
+func WorkerConfigLoader() WorkerConfig {
 	kc := WorkerConfig{
 		workersPoolSize: mustGetInt("WORKER_POOL_SIZE"),
 		channelSize:     mustGetInt("BUFFER_CHANNEL_SIZE"),
-		outputTopic:     mustGetString("OUTPUT_TOPIC"),
 	}
 	return kc
 }

@@ -31,11 +31,13 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	kafkaProducer, err := publisher.NewKafkaProducer(kafkaConfig)
 	if err != nil {
 		logger.Error("Error creating kafka producer", err)
+		logger.Info("Exiting server")
+		os.Exit(0)
 	}
 	kPublisher := publisher.NewProducer(kafkaProducer, config.NewKafkaConfig())
 
 	logger.Info("Start worker -->")
-	workerPool := worker.CreateWorkerPool(config.BufferConfigLoader().WorkersPoolSize(), bufferChannel, kPublisher, config.BufferConfigLoader().OutputTopic())
+	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, kPublisher, config.NewKafkaConfig().Topic())
 	workerPool.StartWorkers()
 
 	go shutDownServer(ctx, cancel, &workerPool)

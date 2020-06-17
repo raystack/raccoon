@@ -19,8 +19,8 @@ func NewProducer(kp KafkaProducer, config config.KafkaConfig) *Producer {
 }
 
 type Producer struct {
-	kp               KafkaProducer
-	Config           config.KafkaConfig
+	kp     KafkaProducer
+	Config config.KafkaConfig
 }
 
 func (pr *Producer) Produce(msg *kafka.Message, deliveryChannel chan kafka.Event) error {
@@ -28,7 +28,7 @@ func (pr *Producer) Produce(msg *kafka.Message, deliveryChannel chan kafka.Event
 	produceErr := pr.kp.Produce(msg, deliveryChannel)
 
 	if produceErr != nil {
-		logger.Error("Producer failed to send message", produceErr)
+		logger.Error("Producer failed to send message ", produceErr)
 		return produceErr
 	}
 
@@ -50,7 +50,7 @@ func (pr *Producer) Close() {
 }
 
 func (pr *Producer) Flush(flushInterval int) {
-	 pr.kp.Flush(flushInterval)
+	pr.kp.Flush(flushInterval)
 }
 
 func ShutdownProducer(ctx context.Context, pr *Producer) {
@@ -62,7 +62,7 @@ func ShutdownProducer(ctx context.Context, pr *Producer) {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 			logger.Debug(fmt.Sprintf("[Kafka.Producer] Received a signal %s", sig))
 			flushInterval := config.NewKafkaConfig().FlushInterval()
-			logger.Debug(fmt.Sprintf("Wait %d ms for all messages to be delivered",flushInterval))
+			logger.Debug(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
 			pr.Flush(flushInterval)
 			logger.Debug("Closing Producer")
 			pr.Close()

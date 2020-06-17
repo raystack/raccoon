@@ -3,11 +3,13 @@ package config
 import "github.com/confluentinc/confluent-kafka-go/kafka"
 
 type KafkaConfig struct {
-	brokerList   string
-	topic        string
-	acks         int
-	maxQueueSize int
-	flushInterval int
+	brokerList     string
+	topic          string
+	acks           int
+	maxQueueSize   int
+	flushInterval  int
+	retries        int
+	retryBackoffMs int
 }
 
 func (kc KafkaConfig) BrokerList() string {
@@ -32,11 +34,13 @@ func (kc KafkaConfig) FlushInterval() int {
 
 func NewKafkaConfig() KafkaConfig {
 	kc := KafkaConfig{
-		brokerList:   mustGetString("KAFKA_BROKER_LIST"),
-		topic:        mustGetString("KAFKA_TOPIC"),
-		acks:         mustGetInt("KAFKA_ACKS"),
-		maxQueueSize: mustGetInt("KAFKA_QUEUE_SIZE"),
-		flushInterval: mustGetInt("KAFKA_FLUSH_INTERVAL"),
+		brokerList:     mustGetString("KAFKA_BROKER_LIST"),
+		topic:          mustGetString("KAFKA_TOPIC"),
+		acks:           mustGetInt("KAFKA_ACKS"),
+		maxQueueSize:   mustGetInt("KAFKA_QUEUE_SIZE"),
+		flushInterval:  mustGetInt("KAFKA_FLUSH_INTERVAL"),
+		retries:        mustGetInt("KAFKA_RETRIES"),
+		retryBackoffMs: mustGetInt("KAFKA_RETRY_BACKOFF_MS"),
 	}
 	return kc
 }
@@ -45,5 +49,7 @@ func (cfg KafkaConfig) ToKafkaConfigMap() *kafka.ConfigMap {
 	return &kafka.ConfigMap{
 		"bootstrap.servers": cfg.BrokerList(),
 		"acks":              cfg.Acks(),
+		"retries":           cfg.retries,
+		"retry.backoff.ms":  cfg.retryBackoffMs,
 	}
 }

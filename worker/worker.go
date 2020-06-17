@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"fmt"
+	"raccoon/logger"
 	"sync"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -17,15 +19,17 @@ type Pool struct {
 	EventsChannel <-chan []byte
 	kafkaProducer KafkaProducer
 	wg            sync.WaitGroup
+	kafkaTopic    string
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan []byte, kafkaProducer KafkaProducer) Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan []byte, kafkaProducer KafkaProducer, kafkaTopic string) Pool {
 	return Pool{
 		Size:          size,
 		EventsChannel: eventsChannel,
 		kafkaProducer: kafkaProducer,
 		wg:            sync.WaitGroup{},
+		kafkaTopic:    kafkaTopic,
 	}
 }
 
@@ -37,10 +41,13 @@ func (w *Pool) StartWorkers() {
 			deliveryChan := make(chan kafka.Event, 1)
 			for events := range w.EventsChannel {
 				message := kafka.Message{
-					Value: events,
+					Value:          events,
+					TopicPartition: kafka.TopicPartition{Topic: &w.kafkaTopic, Partition: kafka.PartitionAny},
 				}
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
-				onFailRetry(&message, deliveryChan, w.kafkaProducer)
+				if err := w.kafkaProducer.Produce(&message, deliveryChan); err != nil {
+					logger.Info(fmt.Sprintf("[worker] Fail to publish message to kafka %v", err))
+				}
 			}
 			w.wg.Done()
 		}()
@@ -50,10 +57,4 @@ func (w *Pool) StartWorkers() {
 // Flush wait for remaining data to be processed. Call this after closing EventsChannel channel
 func (w *Pool) Flush() {
 	w.wg.Wait()
-}
-
-func onFailRetry(message *kafka.Message, deliveryChan chan kafka.Event, producer KafkaProducer) {
-	if err := producer.Produce(message, deliveryChan); err != nil {
-		onFailRetry(message, deliveryChan, producer)
-	}
 }

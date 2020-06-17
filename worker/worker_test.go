@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -24,25 +23,11 @@ func TestWorker(t *testing.T) {
 		t.Run("Should publish message on bufferChannel to kafka", func(t *testing.T) {
 			m := mockKakfaPublisher{}
 			bc := make(chan []byte, 2)
-			worker := CreateWorkerPool(1, bc, &m)
+			worker := CreateWorkerPool(1, bc, &m, "topic")
 			worker.StartWorkers()
 
 			m.On("Produce", mock.Anything, mock.Anything).Return(nil).Twice()
 			bc <- []byte{}
-			bc <- []byte{}
-			time.Sleep(10 * time.Millisecond)
-
-			m.AssertExpectations(t)
-		})
-
-		t.Run("Should retry when fail publishing to kafka", func(t *testing.T) {
-			m := mockKakfaPublisher{}
-			bc := make(chan []byte, 1)
-			worker := CreateWorkerPool(1, bc, &m)
-			worker.StartWorkers()
-
-			m.On("Produce", mock.Anything, mock.Anything).Return(errors.New("Oops")).Twice()
-			m.On("Produce", mock.Anything, mock.Anything).Return(nil).Once()
 			bc <- []byte{}
 			time.Sleep(10 * time.Millisecond)
 
@@ -54,7 +39,7 @@ func TestWorker(t *testing.T) {
 		t.Run("Should block until all messages is proccessed", func(t *testing.T) {
 			m := mockKakfaPublisher{}
 			bc := make(chan []byte, 2)
-			worker := CreateWorkerPool(1, bc, &m)
+			worker := CreateWorkerPool(1, bc, &m, "topic")
 			worker.StartWorkers()
 			m.On("Produce", mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)
 			bc <- []byte{}

@@ -26,24 +26,21 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	logger.Info("Start Server -->")
 	wssServer.StartHTTPServer(ctx, cancel)
 	logger.Info("Start publisher -->")
-
-	kafkaConfig := config.NewKafkaConfig()
-	kafkaProducer, err := publisher.NewKafkaProducer(kafkaConfig)
+	kPublisher, err := publisher.NewKafka(config.NewKafkaConfig())
 	if err != nil {
 		logger.Error("Error creating kafka producer", err)
 		logger.Info("Exiting server")
 		os.Exit(0)
 	}
-	kPublisher := publisher.NewProducer(kafkaProducer, config.NewKafkaConfig())
 
 	logger.Info("Start worker -->")
-	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, kPublisher, config.NewKafkaConfig().Topic())
+	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, kPublisher)
 	workerPool.StartWorkers()
 
-	go shutDownServer(ctx, cancel, &workerPool)
+	go shutDownServer(ctx, cancel, workerPool, kPublisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, workerPool *worker.Pool) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, workerPool *worker.Pool, kp *publisher.Kafka) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
@@ -54,6 +51,10 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, workerPool *
 			time.Sleep(3 * time.Second)
 			// Temporary graceful shutdown mechanism
 			workerPool.Flush()
+			flushInterval := config.NewKafkaConfig().GetFlushInterval()
+			logger.Info("Closing Kafka producer")
+			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
+			kp.Close()
 			logger.Info("Exiting server")
 			os.Exit(0)
 		default:

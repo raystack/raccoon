@@ -28,18 +28,29 @@ func TestProducer_Produce(suite *testing.T) {
 		},
 	}
 	suite.Run("MessageSuccessfulProduce", func(t *testing.T) {
-		kafkaproducer := &MockKafkaProducer{}
+		kafkaproducer := &mockClient{}
 		kafkaproducer.On("Produce", mock.Anything, mock.Anything).Return(nil)
 		err := kafkaproducer.Produce(&kafkaMessage, nil)
-		NewProducer(kafkaproducer, config.KafkaConfig{})
+		NewKafkaFromClient(kafkaproducer, config.KafkaConfig{})
 		assert.NoError(t, err)
 	})
 
 	suite.Run("MessageFailedToProduce", func(t *testing.T) {
-		kafkaproducer := &MockKafkaProducer{}
+		kafkaproducer := &mockClient{}
 		kafkaproducer.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("Error while producing into kafka"))
 		err := kafkaproducer.Produce(&kafkaMessage, nil)
-		NewProducer(kafkaproducer, config.KafkaConfig{})
+		NewKafkaFromClient(kafkaproducer, config.KafkaConfig{})
 		assert.Error(t, err)
+	})
+
+	suite.Run("Should flush before closing the client", func(t *testing.T) {
+		client := &mockClient{}
+		client.On("Flush", 10).Return(0)
+		client.On("Close").Return()
+		kp := NewKafkaFromClient(client, config.KafkaConfig{
+			FlushInterval: 10,
+		})
+		kp.Close()
+		client.AssertExpectations(t)
 	})
 }

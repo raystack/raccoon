@@ -46,7 +46,7 @@ func (w *Pool) StartWorkers() {
 				}
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 				if err := w.kafkaProducer.Produce(&message, deliveryChan); err != nil {
-					logger.Info(fmt.Sprintf("[worker] Fail to publish message to kafka %v", err))
+					logger.Error(fmt.Sprintf("[worker] Fail to publish message to kafka %v", err))
 				}
 			}
 			w.wg.Done()

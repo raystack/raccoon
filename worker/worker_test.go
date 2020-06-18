@@ -13,7 +13,7 @@ type mockKakfaPublisher struct {
 	mock.Mock
 }
 
-func (m *mockKakfaPublisher) Produce(message *kafka.Message, deliveryChannel chan kafka.Event) error {
+func (m *mockKakfaPublisher) Produce(message []byte, deliveryChannel chan kafka.Event) error {
 	err := m.Called(mock.Anything, mock.Anything).Error(0)
 	return err
 }
@@ -23,7 +23,7 @@ func TestWorker(t *testing.T) {
 		t.Run("Should publish message on bufferChannel to kafka", func(t *testing.T) {
 			m := mockKakfaPublisher{}
 			bc := make(chan []byte, 2)
-			worker := CreateWorkerPool(1, bc, &m, "topic")
+			worker := CreateWorkerPool(1, bc, &m)
 			worker.StartWorkers()
 
 			m.On("Produce", mock.Anything, mock.Anything).Return(nil).Twice()
@@ -39,7 +39,7 @@ func TestWorker(t *testing.T) {
 		t.Run("Should block until all messages is proccessed", func(t *testing.T) {
 			m := mockKakfaPublisher{}
 			bc := make(chan []byte, 2)
-			worker := CreateWorkerPool(1, bc, &m, "topic")
+			worker := CreateWorkerPool(1, bc, &m)
 			worker.StartWorkers()
 			m.On("Produce", mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)
 			bc <- []byte{}

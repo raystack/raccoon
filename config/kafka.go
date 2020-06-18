@@ -6,27 +6,27 @@ import (
 )
 
 type KafkaConfig struct {
-	topic         string
-	flushInterval int
+	Topic         string
+	FlushInterval int
 }
 
-func (kc KafkaConfig) Topic() string {
-	return kc.topic
+func (kc KafkaConfig) GetTopic() string {
+	return kc.Topic
 }
 
-func (kc KafkaConfig) FlushInterval() int {
-	return kc.flushInterval
+func (kc KafkaConfig) GetFlushInterval() int {
+	return kc.FlushInterval
 }
 
 func NewKafkaConfig() KafkaConfig {
 	kc := KafkaConfig{
-		topic:         mustGetString("KAFKA_TOPIC"),
-		flushInterval: mustGetInt("KAFKA_FLUSH_INTERVAL"),
+		Topic:         mustGetString("KAFKA_TOPIC"),
+		FlushInterval: mustGetInt("KAFKA_FLUSH_INTERVAL"),
 	}
 	return kc
 }
 
-func (cfg KafkaConfig) ToKafkaConfigMap() *kafka.ConfigMap {
+func (kc KafkaConfig) ToKafkaConfigMap() *kafka.ConfigMap {
 	configMap := &kafka.ConfigMap{}
 	for key, value := range allSettings() {
 		if len(key) > 13 && key[0:13] == "kafka_client_" {

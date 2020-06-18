@@ -25,8 +25,8 @@ func TestNewKafkaConfig(t *testing.T) {
 	os.Setenv("KAFKA_FLUSH_INTERVAL", "1000")
 
 	expectedKafkaConfig := KafkaConfig{
-		topic:         "test1",
-		flushInterval: 1000,
+		Topic:         "test1",
+		FlushInterval: 1000,
 	}
 
 	viper.AutomaticEnv()

@@ -6,7 +6,7 @@ type WorkerConfig struct {
 	channelSize     int
 }
 
-// WorkerPoolSize number of worker to push to kafka initiated at the start of Raccoon
+// WorkersPoolSize number of worker to push to kafka initiated at the start of Raccoon
 func (bc WorkerConfig) WorkersPoolSize() int {
 	return bc.workersPoolSize
 }

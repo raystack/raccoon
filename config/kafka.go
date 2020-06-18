@@ -29,11 +29,8 @@ func NewKafkaConfig() KafkaConfig {
 func (cfg KafkaConfig) ToKafkaConfigMap() *kafka.ConfigMap {
 	configMap := &kafka.ConfigMap{}
 	for key, value := range allSettings() {
-		if strings.Contains(key, "kafka_client_") {
-			splittedKey := strings.Split(key, "_")
-			prefixRemoved := splittedKey[2:]
-			transformedKey := strings.Join(prefixRemoved, ".")
-			configMap.SetKey(transformedKey, value)
+		if len(key) > 13 && key[0:13] == "kafka_client_" {
+			configMap.SetKey(strings.Join(strings.Split(key, "_")[2:], "."), value)
 		}
 	}
 	return configMap

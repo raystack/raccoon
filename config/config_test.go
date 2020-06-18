@@ -40,6 +40,7 @@ func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
 	os.Setenv("KAFKA_CLIENT_BOOTSTRAP_SERVERS", "kafka:6668")
 	os.Setenv("KAFKA_CLIENT_ACKS", "1")
 	os.Setenv("KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES", "10000")
+	os.Setenv("SOMETHING_KAFKA_CLIENT_SOMETHING", "anything")
 
 	viper.AutomaticEnv()
 	viper.BindEnv("KAFKA_TOPIC")
@@ -47,11 +48,14 @@ func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
 	viper.BindEnv("KAFKA_CLIENT_BOOTSTRAP_SERVERS")
 	viper.BindEnv("KAFKA_CLIENT_ACKS")
 	viper.BindEnv("KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES")
+	viper.BindEnv("SOMETHING_KAFKA_CLIENT_SOMETHING")
 
 	kafkaConfig := NewKafkaConfig().ToKafkaConfigMap()
 	bootstrapServer, _ := kafkaConfig.Get("bootstrap.servers", "")
 	topic, _ := kafkaConfig.Get("topic", "")
+	something, _ := kafkaConfig.Get("client.something", "")
 	assert.Equal(t, "kafka:6668", bootstrapServer)
 	assert.Equal(t, "", topic)
+	assert.NotEqual(t, something, "anything")
 	assert.Equal(t, 3, len(*kafkaConfig))
 }

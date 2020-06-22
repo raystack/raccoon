@@ -14,6 +14,7 @@ func Load() {
 	viper.SetDefault("APP_PORT", "8080")
 	viper.SetDefault("kafka_client_queue_buffering_max_messages", "100000")
 	viper.SetDefault("kafka_flush_interval", "1000")
+	viper.SetDefault("delivery_channel_size", "100")
 	viper.SetConfigName("application")
 	viper.AddConfigPath("./")
 	viper.AddConfigPath("../")
@@ -23,7 +24,6 @@ func Load() {
 	viper.AutomaticEnv()
 
 	AppPort()
-	LogLevel()
 	NewKafkaConfig()
 	WorkerConfigLoader()
 }

@@ -2,15 +2,18 @@ package websocket
 
 import (
 	"fmt"
-	"github.com/gorilla/websocket"
+	"github.com/golang/protobuf/proto"
 	"net/http"
 	"raccoon/logger"
+	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type Handler struct {
 	websocketUpgrader websocket.Upgrader
-	bufferChannel     chan []byte
+	bufferChannel     chan []*de.CSEventMessage
 }
 
 func PingHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +28,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 	logger.Info(fmt.Sprintf("UserID %s connected at %v", userID, connectedTime))
 	conn, err := wsHandler.websocketUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.Info(fmt.Sprintf("[websocket.Handler] Failed to upgrade connection: %v", err))
+		logger.Error(fmt.Sprintf("[websocket.Handler] Failed to upgrade connection: %v", err))
 		return
 	}
 	defer conn.Close()
@@ -38,21 +41,27 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 				websocket.CloseNormalClosure,
 				websocket.CloseNoStatusReceived,
 				websocket.CloseAbnormalClosure) {
-				logger.Info(fmt.Sprintf("[websocket.Handler] Connection Closed Abruptly: %v", err))
+				logger.Error(fmt.Sprintf("[websocket.Handler] Connection Closed Abruptly: %v", err))
 				break
 			}
-			logger.Info(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v", err)) //no connection issue here
+			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v", err)) //no connection issue here
 			break
 		}
-		// text message @TODO - remove this once we deserialize and get the batch ID
-		go func() {
-			//@TODO - Deserialize and send this proto to the events-channel.
-			//@TODO - Send the acknowledgement with the batch-id to the client
-			conn.WriteMessage(websocket.TextMessage, []byte("batch-id: "+userID))
-			//@TODO - Replace this message with deserialized one.
-			wsHandler.bufferChannel <- message
-		}()
-		fmt.Printf("%+v\n", message)
+		request := &de.EventRequest{}
+		err = proto.Unmarshal(message, request)
+		if err != nil {
+			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v", err))
+			resp := createUnknownrequestResponse(err)
+			unknownRequest, _ := proto.Marshal(&resp)
+			conn.WriteMessage(websocket.BinaryMessage, unknownRequest)
+			break
+		}
+
+		wsHandler.bufferChannel <- request.GetData()
+
+		resp := createSuccessResponse(*request)
+		success, _ := proto.Marshal(&resp)
+		conn.WriteMessage(websocket.BinaryMessage, success)
 	}
 	/**
 	* 1. @TODO - fetch user details from the header

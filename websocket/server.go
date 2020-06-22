@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"raccoon/config"
 	"raccoon/logger"
+	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"syscall"
 
 	"github.com/gorilla/mux"
@@ -17,7 +18,7 @@ import (
 
 type Server struct {
 	server        *negroni.Negroni
-	bufferChannel chan []byte
+	bufferChannel chan []*de.CSEventMessage
 }
 
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
@@ -28,9 +29,9 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 }
 
 //CreateServer - instantiates the http server
-func CreateServer() (*Server, chan []byte) {
+func CreateServer() (*Server, chan []*de.CSEventMessage) {
 	//create the websocket handler that upgrades the http request
-	bufferChannel := make(chan []byte, config.WorkerConfigLoader().ChannelSize())
+	bufferChannel := make(chan []*de.CSEventMessage, config.WorkerConfigLoader().ChannelSize())
 	wsHandler := &Handler{
 		websocketUpgrader: getWebSocketUpgrader(),
 		bufferChannel:     bufferChannel,
@@ -68,7 +69,7 @@ func getWebSocketUpgrader() websocket.Upgrader {
 	return ug
 }
 
-func shutDownGracefully(ctx context.Context, cancel context.CancelFunc, bufferChannel chan []byte) {
+func shutDownGracefully(ctx context.Context, cancel context.CancelFunc, bufferChannel chan []*de.CSEventMessage) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {

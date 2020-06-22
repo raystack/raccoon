@@ -2,11 +2,13 @@ package websocket
 
 import (
 	"fmt"
-	"log"
+	"github.com/golang/protobuf/proto"
 	"net/http"
 	"net/http/httptest"
+	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
@@ -24,9 +26,10 @@ func TestPingHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 }
 
-func TestWSHandlerSendsAcknowledgement(t *testing.T) {
-
+func TestHandlerWSEvents(t *testing.T) {
+	// ---- Setup ----
 	hlr := &Handler{
+
 		websocketUpgrader: websocket.Upgrader{
 			ReadBufferSize:  10240,
 			WriteBufferSize: 10240,
@@ -34,6 +37,7 @@ func TestWSHandlerSendsAcknowledgement(t *testing.T) {
 				return true
 			},
 		},
+		bufferChannel: make(chan []*de.CSEventMessage, 10),
 	}
 	ts := httptest.NewServer(Router(hlr))
 	defer ts.Close()
@@ -42,16 +46,49 @@ func TestWSHandlerSendsAcknowledgement(t *testing.T) {
 	header := http.Header{
 		"User-ID": []string{"test1-user1"},
 	}
-	log.Println(fmt.Sprintf("%s", ts.URL))
-	wss, _, err := websocket.DefaultDialer.Dial(url, header)
-	require.NoError(t, err)
 
-	err = wss.WriteMessage(websocket.BinaryMessage, []byte("TestWsServerEndPoint"))
-	require.NoError(t, err)
+	t.Run("Should return success response after successfully push to channel", func(t *testing.T) {
+		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+		require.NoError(t, err)
 
-	responseMsgType, response, err := wss.ReadMessage()
-	require.NoError(t, err)
+		request := &de.EventRequest{
+			ReqGuid:  "1234",
+			SentTime: time.Now().Unix(),
+			Data:     nil,
+		}
+		serializedRequest, _ := proto.Marshal(request)
 
-	assert.Equal(t, responseMsgType, websocket.TextMessage)
-	assert.Equal(t, "batch-id: test1-user1", string(response))
+		err = wss.WriteMessage(websocket.BinaryMessage, serializedRequest)
+		require.NoError(t, err)
+
+		responseMsgType, response, err := wss.ReadMessage()
+		require.NoError(t, err)
+
+		resp := &de.EventResponse{}
+		proto.Unmarshal(response, resp)
+		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
+		assert.Equal(t, request.ReqGuid, resp.GetData()["req_guid"])
+		assert.Equal(t, de.Status_SUCCESS, resp.GetStatus())
+		assert.Equal(t, de.Code_OK, resp.GetCode())
+		assert.Equal(t, "", resp.GetReason())
+	})
+
+	t.Run("Should return unknown request when request fail to deserialize", func(t *testing.T) {
+		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+		require.NoError(t, err)
+
+		err = wss.WriteMessage(websocket.BinaryMessage, []byte{1, 2, 3, 4, 1, 2})
+		require.NoError(t, err)
+
+		responseMsgType, response, err := wss.ReadMessage()
+		require.NoError(t, err)
+
+		resp := &de.EventResponse{}
+		proto.Unmarshal(response, resp)
+		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
+		assert.Equal(t, de.Status_ERROR, resp.GetStatus())
+		assert.Equal(t, fmt.Sprintf("cannot deserialize request: %s", "proto: invalid field number"), resp.GetReason())
+		assert.Equal(t, de.Code_BAD_REQUEST, resp.GetCode())
+		assert.Empty(t, resp.GetData())
+	})
 }

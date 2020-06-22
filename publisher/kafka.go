@@ -9,7 +9,8 @@ import (
 
 // KafkaProducer Produce data to kafka synchronously
 type KafkaProducer interface {
-	Produce(message []byte, deliveryChannel chan kafka.Event) error
+	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
+	ProduceBulk(messages [][]byte, deliveryChannel chan kafka.Event) error
 }
 
 func NewKafka(config config.KafkaConfig) (*Kafka, error) {
@@ -35,28 +36,38 @@ type Kafka struct {
 	Config config.KafkaConfig
 }
 
-func (pr *Kafka) Produce(data []byte, deliveryChannel chan kafka.Event) error {
-	message := &kafka.Message{
-		Value:          data,
-		TopicPartition: kafka.TopicPartition{Topic: &pr.Config.Topic, Partition: kafka.PartitionAny},
+// ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
+// DeliveryChannel needs to be exclusive. DeliveryChannel is exposed for recyclability purpose.
+func (pr *Kafka) ProduceBulk(data [][]byte, deliveryChannel chan kafka.Event) error {
+	errors := make([]error, len(data))
+	totalProcessed := 0
+	for order, datum := range data {
+		message := &kafka.Message{
+			Value:          datum,
+			TopicPartition: kafka.TopicPartition{Topic: &pr.Config.Topic, Partition: kafka.PartitionAny},
+			Opaque:         order,
+		}
+		err := pr.kp.Produce(message, deliveryChannel)
+		if err != nil {
+			errors[order] = err
+			continue
+		}
+		totalProcessed++
 	}
-	produceErr := pr.kp.Produce(message, deliveryChannel)
-
-	if produceErr != nil {
-		logger.Error("Producer failed to send message ", produceErr)
-		return produceErr
+	// Wait for deliveryChannel as many as processed
+	for i := 0; i < totalProcessed; i++ {
+		d := <-deliveryChannel
+		m := d.(*kafka.Message)
+		if m.TopicPartition.Error != nil {
+			order := m.Opaque.(int)
+			errors[order] = m.TopicPartition.Error
+		}
 	}
 
-	e := <-deliveryChannel
-	m := e.(*kafka.Message)
-
-	if m.TopicPartition.Error != nil {
-		logger.Error(fmt.Sprintf("Producer message delivery failed.%s", m.TopicPartition.Error))
-		return m.TopicPartition.Error
+	if allNil(errors) {
+		return nil
 	}
-	logger.Debug(fmt.Sprintf("Delivered message to topic %s [%d] at offset %s",
-		*m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset))
-	return nil
+	return BulkError{Errors: errors}
 }
 
 // Close wait for outstanding messages to be delivered within given flush interval timeout.
@@ -64,4 +75,29 @@ func (pr *Kafka) Close() {
 	remaining := pr.kp.Flush(pr.Config.GetFlushInterval())
 	logger.Info(fmt.Sprintf("Total undelivered messages: %d", remaining))
 	pr.kp.Close()
+}
+
+func allNil(errors []error) bool {
+	for _, err := range errors {
+		if err != nil {
+			return false
+		}
+	}
+	return true
+}
+
+type BulkError struct {
+	Errors []error
+}
+
+func (b BulkError) Error() string {
+	err := "error when sending messages: "
+	for i, mErr := range b.Errors {
+		if i != 0 {
+			err += fmt.Sprintf(", %v", mErr)
+			continue
+		}
+		err += mErr.Error()
+	}
+	return err
 }

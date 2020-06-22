@@ -52,6 +52,10 @@ func Error(args ...interface{}) {
 	log.Error(args...)
 }
 
+func Errorf(format string, args ...interface{}) {
+	log.Errorf(format, args...)
+}
+
 func Fatal(args ...interface{}) {
 	log.Fatal(args...)
 }

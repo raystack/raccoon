@@ -87,7 +87,7 @@ func TestHandlerWSEvents(t *testing.T) {
 		proto.Unmarshal(response, resp)
 		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
 		assert.Equal(t, de.Status_ERROR, resp.GetStatus())
-		assert.Equal(t, fmt.Sprintf("cannot deserialize request: %s", "proto: invalid field number"), resp.GetReason())
+		assert.Equal(t, fmt.Sprintf("cannot deserialize request: %s", "proto:\u00a0invalid field number"), resp.GetReason())
 		assert.Equal(t, de.Code_BAD_REQUEST, resp.GetCode())
 		assert.Empty(t, resp.GetData())
 	})

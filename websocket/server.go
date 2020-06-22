@@ -17,24 +17,26 @@ import (
 )
 
 type Server struct {
+	config        config.ServerConfig
 	server        *negroni.Negroni
 	bufferChannel chan []*de.CSEventMessage
 }
 
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
-	port := fmt.Sprintf(":%s", config.AppPort())
+	port := fmt.Sprintf(":%s", s.config.AppPort)
 	go s.server.Run(port)
 	logger.Info("WebSocket Server --> startHttpServer")
 	go shutDownGracefully(ctx, cancel, s.bufferChannel)
 }
 
 //CreateServer - instantiates the http server
-func CreateServer() (*Server, chan []*de.CSEventMessage) {
+func CreateServer(serverConfig config.ServerConfig) (*Server, chan []*de.CSEventMessage) {
 	//create the websocket handler that upgrades the http request
 	bufferChannel := make(chan []*de.CSEventMessage, config.WorkerConfigLoader().ChannelSize())
 	wsHandler := &Handler{
-		websocketUpgrader: getWebSocketUpgrader(),
+		websocketUpgrader: getWebSocketUpgrader(serverConfig.ReadBufferSize, serverConfig.WriteBufferSize, serverConfig.CheckOrigin),
 		bufferChannel:     bufferChannel,
+		user:              NewUserStore(serverConfig.ServerMaxConn),
 	}
 	negRoniServer := negroni.New(negroni.NewRecovery())
 	//create & set the router
@@ -43,6 +45,7 @@ func CreateServer() (*Server, chan []*de.CSEventMessage) {
 	return &Server{
 		server:        negRoniServer,
 		bufferChannel: bufferChannel,
+		config:        serverConfig,
 	}, bufferChannel
 }
 
@@ -55,15 +58,12 @@ func Router(h *Handler) http.Handler {
 	return router
 }
 
-func getWebSocketUpgrader() websocket.Upgrader {
-	/**
-	@TODO - should make the buffer sizes & cross-origin configurable
-	*/
+func getWebSocketUpgrader(readBufferSize int, writeBufferSize int, checkOrigin bool) websocket.Upgrader {
 	ug := websocket.Upgrader{
-		ReadBufferSize:  10240,
-		WriteBufferSize: 10240,
+		ReadBufferSize:  readBufferSize,
+		WriteBufferSize: writeBufferSize,
 		CheckOrigin: func(r *http.Request) bool {
-			return true
+			return checkOrigin
 		},
 	}
 	return ug

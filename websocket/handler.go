@@ -14,6 +14,7 @@ import (
 type Handler struct {
 	websocketUpgrader websocket.Upgrader
 	bufferChannel     chan []*de.CSEventMessage
+	user              *User
 }
 
 func PingHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,16 +24,32 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 
 //HandlerWSEvents handles the upgrade and the events sent by the peers
 func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("User-ID") // this should change with Proxy supplied header field
+	GoID := r.Header.Get("GO-User-ID")
 	connectedTime := time.Now()
-	logger.Info(fmt.Sprintf("UserID %s connected at %v", userID, connectedTime))
+	logger.Info(fmt.Sprintf("GO-User-ID %s connected at %v", GoID, connectedTime))
 	conn, err := wsHandler.websocketUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Error(fmt.Sprintf("[websocket.Handler] Failed to upgrade connection: %v", err))
 		return
 	}
 	defer conn.Close()
-	defer calculateSessionTime(userID, connectedTime)
+	defer calculateSessionTime(GoID, connectedTime)
+	if wsHandler.user.Exists(GoID) {
+		logger.Errorf("[websocket.Handler] Disconnecting %v, already connected", GoID)
+		duplicateConnResp := createEmptyErrorResponse(de.Code_MAX_USER_LIMIT_REACHED)
+		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
+		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Duplicated connection"))
+		return
+	}
+	if wsHandler.user.HasReachedLimit() {
+		logger.Errorf("[websocket.Handler] Disconnecting %v, max connection reached", GoID)
+		maxConnResp := createEmptyErrorResponse(de.Code_MAX_CONNECTION_LIMIT_REACHED)
+		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
+		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Max connection reached"))
+		return
+	}
+	wsHandler.user.Store(GoID)
+	defer wsHandler.user.Remove(GoID)
 
 	for {
 		_, message, err := conn.ReadMessage()
@@ -51,7 +68,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		err = proto.Unmarshal(message, request)
 		if err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v", err))
-			resp := createUnknownrequestResponse(err)
+			resp := createBadrequestResponse(err)
 			unknownRequest, _ := proto.Marshal(&resp)
 			conn.WriteMessage(websocket.BinaryMessage, unknownRequest)
 			break

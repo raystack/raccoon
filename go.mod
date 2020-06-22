@@ -12,5 +12,5 @@ require (
 	github.com/stretchr/testify v1.6.0
 	github.com/urfave/negroni v1.0.0
 	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
-	source.golabs.io/mobile/clickstream-go-proto v0.0.4
+	source.golabs.io/mobile/clickstream-go-proto v0.0.5
 )

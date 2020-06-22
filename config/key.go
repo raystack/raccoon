@@ -6,13 +6,13 @@ import (
 	"strconv"
 )
 
+func allSettings() map[string]interface{} {
+	return viper.AllSettings()
+}
+
 func mustGetString(key string) string {
 	mustHave(key)
 	return viper.GetString(key)
-}
-
-func allSettings() map[string]interface{} {
-	return viper.AllSettings()
 }
 
 func mustGetInt(key string) int {
@@ -23,6 +23,11 @@ func mustGetInt(key string) int {
 	}
 
 	return v
+}
+
+func mustGetBool(key string) bool {
+	mustHave(key)
+	return viper.GetBool(key)
 }
 
 func mustHave(key string) {

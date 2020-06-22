@@ -36,6 +36,9 @@ lint:
 		golint $$p | { grep -vwE "exported (var|function|method|type|const) \S+ should have comment" || true; } \
 	done
 
+clean: ## Clean the builds
+	rm -rf out/
+
 test:
 	make lint
 	ENVIRONMENT=test go test $(ALL_PACKAGES) -p=2 -v

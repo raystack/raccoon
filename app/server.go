@@ -21,8 +21,8 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 
 	//@TODO - create events-channels, workers (go routines) with ctx
 
-	//start server @TODOD - the wss handler should be passed with the events-channel
-	wssServer, bufferChannel := ws.CreateServer()
+	//start server @TODO - the wss handler should be passed with the events-channel
+	wssServer, bufferChannel := ws.CreateServer(config.ServerConfigLoader())
 	logger.Info("Start Server -->")
 	wssServer.StartHTTPServer(ctx, cancel)
 	logger.Info("Start publisher -->")

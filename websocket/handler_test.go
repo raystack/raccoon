@@ -3,16 +3,15 @@ package websocket
 import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	"github.com/gorilla/websocket"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/gorilla/websocket"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestPingHandler(t *testing.T) {
@@ -26,10 +25,9 @@ func TestPingHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 }
 
-func TestHandlerWSEvents(t *testing.T) {
+func TestHandler_HandlerWSEvents(t *testing.T) {
 	// ---- Setup ----
 	hlr := &Handler{
-
 		websocketUpgrader: websocket.Upgrader{
 			ReadBufferSize:  10240,
 			WriteBufferSize: 10240,
@@ -37,6 +35,7 @@ func TestHandlerWSEvents(t *testing.T) {
 				return true
 			},
 		},
+		user:          NewUserStore(2),
 		bufferChannel: make(chan []*de.CSEventMessage, 10),
 	}
 	ts := httptest.NewServer(Router(hlr))
@@ -44,7 +43,7 @@ func TestHandlerWSEvents(t *testing.T) {
 
 	url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 	header := http.Header{
-		"User-ID": []string{"test1-user1"},
+		"GO-User-ID": []string{"test1-user1"},
 	}
 
 	t.Run("Should return success response after successfully push to channel", func(t *testing.T) {
@@ -59,6 +58,7 @@ func TestHandlerWSEvents(t *testing.T) {
 		serializedRequest, _ := proto.Marshal(request)
 
 		err = wss.WriteMessage(websocket.BinaryMessage, serializedRequest)
+		defer wss.Close()
 		require.NoError(t, err)
 
 		responseMsgType, response, err := wss.ReadMessage()
@@ -75,6 +75,7 @@ func TestHandlerWSEvents(t *testing.T) {
 
 	t.Run("Should return unknown request when request fail to deserialize", func(t *testing.T) {
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+		defer wss.Close()
 		require.NoError(t, err)
 
 		err = wss.WriteMessage(websocket.BinaryMessage, []byte{1, 2, 3, 4, 1, 2})
@@ -89,5 +90,66 @@ func TestHandlerWSEvents(t *testing.T) {
 		assert.Equal(t, de.Status_ERROR, resp.GetStatus())
 		assert.Equal(t, de.Code_BAD_REQUEST, resp.GetCode())
 		assert.Empty(t, resp.GetData())
+	})
+
+	t.Run("Should close subsequence connection of the same user", func(t *testing.T) {
+		ts := httptest.NewServer(Router(hlr))
+		defer ts.Close()
+		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
+		header := http.Header{
+			"GO-User-ID": []string{"test1-user1"},
+		}
+		firstWss, _, err := websocket.DefaultDialer.Dial(url, header)
+		require.NoError(t, err)
+
+		secondWss, _, err := websocket.DefaultDialer.Dial(url, header)
+		require.NoError(t, err)
+		_, message, err := secondWss.ReadMessage()
+		p := &de.EventResponse{}
+		proto.Unmarshal(message, p)
+		assert.Equal(t, p.Code, de.Code_MAX_USER_LIMIT_REACHED)
+		assert.Equal(t, p.Status, de.Status_ERROR)
+		_, _, err = secondWss.ReadMessage()
+		assert.True(t, websocket.IsCloseError(err, websocket.ClosePolicyViolation))
+		assert.Equal(t, "Duplicated connection", err.(*websocket.CloseError).Text)
+		firstWss.Close()
+	})
+
+	t.Run("Should close new connection when reach max connection", func(t *testing.T) {
+		ts := httptest.NewServer(Router(hlr))
+		defer ts.Close()
+		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
+		header := http.Header{
+			"GO-User-ID": []string{"test1-user1"},
+		}
+		websocket.DefaultDialer.Dial(url, http.Header{"GO-User-ID": []string{"test1-user2"}})
+		websocket.DefaultDialer.Dial(url, http.Header{"GO-User-ID": []string{"test1-user3"}})
+
+		ws, _, err := websocket.DefaultDialer.Dial(url, header)
+		require.NoError(t, err)
+		_, message, err := ws.ReadMessage()
+		p := &de.EventResponse{}
+		proto.Unmarshal(message, p)
+		assert.Equal(t, p.Code, de.Code_MAX_CONNECTION_LIMIT_REACHED)
+		assert.Equal(t, p.Status, de.Status_ERROR)
+		_, _, err = ws.ReadMessage()
+		assert.True(t, websocket.IsCloseError(err, websocket.ClosePolicyViolation))
+		assert.Equal(t, "Max connection reached", err.(*websocket.CloseError).Text)
+	})
+
+	t.Run("Should decrement total connection when client close the conn", func(t *testing.T) {
+		ts := httptest.NewServer(Router(hlr))
+		defer ts.Close()
+		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
+		header := http.Header{
+			"GO-User-ID": []string{"test1-user1"},
+		}
+		firstWs, _, _ := websocket.DefaultDialer.Dial(url, http.Header{"GO-User-ID": []string{"test1-user2"}})
+		firstWs.Close()
+		websocket.DefaultDialer.Dial(url, http.Header{"GO-User-ID": []string{"test1-user3"}})
+
+		_, _, err := websocket.DefaultDialer.Dial(url, header)
+		assert.Equal(t, 2, hlr.user.TotalUsers())
+		assert.Empty(t, err)
 	})
 }

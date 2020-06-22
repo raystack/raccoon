@@ -17,7 +17,7 @@ func TestLogLevel(t *testing.T) {
 func TestAppPort(t *testing.T) {
 	os.Setenv("APP_PORT", "8080")
 	viper.AutomaticEnv()
-	assert.Equal(t, "8080", AppPort())
+	assert.Equal(t, "8080", ServerConfigLoader().AppPort)
 }
 
 func TestNewKafkaConfig(t *testing.T) {

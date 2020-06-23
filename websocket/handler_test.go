@@ -5,14 +5,27 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"strings"
 	"testing"
 )
+
+type void struct{}
+
+func (v void) Write(_ []byte) (int, error) {
+	return 0, nil
+}
+func TestMain(t *testing.M) {
+	logrus.SetOutput(void{})
+	t.Run()
+	logrus.SetOutput(os.Stdout)
+}
 
 func TestPingHandler(t *testing.T) {
 	ts := httptest.NewServer(Router(nil))

@@ -3,9 +3,11 @@ package publisher
 import (
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"os"
 	"raccoon/config"
 	"raccoon/logger"
 	"testing"
@@ -14,6 +16,17 @@ import (
 func init() {
 	log, _ := test.NewNullLogger()
 	logger.Set(log)
+}
+
+type void struct{}
+
+func (v void) Write(_ []byte) (int, error) {
+	return 0, nil
+}
+func TestMain(t *testing.M) {
+	logrus.SetOutput(void{})
+	t.Run()
+	logrus.SetOutput(os.Stdout)
 }
 
 func TestProducer_Close(suite *testing.T) {

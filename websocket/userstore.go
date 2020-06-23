@@ -16,23 +16,23 @@ func NewUserStore(maxUser int) *User {
 	}
 }
 
-func (u *User) Exists(userId string) bool {
+func (u *User) Exists(userID string) bool {
 	u.m.Lock()
 	defer u.m.Unlock()
-	_, ok := u.userMap[userId]
+	_, ok := u.userMap[userID]
 	return ok
 }
 
-func (u *User) Store(userId string) {
+func (u *User) Store(userID string) {
 	u.m.Lock()
 	defer u.m.Unlock()
-	u.userMap[userId] = userId
+	u.userMap[userID] = userID
 }
 
-func (u *User) Remove(userId string) {
+func (u *User) Remove(userID string) {
 	u.m.Lock()
 	defer u.m.Unlock()
-	delete(u.userMap, userId)
+	delete(u.userMap, userID)
 }
 
 func (u *User) HasReachedLimit() bool {

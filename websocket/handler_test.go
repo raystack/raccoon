@@ -3,6 +3,7 @@ package websocket
 import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -11,7 +12,6 @@ import (
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestPingHandler(t *testing.T) {
@@ -52,7 +52,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 
 		request := &de.EventRequest{
 			ReqGuid:  "1234",
-			SentTime: time.Now().Unix(),
+			SentTime: ptypes.TimestampNow(),
 			Data:     nil,
 		}
 		serializedRequest, _ := proto.Marshal(request)

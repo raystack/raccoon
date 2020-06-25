@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"strings"
 
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
@@ -35,4 +36,16 @@ func (kc KafkaConfig) ToKafkaConfigMap() *kafka.ConfigMap {
 		}
 	}
 	return configMap
+}
+
+func dynamicKafkaConfigLoad() []byte {
+	var kafkaConfigs []string
+	for _, v := range os.Environ() {
+		if strings.HasPrefix(strings.ToLower(v), "kafka_client_") {
+			kafkaConfigs = append(kafkaConfigs, v)
+		}
+	}
+	yamlFormatted := []byte(
+		strings.Replace(strings.Join(kafkaConfigs, "\n"), "=", ": ", -1))
+	return yamlFormatted
 }

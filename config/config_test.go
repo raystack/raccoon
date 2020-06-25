@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"os"
 	"testing"
 
@@ -12,12 +13,16 @@ func TestLogLevel(t *testing.T) {
 	os.Setenv("LOG_LEVEL", "debug")
 	viper.AutomaticEnv()
 	assert.Equal(t, "debug", LogLevel())
+
+	viper.Reset()
 }
 
 func TestAppPort(t *testing.T) {
 	os.Setenv("APP_PORT", "8080")
 	viper.AutomaticEnv()
 	assert.Equal(t, "8080", ServerConfigLoader().AppPort)
+
+	viper.Reset()
 }
 
 func TestNewKafkaConfig(t *testing.T) {
@@ -32,6 +37,19 @@ func TestNewKafkaConfig(t *testing.T) {
 	viper.AutomaticEnv()
 	kafkaConfig := NewKafkaConfig()
 	assert.Equal(t, expectedKafkaConfig, kafkaConfig)
+
+	viper.Reset()
+}
+
+func TestDynamicKafkaConfigLoad(t *testing.T) {
+	os.Setenv("KAFKA_CLIENT_RANDOM", "anything")
+	os.Setenv("KAFKA_CLIENT_BOOTSTRAP_SERVERS", "localhost:9092")
+	viper.SetConfigType("yaml")
+	viper.ReadConfig(bytes.NewBuffer(dynamicKafkaConfigLoad()))
+	assert.Equal(t, viper.AllSettings()["kafka_client_random"], "anything")
+	assert.Equal(t, viper.AllSettings()["kafka_client_bootstrap_servers"], "localhost:9092")
+
+	viper.Reset()
 }
 
 func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
@@ -58,4 +76,6 @@ func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
 	assert.Equal(t, "", topic)
 	assert.NotEqual(t, something, "anything")
 	assert.Equal(t, 3, len(*kafkaConfig))
+
+	viper.Reset()
 }

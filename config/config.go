@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"github.com/spf13/viper"
 )
 
@@ -20,6 +21,7 @@ func Load() {
 	viper.AddConfigPath("../../")
 	viper.SetConfigType("yaml")
 	viper.ReadInConfig()
+	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaConfigLoad()))
 	viper.AutomaticEnv()
 
 	ServerConfigLoader()

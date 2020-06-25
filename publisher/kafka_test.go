@@ -2,22 +2,14 @@ package publisher
 
 import (
 	"fmt"
-	"os"
 	"raccoon/config"
 	"raccoon/logger"
 	"testing"
 
-	"github.com/sirupsen/logrus"
-	"github.com/sirupsen/logrus/hooks/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
-
-func init() {
-	log, _ := test.NewNullLogger()
-	logger.Set(log)
-}
 
 type void struct{}
 
@@ -25,9 +17,9 @@ func (v void) Write(_ []byte) (int, error) {
 	return 0, nil
 }
 func TestMain(t *testing.M) {
-	logrus.SetOutput(void{})
+	logger.Setup()
+	logger.SetOutput(void{})
 	t.Run()
-	logrus.SetOutput(os.Stdout)
 }
 
 func TestProducer_Close(suite *testing.T) {

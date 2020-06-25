@@ -1,5 +1,8 @@
 package config
 
+var configLoaded bool
+var wc WorkerConfig
+
 // WorkerConfig contains configs for kafka publisher worker pool
 type WorkerConfig struct {
 	workersPoolSize     int
@@ -17,15 +20,19 @@ func (bc WorkerConfig) ChannelSize() int {
 	return bc.channelSize
 }
 
+//DeliveryChannelSize fetches the size of the delivery channel as configured
 func (bc WorkerConfig) DeliveryChannelSize() int {
 	return bc.deliveryChannelSize
 }
 
+//WorkerConfigLoader constructs a singleton instance of the worker pool config
 func WorkerConfigLoader() WorkerConfig {
-	kc := WorkerConfig{
-		workersPoolSize:     mustGetInt("WORKER_POOL_SIZE"),
-		channelSize:         mustGetInt("BUFFER_CHANNEL_SIZE"),
-		deliveryChannelSize: mustGetInt("DELIVERY_CHANNEL_SIZE"),
+	if !configLoaded {
+		wc = WorkerConfig{
+			workersPoolSize:     mustGetInt("WORKER_POOL_SIZE"),
+			channelSize:         mustGetInt("BUFFER_CHANNEL_SIZE"),
+			deliveryChannelSize: mustGetInt("DELIVERY_CHANNEL_SIZE"),
+		}
 	}
-	return kc
+	return wc
 }

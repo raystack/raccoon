@@ -74,7 +74,7 @@ func (pr *Kafka) ProduceBulk(data [][]byte, deliveryChannel chan kafka.Event) er
 // Close wait for outstanding messages to be delivered within given flush interval timeout.
 func (pr *Kafka) Close() {
 	remaining := pr.kp.Flush(pr.Config.GetFlushInterval())
-	logger.Info(fmt.Sprintf("Total undelivered messages: %d", remaining))
+	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
 	pr.kp.Close()
 }
 

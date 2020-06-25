@@ -1,13 +1,15 @@
 package worker
 
 import (
-	"github.com/golang/protobuf/proto"
 	"raccoon/logger"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"sync"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/golang/protobuf/proto"
+	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
+
 	"raccoon/publisher"
+
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 // Pool spawn goroutine as much as Size that will listen to EventsChannel. On Close, wait for all data in EventsChannel to be processed.

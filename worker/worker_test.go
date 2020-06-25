@@ -1,13 +1,14 @@
 package worker
 
 import (
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"testing"
 	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 type mockKakfaPublisher struct {

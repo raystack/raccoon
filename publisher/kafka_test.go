@@ -2,15 +2,16 @@ package publisher
 
 import (
 	"fmt"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/sirupsen/logrus"
-	"github.com/sirupsen/logrus/hooks/test"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"os"
 	"raccoon/config"
 	"raccoon/logger"
 	"testing"
+
+	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/test"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 func init() {

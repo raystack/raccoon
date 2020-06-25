@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"strings"
+
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 type KafkaConfig struct {

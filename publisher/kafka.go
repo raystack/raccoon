@@ -2,9 +2,10 @@ package publisher
 
 import (
 	"fmt"
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"raccoon/config"
 	"raccoon/logger"
+
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 // KafkaProducer Produce data to kafka synchronously

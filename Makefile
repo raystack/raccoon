@@ -2,6 +2,7 @@
 
 ALL_PACKAGES=$(shell go list ./... | grep -v "vendor")
 APP_EXECUTABLE="out/raccoon"
+COVER_FILE="/tmp/coverage.out"
 
 setup:
 	go mod tidy -v
@@ -42,6 +43,8 @@ clean: ## Clean the builds
 test:
 	make lint
 	ENVIRONMENT=test go test $(ALL_PACKAGES) -p=2 -v
+	@go list ./... | grep -v "vendor" | xargs go test -count 1 -cover -short -race -timeout 1m -coverprofile ${COVER_FILE}
+	@go tool cover -func ${COVER_FILE} | tail -1 | xargs echo test coverage:
 
 test_ci:
 	ENVIRONMENT=test go test $(ALL_PACKAGES) -p=1 -race

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -17,10 +18,15 @@ func TestLogLevel(t *testing.T) {
 	viper.Reset()
 }
 
-func TestAppPort(t *testing.T) {
+func TestServerConfig(t *testing.T) {
 	os.Setenv("APP_PORT", "8080")
+	os.Setenv("PING_INTERVAL", "1")
+	os.Setenv("PONG_WAIT_INTERVAL", "1")
 	viper.AutomaticEnv()
-	assert.Equal(t, "8080", ServerConfigLoader().AppPort)
+	serverConfigLoader()
+	assert.Equal(t, "8080", ServerConfig.AppPort)
+	assert.Equal(t, time.Duration(1)*time.Second, ServerConfig.PingInterval)
+	assert.Equal(t, time.Duration(1)*time.Second, ServerConfig.PongWaitInterval)
 
 	viper.Reset()
 }

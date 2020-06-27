@@ -17,26 +17,28 @@ import (
 )
 
 type Server struct {
-	config        config.ServerConfig
 	server        *negroni.Negroni
 	bufferChannel chan []*de.CSEventMessage
 }
 
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
-	port := fmt.Sprintf(":%s", s.config.AppPort)
+	port := fmt.Sprintf(":%s", config.ServerConfig.AppPort)
 	go s.server.Run(port)
 	logger.Info("WebSocket Server --> startHttpServer")
 	go shutDownGracefully(ctx, cancel, s.bufferChannel)
 }
 
 //CreateServer - instantiates the http server
-func CreateServer(serverConfig config.ServerConfig) (*Server, chan []*de.CSEventMessage) {
+func CreateServer() (*Server, chan []*de.CSEventMessage) {
 	//create the websocket handler that upgrades the http request
 	bufferChannel := make(chan []*de.CSEventMessage, config.WorkerConfigLoader().ChannelSize())
 	wsHandler := &Handler{
-		websocketUpgrader: getWebSocketUpgrader(serverConfig.ReadBufferSize, serverConfig.WriteBufferSize, serverConfig.CheckOrigin),
+		websocketUpgrader: getWebSocketUpgrader(config.ServerConfig.ReadBufferSize, config.ServerConfig.WriteBufferSize, config.ServerConfig.CheckOrigin),
 		bufferChannel:     bufferChannel,
-		user:              NewUserStore(serverConfig.ServerMaxConn),
+		user:              NewUserStore(config.ServerConfig.ServerMaxConn),
+		PingInterval:      config.ServerConfig.PingInterval,
+		PongWaitInterval:  config.ServerConfig.PongWaitInterval,
+		WriteWaitInterval: config.ServerConfig.WriteWaitInterval,
 	}
 	negRoniServer := negroni.New(negroni.NewRecovery())
 	//create & set the router
@@ -45,7 +47,6 @@ func CreateServer(serverConfig config.ServerConfig) (*Server, chan []*de.CSEvent
 	return &Server{
 		server:        negRoniServer,
 		bufferChannel: bufferChannel,
-		config:        serverConfig,
 	}, bufferChannel
 }
 

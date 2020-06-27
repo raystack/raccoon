@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"raccoon/config"
 	"raccoon/logger"
 	"strings"
 	"testing"
@@ -22,6 +24,9 @@ func (v void) Write(_ []byte) (int, error) {
 	return 0, nil
 }
 func TestMain(t *testing.M) {
+	os.Setenv("PING_INTERVAL", "1")
+	os.Setenv("WRITE_WAIT_INTERVAL", "1")
+	os.Setenv("PONG_WAIT_INTERVAL", "2")
 	logger.Setup()
 	logger.SetOutput(void{})
 	t.Run()
@@ -40,6 +45,10 @@ func TestPingHandler(t *testing.T) {
 
 func TestHandler_HandlerWSEvents(t *testing.T) {
 	// ---- Setup ----
+	os.Setenv("PING_INTERVAL", "1")
+	os.Setenv("WRITE_WAIT_INTERVAL", "1")
+	os.Setenv("PONG_WAIT_INTERVAL", "1")
+	config.ReLoad()
 	hlr := &Handler{
 		websocketUpgrader: websocket.Upgrader{
 			ReadBufferSize:  10240,
@@ -50,6 +59,9 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		},
 		user:          NewUserStore(2),
 		bufferChannel: make(chan []*de.CSEventMessage, 10),
+		PingInterval:      config.ServerConfig.PingInterval,
+		PongWaitInterval:  config.ServerConfig.PongWaitInterval,
+		WriteWaitInterval: config.ServerConfig.WriteWaitInterval,
 	}
 	ts := httptest.NewServer(Router(hlr))
 	defer ts.Close()
@@ -124,7 +136,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		assert.Equal(t, p.Status, de.Status_ERROR)
 		_, _, err = secondWss.ReadMessage()
 		assert.True(t, websocket.IsCloseError(err, websocket.ClosePolicyViolation))
-		assert.Equal(t, "Duplicated connection", err.(*websocket.CloseError).Text)
+		assert.Equal(t, "Duplicate connection", err.(*websocket.CloseError).Text)
 		firstWss.Close()
 	})
 

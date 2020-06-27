@@ -2,8 +2,10 @@ package config
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"strconv"
+	"time"
+
+	"github.com/spf13/viper"
 )
 
 func allSettings() map[string]interface{} {
@@ -34,4 +36,8 @@ func mustHave(key string) {
 	if !viper.IsSet(key) {
 		panic(fmt.Sprintf("key %s is not set", key))
 	}
+}
+
+func mustGetDurationInSeconds(key string) time.Duration {
+	return time.Second * time.Duration(mustGetInt(key))
 }

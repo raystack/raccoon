@@ -1,5 +1,7 @@
 package config
 
+import "github.com/spf13/viper"
+
 var configLoaded bool
 var wc WorkerConfig
 
@@ -28,6 +30,10 @@ func (bc WorkerConfig) DeliveryChannelSize() int {
 //WorkerConfigLoader constructs a singleton instance of the worker pool config
 func WorkerConfigLoader() WorkerConfig {
 	if !configLoaded {
+		viper.SetDefault("WORKER_POOL_SIZE", 5)
+		viper.SetDefault("BUFFER_CHANNEL_SIZE", 100)
+		viper.SetDefault("DELIVERY_CHANNEL_SIZE", 10)
+
 		wc = WorkerConfig{
 			workersPoolSize:     mustGetInt("WORKER_POOL_SIZE"),
 			channelSize:         mustGetInt("BUFFER_CHANNEL_SIZE"),

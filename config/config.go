@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+
 	"github.com/spf13/viper"
 )
 
@@ -24,8 +25,12 @@ func Load() {
 	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaConfigLoad()))
 	viper.AutomaticEnv()
 
-	ServerConfigLoader()
+	serverConfigLoader()
 	LogLevel()
-	NewKafkaConfig()
 	WorkerConfigLoader()
+}
+
+func ReLoad() {
+	loaded = false
+	Load()
 }

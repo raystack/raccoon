@@ -2,30 +2,30 @@ package websocket
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
 	"raccoon/config"
 	"raccoon/logger"
+
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
-	"syscall"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	"github.com/urfave/negroni"
 )
 
 type Server struct {
-	server        *negroni.Negroni
+	HttpServer    *http.Server
 	bufferChannel chan []*de.CSEventMessage
 }
 
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
-	port := fmt.Sprintf(":%s", config.ServerConfig.AppPort)
-	go s.server.Run(port)
-	logger.Info("WebSocket Server --> startHttpServer")
-	go shutDownGracefully(ctx, cancel, s.bufferChannel)
+	go func() {
+		logger.Info("WebSocket Server --> startHttpServer")
+		err := s.HttpServer.ListenAndServe()
+		if err != http.ErrServerClosed {
+			logger.Errorf("WebSocket Server --> HTTP Server could not be started = %s", err.Error())
+			cancel()
+		}
+	}()
 }
 
 //CreateServer - instantiates the http server
@@ -40,14 +40,15 @@ func CreateServer() (*Server, chan []*de.CSEventMessage) {
 		PongWaitInterval:  config.ServerConfig.PongWaitInterval,
 		WriteWaitInterval: config.ServerConfig.WriteWaitInterval,
 	}
-	negRoniServer := negroni.New(negroni.NewRecovery())
-	//create & set the router
-	negRoniServer.UseHandler(Router(wsHandler))
-	//Wrap the handler with a Server instance and return it
-	return &Server{
-		server:        negRoniServer,
+	server := &Server{
+		HttpServer: &http.Server{
+			Handler: Router(wsHandler),
+			Addr:    ":" + config.ServerConfig.AppPort,
+		},
 		bufferChannel: bufferChannel,
-	}, bufferChannel
+	}
+	//Wrap the handler with a Server instance and return it
+	return server, bufferChannel
 }
 
 // Router sets up the routes
@@ -68,20 +69,4 @@ func getWebSocketUpgrader(readBufferSize int, writeBufferSize int, checkOrigin b
 		},
 	}
 	return ug
-}
-
-func shutDownGracefully(ctx context.Context, cancel context.CancelFunc, bufferChannel chan []*de.CSEventMessage) {
-	signalChan := make(chan os.Signal)
-	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	for {
-		sig := <-signalChan
-		switch sig {
-		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-			logger.Info(fmt.Sprintf("[Websocket.server] Received signal %s, shutting down http server", sig))
-			//@TODO - Should see a way to stop the http negroni server
-			close(bufferChannel)
-		default:
-			logger.Info(fmt.Sprintf("[Websocket.server] Received a unexpected signal %s", sig))
-		}
-	}
 }

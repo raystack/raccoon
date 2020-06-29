@@ -99,16 +99,16 @@ func calculateSessionTime(userID string, connectedAt time.Time) {
 func setUpControlHandlers(conn *websocket.Conn, GOUserID string, PingInterval time.Duration,
 	PongWaitInterval time.Duration, WriteWaitInterval time.Duration) {
 	//expects the client to send a ping, mark this channel as idle timed out post the deadline
-	conn.SetReadDeadline(time.Now().Add(PongWaitInterval * time.Second))
+	conn.SetReadDeadline(time.Now().Add(PongWaitInterval))
 	conn.SetPongHandler(func(string) error {
 		// extends the read deadline since we have received this pong on this channel
-		conn.SetReadDeadline(time.Now().Add(PongWaitInterval * time.Second))
+		conn.SetReadDeadline(time.Now().Add(PongWaitInterval))
 		return nil
 	})
 
 	conn.SetPingHandler(func(s string) error {
 		logger.Debug(fmt.Sprintf("Client connection with User ID: %s Pinged", GOUserID))
-		if err := conn.WriteControl(websocket.PongMessage, []byte(s), time.Now().Add(WriteWaitInterval*time.Second)); err != nil {
+		if err := conn.WriteControl(websocket.PongMessage, []byte(s), time.Now().Add(WriteWaitInterval)); err != nil {
 			logger.Debug(fmt.Sprintf("Failed to send ping event: %s User: %s", err, GOUserID))
 		}
 		return nil
@@ -125,7 +125,7 @@ func pingPeer(userID string, conn *websocket.Conn, PingInterval time.Duration, W
 	for {
 		<-timer.C
 		logger.Debug(fmt.Sprintf("Pinging UserId: %s ", userID))
-		if err := conn.WriteControl(websocket.PingMessage, []byte("--ping--"), time.Now().Add(WriteWaitInterval*time.Second)); err != nil {
+		if err := conn.WriteControl(websocket.PingMessage, []byte("--ping--"), time.Now().Add(WriteWaitInterval)); err != nil {
 			logger.Error(fmt.Sprintf("[websocket.pingPeer] - Failed to ping User: %s Error: %v", userID, err))
 			return
 		}

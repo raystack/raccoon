@@ -9,14 +9,15 @@ import (
 var ServerConfig ServerCfg
 
 type ServerCfg struct {
-	AppPort           string
-	ServerMaxConn     int
-	ReadBufferSize    int
-	WriteBufferSize   int
-	CheckOrigin       bool
-	PingInterval      time.Duration
-	PongWaitInterval  time.Duration
-	WriteWaitInterval time.Duration
+	AppPort                   string
+	ServerMaxConn             int
+	ReadBufferSize            int
+	WriteBufferSize           int
+	CheckOrigin               bool
+	PingInterval              time.Duration
+	PongWaitInterval          time.Duration
+	WriteWaitInterval         time.Duration
+	ServerShutDownGracePeriod time.Duration
 }
 
 func serverConfigLoader() {
@@ -28,15 +29,17 @@ func serverConfigLoader() {
 	viper.SetDefault("PING_INTERVAL", "30")
 	viper.SetDefault("PONG_WAIT_INTERVAL", "60") //should be more than the ping period
 	viper.SetDefault("WRITE_WAIT_INTERVAL", "5")
+	viper.SetDefault("SERVER_SHUTDOWN_GRACE_PERIOD", "3")
 
 	ServerConfig = ServerCfg{
-		AppPort:           mustGetString("APP_PORT"),
-		ServerMaxConn:     mustGetInt("SERVER_MAX_CONN"),
-		ReadBufferSize:    mustGetInt("READ_BUFFER_SIZE"),
-		WriteBufferSize:   mustGetInt("WRITE_BUFFER_SIZE"),
-		CheckOrigin:       mustGetBool("CHECK_ORIGIN"),
-		PingInterval:      mustGetDurationInSeconds("PING_INTERVAL"),
-		PongWaitInterval:  mustGetDurationInSeconds("PONG_WAIT_INTERVAL"),
-		WriteWaitInterval: mustGetDurationInSeconds("WRITE_WAIT_INTERVAL"),
+		AppPort:                   mustGetString("APP_PORT"),
+		ServerMaxConn:             mustGetInt("SERVER_MAX_CONN"),
+		ReadBufferSize:            mustGetInt("READ_BUFFER_SIZE"),
+		WriteBufferSize:           mustGetInt("WRITE_BUFFER_SIZE"),
+		CheckOrigin:               mustGetBool("CHECK_ORIGIN"),
+		PingInterval:              mustGetDurationInSeconds("PING_INTERVAL"),
+		PongWaitInterval:          mustGetDurationInSeconds("PONG_WAIT_INTERVAL"),
+		WriteWaitInterval:         mustGetDurationInSeconds("WRITE_WAIT_INTERVAL"),
+		ServerShutDownGracePeriod: mustGetDurationInSeconds("SERVER_SHUTDOWN_GRACE_PERIOD"),
 	}
 }

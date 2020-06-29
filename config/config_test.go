@@ -22,11 +22,13 @@ func TestServerConfig(t *testing.T) {
 	os.Setenv("APP_PORT", "8080")
 	os.Setenv("PING_INTERVAL", "1")
 	os.Setenv("PONG_WAIT_INTERVAL", "1")
+	os.Setenv("SERVER_SHUTDOWN_GRACE_PERIOD", "3")
 	viper.AutomaticEnv()
 	serverConfigLoader()
 	assert.Equal(t, "8080", ServerConfig.AppPort)
 	assert.Equal(t, time.Duration(1)*time.Second, ServerConfig.PingInterval)
 	assert.Equal(t, time.Duration(1)*time.Second, ServerConfig.PongWaitInterval)
+	assert.Equal(t, time.Duration(3)*time.Second, ServerConfig.ServerShutDownGracePeriod)
 
 	viper.Reset()
 }
@@ -83,5 +85,19 @@ func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
 	assert.NotEqual(t, something, "anything")
 	assert.Equal(t, 3, len(*kafkaConfig))
 
+	viper.Reset()
+}
+
+func TestWorkerConfig(t *testing.T) {
+	os.Setenv("WORKER_POOL_SIZE", "2")
+	os.Setenv("BUFFER_CHANNEL_SIZE", "5")
+	os.Setenv("DELIVERY_CHANNEL_SIZE", "10")
+	os.Setenv("WORKER_FLUSH_TIMEOUT", "100")
+	viper.AutomaticEnv()
+	wc := WorkerConfigLoader()
+	assert.Equal(t, 100, wc.WorkerFlushTimeout())
+	assert.Equal(t, 10, wc.DeliveryChannelSize())
+	assert.Equal(t, 5, wc.ChannelSize())
+	assert.Equal(t, 2, wc.WorkersPoolSize())
 	viper.Reset()
 }

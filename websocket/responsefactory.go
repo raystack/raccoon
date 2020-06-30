@@ -21,7 +21,7 @@ func createSuccessResponse(request de.EventRequest) de.EventResponse {
 	return response
 }
 
-func createBadrequestResponse(err error) de.EventResponse {
+func createBadrequestResponse(err error) []byte {
 	response := de.EventResponse{
 		Status:   de.Status_ERROR,
 		Code:     de.Code_BAD_REQUEST,
@@ -29,7 +29,8 @@ func createBadrequestResponse(err error) de.EventResponse {
 		Reason:   fmt.Sprintf("cannot deserialize request: %s", err),
 		Data:     nil,
 	}
-	return response
+	badrequestResp, _ := proto.Marshal(&response)
+	return badrequestResp
 }
 
 func createEmptyErrorResponse(errCode de.Code) []byte {

@@ -76,10 +76,9 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		err = proto.Unmarshal(message, payload)
 		if err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v  User ID: %s ", err, GOUserID))
-			resp := createBadrequestResponse(err)
-			unknownRequest, _ := proto.Marshal(&resp)
-			conn.WriteMessage(websocket.BinaryMessage, unknownRequest)
-			break
+			badrequest := createBadrequestResponse(err)
+			conn.WriteMessage(websocket.BinaryMessage, badrequest)
+			continue
 		}
 
 		wsHandler.bufferChannel <- payload.GetData()

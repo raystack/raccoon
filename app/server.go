@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"raccoon/config"
@@ -31,10 +32,10 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, config.WorkerConfigLoader().DeliveryChannelSize(), kPublisher)
 	workerPool.StartWorkers()
 
-	go shutDownServer(ctx, cancel, workerPool, kPublisher)
+	go shutDownServer(ctx, cancel, wssServer.HttpServer, workerPool, kPublisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, workerPool *worker.Pool, kp *publisher.Kafka) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *http.Server, workerPool *worker.Pool, kp *publisher.Kafka) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
@@ -42,9 +43,12 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, workerPool *
 		switch sig {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 			logger.Info(fmt.Sprintf("[App.Server] Received a signal %s", sig))
-			time.Sleep(3 * time.Second)
-			// Temporary graceful shutdown mechanism
-			workerPool.Flush()
+			wssServer.Shutdown(ctx)
+			logger.Info("Server shutdown all the listeners")
+			timedOut := workerPool.FlushWithTimeOut(time.Duration(config.WorkerConfigLoader().WorkerFlushTimeout()) * time.Second)
+			if timedOut {
+				logger.Info(fmt.Sprintf("WorkerPool flush timedout %t", timedOut))
+			}
 			flushInterval := config.NewKafkaConfig().GetFlushInterval()
 			logger.Info("Closing Kafka producer")
 			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))

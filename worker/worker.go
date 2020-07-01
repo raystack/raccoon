@@ -3,6 +3,7 @@ package worker
 import (
 	"raccoon/logger"
 	"sync"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
@@ -32,7 +33,7 @@ func CreateWorkerPool(size int, eventsChannel <-chan []*de.CSEventMessage, deliv
 	}
 }
 
-// StartWorkers initialize worker pool as much as Pool.poolNumber
+// StartWorkers initialize worker pool as much as Pool.Size
 func (w *Pool) StartWorkers() {
 	w.wg.Add(w.Size)
 	for i := 0; i < w.Size; i++ {
@@ -62,7 +63,19 @@ func (w *Pool) StartWorkers() {
 	}
 }
 
-// Flush wait for remaining data to be processed. Call this after closing EventsChannel channel
-func (w *Pool) Flush() {
-	w.wg.Wait()
+// FlushWithTimeOut waits for the workers to complete the pending the messages
+//to be flushed to the publisher within a timeout.
+// Returns true if waiting timed out, meaning not all the events could be processed before this timeout.
+func (w *Pool) FlushWithTimeOut(timeout time.Duration) bool {
+	c := make(chan struct{})
+	go func() {
+		defer close(c)
+		w.wg.Wait()
+	}()
+	select {
+	case <-c:
+		return false // completed normally
+	case <-time.After(timeout):
+		return true // timed out
+	}
 }

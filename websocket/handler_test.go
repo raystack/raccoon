@@ -57,8 +57,8 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 				return true
 			},
 		},
-		user:          NewUserStore(2),
-		bufferChannel: make(chan []*de.CSEventMessage, 10),
+		user:              NewUserStore(2),
+		bufferChannel:     make(chan []*de.CSEventMessage, 10),
 		PingInterval:      config.ServerConfig.PingInterval,
 		PongWaitInterval:  config.ServerConfig.PongWaitInterval,
 		WriteWaitInterval: config.ServerConfig.WriteWaitInterval,

@@ -38,7 +38,7 @@ func TestWorker(t *testing.T) {
 	})
 
 	t.Run("Flush", func(t *testing.T) {
-		t.Run("Should block until all messages is processed", func(t *testing.T) {
+		t.Run("Should flush without blocking forever", func(t *testing.T) {
 			m := mockKakfaPublisher{}
 			bc := make(chan []*de.CSEventMessage, 2)
 			worker := CreateWorkerPool(1, bc, 100, &m)
@@ -48,7 +48,8 @@ func TestWorker(t *testing.T) {
 			bc <- []*de.CSEventMessage{}
 			bc <- []*de.CSEventMessage{}
 			close(bc)
-			worker.Flush()
+			timedOut := worker.FlushWithTimeOut(1 * time.Second)
+			assert.False(t, timedOut)
 			assert.Equal(t, 0, len(bc))
 		})
 	})

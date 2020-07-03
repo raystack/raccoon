@@ -28,6 +28,7 @@ func Load() {
 	serverConfigLoader()
 	LogLevel()
 	WorkerConfigLoader()
+	StatsdConfigLoader()
 }
 
 func ReLoad() {

@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"net/http"
 	"raccoon/logger"
+	"raccoon/metrics"
 	"time"
-
 	"github.com/golang/protobuf/proto"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
-
 	"github.com/gorilla/websocket"
+	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 )
 
 type Handler struct {
 	websocketUpgrader websocket.Upgrader
-	bufferChannel     chan []*de.CSEventMessage
+	bufferChannel     chan de.EventRequest
 	user              *User
 	PingInterval      time.Duration
 	PongWaitInterval  time.Duration
@@ -34,6 +33,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 	conn, err := wsHandler.websocketUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Error(fmt.Sprintf("[websocket.Handler] Failed to upgrade connection  User ID: %s : %v", GOUserID, err))
+		metrics.Increment("users.disconnected", "reason=ugfailure")
 		return
 	}
 	defer conn.Close()
@@ -44,6 +44,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 
 		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Duplicate connection"))
+		metrics.Count("user.disconnected", 1, "reason=exists")
 		return
 	}
 	if wsHandler.user.HasReachedLimit() {
@@ -51,6 +52,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		maxConnResp := createEmptyErrorResponse(de.Code_MAX_CONNECTION_LIMIT_REACHED)
 		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Max connection reached"))
+		metrics.Count("user.disconnected", 1, "reason=serverlimit")
 		return
 	}
 	wsHandler.user.Store(GOUserID)
@@ -58,6 +60,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 	defer calculateSessionTime(GOUserID, connectedTime)
 
 	setUpControlHandlers(conn, GOUserID, wsHandler.PingInterval, wsHandler.PongWaitInterval, wsHandler.WriteWaitInterval)
+	metrics.Increment("user.connected", "")
 
 	for {
 		_, message, err := conn.ReadMessage()
@@ -72,16 +75,19 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v  User ID: %s ", err, GOUserID)) //no connection issue here
 			break
 		}
+		metrics.Count("request.events.bytes", len(message), "")
 		payload := &de.EventRequest{}
 		err = proto.Unmarshal(message, payload)
 		if err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v  User ID: %s ", err, GOUserID))
+			metrics.Increment("request.count", "type=bad")
 			badrequest := createBadrequestResponse(err)
 			conn.WriteMessage(websocket.BinaryMessage, badrequest)
 			continue
 		}
+		metrics.Increment("request.count", "type=ok")
 
-		wsHandler.bufferChannel <- payload.GetData()
+		wsHandler.bufferChannel <- *payload
 
 		resp := createSuccessResponse(*payload)
 		success, _ := proto.Marshal(&resp)
@@ -92,7 +98,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 func calculateSessionTime(userID string, connectedAt time.Time) {
 	connectionTime := time.Now().Sub(connectedAt)
 	logger.Info(fmt.Sprintf("[websocket.calculateSessionTime] UserID: %s, total time connected in minutes: %v", userID, connectionTime.Minutes()))
-	//@TODO - send this as metrics
+	metrics.Timing("users.session.time", connectionTime.Milliseconds(), "")
 }
 
 func setUpControlHandlers(conn *websocket.Conn, GOUserID string, PingInterval time.Duration,

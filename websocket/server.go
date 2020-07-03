@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"raccoon/config"
 	"raccoon/logger"
+	"time"
 
+	"raccoon/metrics"
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 
 	"github.com/gorilla/mux"
@@ -14,7 +16,8 @@ import (
 
 type Server struct {
 	HttpServer    *http.Server
-	bufferChannel chan []*de.CSEventMessage
+	bufferChannel chan de.EventRequest
+	user          *User
 }
 
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
@@ -26,16 +29,26 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 			cancel()
 		}
 	}()
+	go s.ReportTotalConnection()
+}
+
+func (s *Server) ReportTotalConnection() {
+	t := time.Tick(config.StatsdConfigLoader().FlushPeriod())
+	for {
+		<-t
+		metrics.Gauge("connections.count", s.user.TotalUsers(), "")
+	}
 }
 
 //CreateServer - instantiates the http server
-func CreateServer() (*Server, chan []*de.CSEventMessage) {
+func CreateServer() (*Server, chan de.EventRequest) {
 	//create the websocket handler that upgrades the http request
-	bufferChannel := make(chan []*de.CSEventMessage, config.WorkerConfigLoader().ChannelSize())
+	bufferChannel := make(chan de.EventRequest, config.WorkerConfigLoader().ChannelSize())
+	user := NewUserStore(config.ServerConfig.ServerMaxConn)
 	wsHandler := &Handler{
 		websocketUpgrader: getWebSocketUpgrader(config.ServerConfig.ReadBufferSize, config.ServerConfig.WriteBufferSize, config.ServerConfig.CheckOrigin),
 		bufferChannel:     bufferChannel,
-		user:              NewUserStore(config.ServerConfig.ServerMaxConn),
+		user:              user,
 		PingInterval:      config.ServerConfig.PingInterval,
 		PongWaitInterval:  config.ServerConfig.PongWaitInterval,
 		WriteWaitInterval: config.ServerConfig.WriteWaitInterval,
@@ -46,6 +59,7 @@ func CreateServer() (*Server, chan []*de.CSEventMessage) {
 			Addr:    ":" + config.ServerConfig.AppPort,
 		},
 		bufferChannel: bufferChannel,
+		user:          user,
 	}
 	//Wrap the handler with a Server instance and return it
 	return server, bufferChannel

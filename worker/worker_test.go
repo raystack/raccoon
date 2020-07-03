@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"github.com/golang/protobuf/ptypes/timestamp"
+	"sync"
 	"testing"
 	"time"
 
@@ -8,49 +10,67 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
-type mockKakfaPublisher struct {
-	mock.Mock
-}
-
-func (m *mockKakfaPublisher) ProduceBulk(message [][]byte, deliveryChannel chan kafka.Event) error {
-	mock := m.Called(mock.Anything, mock.Anything)
-	return mock.Error(0)
-}
-
 func TestWorker(t *testing.T) {
+	request := de.EventRequest{
+		SentTime: &timestamp.Timestamp{Seconds: 1593574343},
+	}
+
 	t.Run("StartWorkers", func(t *testing.T) {
 		t.Run("Should publish messages on bufferChannel to kafka", func(t *testing.T) {
-			m := mockKakfaPublisher{}
-			bc := make(chan []*de.CSEventMessage, 2)
-			worker := CreateWorkerPool(1, bc, 100, &m)
+			kp := mockKakfaPublisher{}
+			m := &mockMetric{}
+			m.On("Timing", "processing.latency", mock.Anything, "")
+			m.On("Count", "kafka.messages.delivered", 0, "success=true")
+			m.On("Count", "kafka.messages.delivered", 0, "success=false")
+			bc := make(chan de.EventRequest, 2)
+			worker := Pool{
+				Size:                1,
+				deliveryChannelSize: 0,
+				EventsChannel:       bc,
+				kafkaProducer:       &kp,
+				wg:                  sync.WaitGroup{},
+				instrumentation:     m,
+			}
 			worker.StartWorkers()
 
-			m.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Twice()
-			bc <- []*de.CSEventMessage{}
-			bc <- []*de.CSEventMessage{}
+			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil)
+			bc <- request
+			bc <- request
 			time.Sleep(10 * time.Millisecond)
 
-			m.AssertExpectations(t)
+			kp.AssertExpectations(t)
 		})
 	})
 
 	t.Run("Flush", func(t *testing.T) {
-		t.Run("Should flush without blocking forever", func(t *testing.T) {
-			m := mockKakfaPublisher{}
-			bc := make(chan []*de.CSEventMessage, 2)
-			worker := CreateWorkerPool(1, bc, 100, &m)
+		t.Run("Should block until all messages is processed", func(t *testing.T) {
+			kp := mockKakfaPublisher{}
+			bc := make(chan de.EventRequest, 2)
+			m := &mockMetric{}
+			m.On("Timing", "processing.latency", mock.Anything, "")
+			m.On("Count", "kafka.messages.delivered", 0, "success=true")
+			m.On("Count", "kafka.messages.delivered", 0, "success=false")
+
+			worker := Pool{
+				Size:                1,
+				deliveryChannelSize: 100,
+				EventsChannel:       bc,
+				kafkaProducer:       &kp,
+				wg:                  sync.WaitGroup{},
+				instrumentation:     m,
+			}
 			worker.StartWorkers()
-			m.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)
-			bc <- []*de.CSEventMessage{}
-			bc <- []*de.CSEventMessage{}
-			bc <- []*de.CSEventMessage{}
+			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)
+			bc <- request
+			bc <- request
+			bc <- request
 			close(bc)
 			timedOut := worker.FlushWithTimeOut(1 * time.Second)
 			assert.False(t, timedOut)
 			assert.Equal(t, 0, len(bc))
+			kp.AssertExpectations(t)
 		})
 	})
 }

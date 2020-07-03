@@ -2,6 +2,7 @@ package worker
 
 import (
 	"raccoon/logger"
+	"raccoon/metrics"
 	"sync"
 	"time"
 
@@ -17,19 +18,21 @@ import (
 type Pool struct {
 	Size                int
 	deliveryChannelSize int
-	EventsChannel       <-chan []*de.CSEventMessage
+	EventsChannel       <-chan de.EventRequest
 	kafkaProducer       publisher.KafkaProducer
 	wg                  sync.WaitGroup
+	instrumentation     metric
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan []*de.CSEventMessage, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan de.EventRequest, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
 	return &Pool{
 		Size:                size,
 		deliveryChannelSize: deliveryChannelSize,
 		EventsChannel:       eventsChannel,
 		kafkaProducer:       kafkaProducer,
 		wg:                  sync.WaitGroup{},
+		instrumentation:     metrics.Instance(),
 	}
 }
 
@@ -39,24 +42,35 @@ func (w *Pool) StartWorkers() {
 	for i := 0; i < w.Size; i++ {
 		go func() {
 			deliveryChan := make(chan kafka.Event, w.deliveryChannelSize)
-			for events := range w.EventsChannel {
+			for request := range w.EventsChannel {
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
-				batch := make([][]byte, len(events))
-				for _, event := range events {
+				batch := make([][]byte, 0, len(request.GetData()))
+				for _, event := range request.GetData() {
 					csByte, err := proto.Marshal(event)
 					if err != nil {
 						logger.Errorf("[worker] Fail to serialize message: %v", err)
-						continue
+						w.instrumentation.Count("kafka.event.serialization.error", 1, "")
+						break
 					}
 					batch = append(batch, csByte)
 				}
-
 				err := w.kafkaProducer.ProduceBulk(batch, deliveryChan)
+				totalErr := 0
 				if err != nil {
 					for _, err := range err.(publisher.BulkError).Errors {
-						logger.Errorf("[worker] Fail to publish message to kafka %v", err)
+						if err != nil {
+							logger.Errorf("[worker] Fail to publish message to kafka %v", err)
+							totalErr++
+						}
 					}
 				}
+				logger.Infof("Success sending messages, %v", len(batch))
+				if len(batch) > 0 {
+					eventTimingMs := time.Since(time.Unix(request.SentTime.Seconds, 0)).Milliseconds() / int64(len(batch))
+					w.instrumentation.Timing("processing.latency", eventTimingMs, "")
+				}
+				w.instrumentation.Count("kafka.messages.delivered", totalErr, "success=false")
+				w.instrumentation.Count("kafka.messages.delivered", len(batch)-totalErr, "success=true")
 			}
 			w.wg.Done()
 		}()
@@ -78,4 +92,9 @@ func (w *Pool) FlushWithTimeOut(timeout time.Duration) bool {
 	case <-time.After(timeout):
 		return true // timed out
 	}
+}
+
+type metric interface {
+	Count(string, int, string)
+	Timing(string, int64, string)
 }

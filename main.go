@@ -4,12 +4,15 @@ import (
 	"raccoon/app"
 	"raccoon/config"
 	"raccoon/logger"
+	"raccoon/metrics"
 )
 
 func main() {
 	config.Load()
 	logger.Setup()
+	metrics.Setup()
 	err := app.Run()
+	metrics.Close()
 	if err != nil {
 		logger.Fatal("init failure", err)
 	}

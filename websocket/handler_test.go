@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"raccoon/config"
 	"raccoon/logger"
+	"raccoon/metrics"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
@@ -24,11 +24,9 @@ func (v void) Write(_ []byte) (int, error) {
 	return 0, nil
 }
 func TestMain(t *testing.M) {
-	os.Setenv("PING_INTERVAL", "1")
-	os.Setenv("WRITE_WAIT_INTERVAL", "1")
-	os.Setenv("PONG_WAIT_INTERVAL", "2")
 	logger.Setup()
 	logger.SetOutput(void{})
+	metrics.SetVoid()
 	t.Run()
 }
 
@@ -45,10 +43,6 @@ func TestPingHandler(t *testing.T) {
 
 func TestHandler_HandlerWSEvents(t *testing.T) {
 	// ---- Setup ----
-	os.Setenv("PING_INTERVAL", "1")
-	os.Setenv("WRITE_WAIT_INTERVAL", "1")
-	os.Setenv("PONG_WAIT_INTERVAL", "1")
-	config.ReLoad()
 	hlr := &Handler{
 		websocketUpgrader: websocket.Upgrader{
 			ReadBufferSize:  10240,
@@ -58,10 +52,10 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 			},
 		},
 		user:              NewUserStore(2),
-		bufferChannel:     make(chan []*de.CSEventMessage, 10),
-		PingInterval:      config.ServerConfig.PingInterval,
-		PongWaitInterval:  config.ServerConfig.PongWaitInterval,
-		WriteWaitInterval: config.ServerConfig.WriteWaitInterval,
+		bufferChannel:     make(chan de.EventRequest, 10),
+		PingInterval:      time.Duration(30 * time.Second),
+		PongWaitInterval:  time.Duration(60 * time.Second),
+		WriteWaitInterval: time.Duration(5 * time.Second),
 	}
 	ts := httptest.NewServer(Router(hlr))
 	defer ts.Close()

@@ -42,8 +42,8 @@ clean: ## Clean the builds
 
 test:
 	make lint
-	ENVIRONMENT=test go test $(ALL_PACKAGES) -p=2 -v
-	@go list ./... | grep -v "vendor" | -v "integration" | xargs go test -count 1 -cover -short -race -timeout 1m -coverprofile ${COVER_FILE}
+	ENVIRONMENT=test go test $(shell go list ./... | grep -v "vendor" | grep -v "integration") -p=2 -v
+	@go list ./... | grep -v "vendor" | grep -v "integration" | xargs go test -count 1 -cover -short -race -timeout 1m -coverprofile ${COVER_FILE}
 	@go tool cover -func ${COVER_FILE} | tail -1 | xargs echo test coverage:
 
 test_ci:

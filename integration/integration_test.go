@@ -9,6 +9,7 @@ import (
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"math/rand"
 	"net/http"
+	"os"
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"testing"
 	"time"
@@ -23,9 +24,9 @@ var bootstrapServers string
 func TestMain(m *testing.M) {
 	uuid = fmt.Sprintf("%d-test", rand.Int())
 	timeout = 120 * time.Second
-	topic = "de-test-raccoon"
-	url = "wss://raccoon-integration.gojekapi.com/api/v1/events"
-	bootstrapServers = "10.200.188.27:6668"
+	topic = os.Getenv("KAFKA_TOPIC")
+	url = fmt.Sprintf("%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
+	bootstrapServers = os.Getenv("INTEGTEST_HOST")
 	m.Run()
 }
 
@@ -34,6 +35,7 @@ func TestIntegration(t *testing.T) {
 	assert.NoError(t, err)
 	header := http.Header{
 		"Authorization": []string{fmt.Sprintf("Bearer %v", accessToken)},
+		"GO-User-ID":    []string{"1234"},
 	}
 	t.Run("Should response with BadRequest when sending invalid request", func(t *testing.T) {
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)
@@ -86,7 +88,6 @@ func TestIntegration(t *testing.T) {
 		assert.Equal(t, r.Status, de.Status_SUCCESS)
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
-		fmt.Println(fmt.Sprintf("gen uuid: %v", uuid))
 
 		wss.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Now().Add(100*time.Millisecond))
 	})
@@ -113,14 +114,12 @@ func TestIntegration(t *testing.T) {
 				assert.Fail(t, "timeout")
 				return
 			default:
-				msg, err := c.ReadMessage(-1)
+				msg, err := c.ReadMessage(timeout)
 				if err != nil {
-					fmt.Println(err)
 					continue
 				}
 				m := &de.CSEventMessage{}
 				proto.Unmarshal(msg.Value, m)
-				fmt.Println(uuid)
 				if m.EventGuid == uuid {
 					return
 				}

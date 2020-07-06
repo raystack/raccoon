@@ -24,9 +24,9 @@ var bootstrapServers string
 func TestMain(m *testing.M) {
 	uuid = fmt.Sprintf("%d-test", rand.Int())
 	timeout = 120 * time.Second
-	topic = os.Getenv("KAFKA_TOPIC")
+	topic = "de-test-raccoon"
 	url = fmt.Sprintf("%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
-	bootstrapServers = os.Getenv("INTEGTEST_HOST")
+	bootstrapServers = os.Getenv("INTEGTEST_BOOTSTRAP_SERVER")
 	m.Run()
 }
 

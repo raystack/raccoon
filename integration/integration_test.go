@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func TestSuite(t *testing.T) {
+func TestIntegration(t *testing.T) {
 	accessToken, err := FetchAccessToken()
 	assert.NoError(t, err)
 	header := http.Header{

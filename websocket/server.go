@@ -45,10 +45,21 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 
 func (s *Server) ReportServerMetrics() {
 	t := time.Tick(config.StatsdConfigLoader().FlushPeriod())
+	m := &runtime.MemStats{}
 	for {
 		<-t
 		metrics.Gauge("connections.count", s.user.TotalUsers(), "")
 		metrics.Gauge("go.routines.count", runtime.NumGoroutine(), "")
+
+		runtime.ReadMemStats(m)
+		metrics.Gauge("heap.alloc", m.HeapAlloc, "")
+		metrics.Gauge("heap.inuse", m.HeapInuse, "")
+		metrics.Gauge("heap.object", m.HeapObjects, "")
+		metrics.Gauge("stack.inuse", m.StackInuse, "")
+		metrics.Gauge("gc.triggered", m.LastGC/1000, "")
+		metrics.Gauge("gc.pauseNs", m.PauseNs[(m.NumGC+255)%256]/1000, "")
+		metrics.Gauge("gc.count", m.NumGC, "")
+		metrics.Gauge("gc.puseTotalNs", m.PauseTotalNs, "")
 	}
 }
 

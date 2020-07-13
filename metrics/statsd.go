@@ -2,8 +2,10 @@ package metrics
 
 import (
 	"fmt"
-	client "gopkg.in/alexcesaro/statsd.v2"
 	"raccoon/config"
+	"raccoon/logger"
+
+	client "gopkg.in/alexcesaro/statsd.v2"
 )
 
 var instance *Statsd
@@ -12,23 +14,23 @@ type Statsd struct {
 	c *client.Client
 }
 
-func (s *Statsd) Count(bucket string, i int, tags string) {
+func (s *Statsd) count(bucket string, i int, tags string) {
 	s.c.Count(withTags(bucket, tags), i)
 }
 
-func (s *Statsd) Timing(bucket string, t int64, tags string) {
+func (s *Statsd) timing(bucket string, t int64, tags string) {
 	s.c.Timing(withTags(bucket, tags), t)
 }
 
-func (s *Statsd) Increment(bucket string, tags string) {
+func (s *Statsd) increment(bucket string, tags string) {
 	s.c.Increment(withTags(bucket, tags))
 }
 
-func (s *Statsd) Decrement(bucket string, tags string) {
+func (s *Statsd) decrement(bucket string, tags string) {
 	s.c.Count(withTags(bucket, tags), -1)
 }
 
-func (s *Statsd) Gauge(bucket string, val interface{}, tags string) {
+func (s *Statsd) gauge(bucket string, val interface{}, tags string) {
 	s.c.Gauge(withTags(bucket, tags), val)
 }
 
@@ -40,56 +42,63 @@ func withTags(bucket, tags string) string {
 	return fmt.Sprintf("%v,%v", bucket, tags)
 }
 
-func Setup() {
+func Setup() error {
 	if instance == nil {
 		c, err := client.New(
 			client.Address(config.StatsdConfigLoader().Address),
 			client.FlushPeriod(config.StatsdConfigLoader().FlushPeriod()))
 		if err != nil {
-			fmt.Printf("error: %v", err)
-			return
+			logger.Errorf("StatsD Set up failed to create client: %s", err.Error())
+			return err
 		}
 
 		instance = &Statsd{
 			c: c,
 		}
-
 	}
+	return nil
 }
 
 func Count(bucket string, i int, tags string) {
-	Setup()
-	instance.Count(bucket, i, tags)
+	err := Setup()
+	if err == nil {
+		instance.count(bucket, i, tags)
+	}
 }
 
 func Timing(bucket string, t int64, tags string) {
-	Setup()
-	instance.Timing(bucket, t, tags)
+	err := Setup()
+	if err == nil {
+		instance.timing(bucket, t, tags)
+	}
 }
 
 func Increment(bucket string, tags string) {
-	Setup()
-	instance.Increment(bucket, tags)
+	err := Setup()
+	if err == nil {
+		instance.increment(bucket, tags)
+	}
 }
 
 func Decrement(bucket string, tags string) {
-	Setup()
-	instance.Decrement(bucket, tags)
+	err := Setup()
+	if err == nil {
+		instance.decrement(bucket, tags)
+	}
 }
 
 func Gauge(bucket string, val interface{}, tags string) {
-	Setup()
-	instance.Gauge(bucket, val, tags)
+	err := Setup()
+	if err == nil {
+		instance.gauge(bucket, val, tags)
+	}
 }
 
 func Close() {
-	Setup()
-	instance.Close()
-}
-
-func Instance() *Statsd {
-	Setup()
-	return instance
+	err := Setup()
+	if err == nil {
+		instance.Close()
+	}
 }
 
 func SetVoid() {

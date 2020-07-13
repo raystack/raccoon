@@ -6,6 +6,7 @@ import (
 	"raccoon/logger"
 	"raccoon/metrics"
 	"time"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
@@ -13,11 +14,16 @@ import (
 
 type Handler struct {
 	websocketUpgrader websocket.Upgrader
-	bufferChannel     chan de.EventRequest
+	bufferChannel     chan EventsBatch
 	user              *User
-	PingInterval      time.Duration
 	PongWaitInterval  time.Duration
 	WriteWaitInterval time.Duration
+	PingChannel       chan connection
+}
+
+type EventsBatch struct {
+	EventReq   de.EventRequest
+	TimePushed time.Time
 }
 
 func PingHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +65,11 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 	defer wsHandler.user.Remove(GOUserID)
 	defer calculateSessionTime(GOUserID, connectedTime)
 
-	setUpControlHandlers(conn, GOUserID, wsHandler.PingInterval, wsHandler.PongWaitInterval, wsHandler.WriteWaitInterval)
+	setUpControlHandlers(conn, GOUserID, wsHandler.PongWaitInterval, wsHandler.WriteWaitInterval)
+	wsHandler.PingChannel <- connection{
+		userID: GOUserID,
+		conn:   conn,
+	}
 	metrics.Increment("user.connected", "")
 
 	for {
@@ -75,7 +85,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v  User ID: %s ", err, GOUserID)) //no connection issue here
 			break
 		}
-		metrics.Count("request.events.bytes", len(message), "")
+		metrics.Count("request.events.size", len(message), "")
 		payload := &de.EventRequest{}
 		err = proto.Unmarshal(message, payload)
 		if err != nil {
@@ -86,8 +96,12 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 			continue
 		}
 		metrics.Increment("request.count", "type=ok")
+		metrics.Count("request.events.count", len(payload.Data), "type=ok")
 
-		wsHandler.bufferChannel <- *payload
+		wsHandler.bufferChannel <- EventsBatch{
+			EventReq:   *payload,
+			TimePushed: (time.Now()),
+		}
 
 		resp := createSuccessResponse(*payload)
 		success, _ := proto.Marshal(&resp)
@@ -101,7 +115,7 @@ func calculateSessionTime(userID string, connectedAt time.Time) {
 	metrics.Timing("users.session.time", connectionTime.Milliseconds(), "")
 }
 
-func setUpControlHandlers(conn *websocket.Conn, GOUserID string, PingInterval time.Duration,
+func setUpControlHandlers(conn *websocket.Conn, GOUserID string,
 	PongWaitInterval time.Duration, WriteWaitInterval time.Duration) {
 	//expects the client to send a ping, mark this channel as idle timed out post the deadline
 	conn.SetReadDeadline(time.Now().Add(PongWaitInterval))
@@ -118,21 +132,4 @@ func setUpControlHandlers(conn *websocket.Conn, GOUserID string, PingInterval ti
 		}
 		return nil
 	})
-	go pingPeer(GOUserID, conn, PingInterval, WriteWaitInterval)
-}
-
-func pingPeer(userID string, conn *websocket.Conn, PingInterval time.Duration, WriteWaitInterval time.Duration) {
-	timer := time.NewTicker(PingInterval)
-	defer func() {
-		timer.Stop()
-	}()
-
-	for {
-		<-timer.C
-		logger.Debug(fmt.Sprintf("Pinging UserId: %s ", userID))
-		if err := conn.WriteControl(websocket.PingMessage, []byte("--ping--"), time.Now().Add(WriteWaitInterval)); err != nil {
-			logger.Error(fmt.Sprintf("[websocket.pingPeer] - Failed to ping User: %s Error: %v", userID, err))
-			return
-		}
-	}
 }

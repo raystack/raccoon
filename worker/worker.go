@@ -1,15 +1,16 @@
 package worker
 
 import (
+	"fmt"
 	"raccoon/logger"
 	"raccoon/metrics"
+	ws "raccoon/websocket"
 	"sync"
 	"time"
 
-	"github.com/golang/protobuf/proto"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
-
 	"raccoon/publisher"
+
+	"github.com/golang/protobuf/proto"
 
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
@@ -18,21 +19,19 @@ import (
 type Pool struct {
 	Size                int
 	deliveryChannelSize int
-	EventsChannel       <-chan de.EventRequest
+	EventsChannel       <-chan ws.EventsBatch
 	kafkaProducer       publisher.KafkaProducer
 	wg                  sync.WaitGroup
-	instrumentation     metric
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan de.EventRequest, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan ws.EventsBatch, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
 	return &Pool{
 		Size:                size,
 		deliveryChannelSize: deliveryChannelSize,
 		EventsChannel:       eventsChannel,
 		kafkaProducer:       kafkaProducer,
 		wg:                  sync.WaitGroup{},
-		instrumentation:     metrics.Instance(),
 	}
 }
 
@@ -40,16 +39,19 @@ func CreateWorkerPool(size int, eventsChannel <-chan de.EventRequest, deliveryCh
 func (w *Pool) StartWorkers() {
 	w.wg.Add(w.Size)
 	for i := 0; i < w.Size; i++ {
-		go func() {
+		go func(workerName string) {
+			logger.Info("Running worker: " + workerName)
 			deliveryChan := make(chan kafka.Event, w.deliveryChannelSize)
 			for request := range w.EventsChannel {
+				metrics.Timing("batch.idletime.inchannel", (time.Now().Sub(request.TimePushed)).Milliseconds(), "worker="+workerName)
+				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
-				batch := make([][]byte, 0, len(request.GetData()))
-				for _, event := range request.GetData() {
+				batch := make([][]byte, 0, len(request.EventReq.GetData()))
+				for _, event := range request.EventReq.GetData() {
 					csByte, err := proto.Marshal(event)
 					if err != nil {
 						logger.Errorf("[worker] Fail to serialize message: %v", err)
-						w.instrumentation.Count("kafka.event.serialization.error", 1, "")
+						metrics.Count("kafka.event.serialization.error", 1, "")
 						break
 					}
 					batch = append(batch, csByte)
@@ -66,14 +68,16 @@ func (w *Pool) StartWorkers() {
 				}
 				logger.Infof("Success sending messages, %v", len(batch))
 				if len(batch) > 0 {
-					eventTimingMs := time.Since(time.Unix(request.SentTime.Seconds, 0)).Milliseconds() / int64(len(batch))
-					w.instrumentation.Timing("processing.latency", eventTimingMs, "")
+					eventTimingMs := time.Since(time.Unix(request.EventReq.SentTime.Seconds, 0)).Milliseconds() / int64(len(batch))
+					logger.Info(fmt.Sprintf("Currenttim: %d, eventTimingMs: %d", request.EventReq.SentTime.Seconds, eventTimingMs))
+					metrics.Timing("processing.latency", eventTimingMs, "")
+					metrics.Timing("worker.processing.latency", (time.Now().Sub(batchReadTime).Milliseconds())/int64(len(batch)), "worker="+workerName)
 				}
-				w.instrumentation.Count("kafka.messages.delivered", totalErr, "success=false")
-				w.instrumentation.Count("kafka.messages.delivered", len(batch)-totalErr, "success=true")
+				metrics.Count("kafka.messages.delivered", totalErr, "success=false")
+				metrics.Count("kafka.messages.delivered", len(batch)-totalErr, "success=true")
 			}
 			w.wg.Done()
-		}()
+		}(fmt.Sprintf("worker-%d", i))
 	}
 }
 

@@ -18,6 +18,7 @@ type ServerCfg struct {
 	PongWaitInterval          time.Duration
 	WriteWaitInterval         time.Duration
 	ServerShutDownGracePeriod time.Duration
+	PingerSize                int
 }
 
 func serverConfigLoader() {
@@ -30,6 +31,7 @@ func serverConfigLoader() {
 	viper.SetDefault("PONG_WAIT_INTERVAL", "60") //should be more than the ping period
 	viper.SetDefault("WRITE_WAIT_INTERVAL", "5")
 	viper.SetDefault("SERVER_SHUTDOWN_GRACE_PERIOD", "3")
+	viper.SetDefault("PINGER_SIZE", 1)
 
 	ServerConfig = ServerCfg{
 		AppPort:                   mustGetString("APP_PORT"),
@@ -41,5 +43,6 @@ func serverConfigLoader() {
 		PongWaitInterval:          mustGetDurationInSeconds("PONG_WAIT_INTERVAL"),
 		WriteWaitInterval:         mustGetDurationInSeconds("WRITE_WAIT_INTERVAL"),
 		ServerShutDownGracePeriod: mustGetDurationInSeconds("SERVER_SHUTDOWN_GRACE_PERIOD"),
+		PingerSize:                mustGetInt("PINGER_SIZE"),
 	}
 }

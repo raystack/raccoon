@@ -1,11 +1,12 @@
 package worker
 
 import (
+	"testing"
+
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
-	"testing"
 )
 
 type mockKakfaPublisher struct {

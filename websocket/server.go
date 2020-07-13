@@ -5,19 +5,21 @@ import (
 	"net/http"
 	"raccoon/config"
 	"raccoon/logger"
+	"runtime"
 	"time"
 
 	"raccoon/metrics"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	_ "net/http/pprof"
 )
 
 type Server struct {
 	HttpServer    *http.Server
-	bufferChannel chan de.EventRequest
+	bufferChannel chan EventsBatch
 	user          *User
+	pingChannel   chan connection
 }
 
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
@@ -29,29 +31,40 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 			cancel()
 		}
 	}()
-	go s.ReportTotalConnection()
+	go s.ReportServerMetrics()
+	go Pinger(s.pingChannel, config.ServerConfig.PingerSize, config.ServerConfig.PingInterval, config.ServerConfig.WriteWaitInterval)
+	go func() {
+		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
+			logger.Errorf("WebSocket Server --> pprof could not be enabled: %s", err.Error())
+			cancel()
+		} else {
+			logger.Info("WebSocket Server --> pprof :: Enabled")
+		}
+	}()
 }
 
-func (s *Server) ReportTotalConnection() {
+func (s *Server) ReportServerMetrics() {
 	t := time.Tick(config.StatsdConfigLoader().FlushPeriod())
 	for {
 		<-t
 		metrics.Gauge("connections.count", s.user.TotalUsers(), "")
+		metrics.Gauge("go.routines.count", runtime.NumGoroutine(), "")
 	}
 }
 
 //CreateServer - instantiates the http server
-func CreateServer() (*Server, chan de.EventRequest) {
+func CreateServer() (*Server, chan EventsBatch) {
 	//create the websocket handler that upgrades the http request
-	bufferChannel := make(chan de.EventRequest, config.WorkerConfigLoader().ChannelSize())
+	bufferChannel := make(chan EventsBatch, config.WorkerConfigLoader().ChannelSize())
+	pingChannel := make(chan connection, config.ServerConfig.ServerMaxConn)
 	user := NewUserStore(config.ServerConfig.ServerMaxConn)
 	wsHandler := &Handler{
 		websocketUpgrader: getWebSocketUpgrader(config.ServerConfig.ReadBufferSize, config.ServerConfig.WriteBufferSize, config.ServerConfig.CheckOrigin),
 		bufferChannel:     bufferChannel,
 		user:              user,
-		PingInterval:      config.ServerConfig.PingInterval,
 		PongWaitInterval:  config.ServerConfig.PongWaitInterval,
 		WriteWaitInterval: config.ServerConfig.WriteWaitInterval,
+		PingChannel:       pingChannel,
 	}
 	server := &Server{
 		HttpServer: &http.Server{
@@ -60,6 +73,7 @@ func CreateServer() (*Server, chan de.EventRequest) {
 		},
 		bufferChannel: bufferChannel,
 		user:          user,
+		pingChannel:   pingChannel,
 	}
 	//Wrap the handler with a Server instance and return it
 	return server, bufferChannel

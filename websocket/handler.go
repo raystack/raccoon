@@ -128,7 +128,8 @@ func setUpControlHandlers(conn *websocket.Conn, GOUserID string,
 	conn.SetPingHandler(func(s string) error {
 		logger.Debug(fmt.Sprintf("Client connection with User ID: %s Pinged", GOUserID))
 		if err := conn.WriteControl(websocket.PongMessage, []byte(s), time.Now().Add(WriteWaitInterval)); err != nil {
-			logger.Debug(fmt.Sprintf("Failed to send ping event: %s User: %s", err, GOUserID))
+			metrics.Count("server.pong.failed", 1, "")
+			logger.Debug(fmt.Sprintf("Failed to send pong event: %s User: %s", err, GOUserID))
 		}
 		return nil
 	})

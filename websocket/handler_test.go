@@ -52,10 +52,10 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 			},
 		},
 		user:              NewUserStore(2),
-		bufferChannel:     make(chan de.EventRequest, 10),
-		PingInterval:      time.Duration(30 * time.Second),
+		bufferChannel:     make(chan EventsBatch, 10),
 		PongWaitInterval:  time.Duration(60 * time.Second),
 		WriteWaitInterval: time.Duration(5 * time.Second),
+		PingChannel:       make(chan connection, 100),
 	}
 	ts := httptest.NewServer(Router(hlr))
 	defer ts.Close()

@@ -1,10 +1,12 @@
 package worker
 
 import (
-	"github.com/golang/protobuf/ptypes/timestamp"
+	ws "raccoon/websocket"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/timestamp"
 
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 
@@ -13,8 +15,10 @@ import (
 )
 
 func TestWorker(t *testing.T) {
-	request := de.EventRequest{
-		SentTime: &timestamp.Timestamp{Seconds: 1593574343},
+	request := ws.EventsBatch{
+		EventReq: de.EventRequest{
+			SentTime: &timestamp.Timestamp{Seconds: 1593574343},
+		},
 	}
 
 	t.Run("StartWorkers", func(t *testing.T) {
@@ -24,14 +28,13 @@ func TestWorker(t *testing.T) {
 			m.On("Timing", "processing.latency", mock.Anything, "")
 			m.On("Count", "kafka.messages.delivered", 0, "success=true")
 			m.On("Count", "kafka.messages.delivered", 0, "success=false")
-			bc := make(chan de.EventRequest, 2)
+			bc := make(chan ws.EventsBatch, 2)
 			worker := Pool{
 				Size:                1,
 				deliveryChannelSize: 0,
 				EventsChannel:       bc,
 				kafkaProducer:       &kp,
 				wg:                  sync.WaitGroup{},
-				instrumentation:     m,
 			}
 			worker.StartWorkers()
 
@@ -47,7 +50,7 @@ func TestWorker(t *testing.T) {
 	t.Run("Flush", func(t *testing.T) {
 		t.Run("Should block until all messages is processed", func(t *testing.T) {
 			kp := mockKakfaPublisher{}
-			bc := make(chan de.EventRequest, 2)
+			bc := make(chan ws.EventsBatch, 2)
 			m := &mockMetric{}
 			m.On("Timing", "processing.latency", mock.Anything, "")
 			m.On("Count", "kafka.messages.delivered", 0, "success=true")
@@ -59,7 +62,6 @@ func TestWorker(t *testing.T) {
 				EventsChannel:       bc,
 				kafkaProducer:       &kp,
 				wg:                  sync.WaitGroup{},
-				instrumentation:     m,
 			}
 			worker.StartWorkers()
 			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)

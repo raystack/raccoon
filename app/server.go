@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"raccoon/config"
 	"raccoon/logger"
+	"raccoon/metrics"
 	"raccoon/publisher"
 	ws "raccoon/websocket"
 	"raccoon/worker"
@@ -32,10 +33,10 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, config.WorkerConfigLoader().DeliveryChannelSize(), kPublisher)
 	workerPool.StartWorkers()
 
-	go shutDownServer(ctx, cancel, wssServer.HttpServer, workerPool, kPublisher)
+	go shutDownServer(ctx, cancel, wssServer.HttpServer, bufferChannel, workerPool, kPublisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *http.Server, workerPool *worker.Pool, kp *publisher.Kafka) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *http.Server, bufferChannel chan ws.EventsBatch, workerPool *worker.Pool, kp *publisher.Kafka) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
@@ -52,7 +53,13 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *h
 			flushInterval := config.NewKafkaConfig().GetFlushInterval()
 			logger.Info("Closing Kafka producer")
 			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
-			kp.Close()
+			eventsInProducer := kp.Close()
+			/**
+			@TODO - should compute the actual no., of events per batch and therefore the total. We can do this only when we close all the active connections
+			Until then we fall back to approximation */
+			eventsInChannel := len(bufferChannel) * 7
+			logger.Info(fmt.Sprintf("Outstanding unprocessed events in the channel, data lost ~ (No batches %d * 5 events) = ~%d", len(bufferChannel), eventsInChannel))
+			metrics.Count("kafka.messages.delivered", eventsInChannel+eventsInProducer, "success=false")
 			logger.Info("Exiting server")
 			os.Exit(0)
 		default:

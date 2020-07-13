@@ -59,7 +59,7 @@ func (s *Server) ReportServerMetrics() {
 		metrics.Gauge("gc.triggered", m.LastGC/1000, "")
 		metrics.Gauge("gc.pauseNs", m.PauseNs[(m.NumGC+255)%256]/1000, "")
 		metrics.Gauge("gc.count", m.NumGC, "")
-		metrics.Gauge("gc.puseTotalNs", m.PauseTotalNs, "")
+		metrics.Gauge("gc.pauseTotalNs", m.PauseTotalNs, "")
 	}
 }
 

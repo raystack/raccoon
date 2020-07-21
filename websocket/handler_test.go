@@ -72,7 +72,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		request := &de.EventRequest{
 			ReqGuid:  "1234",
 			SentTime: ptypes.TimestampNow(),
-			Data:     nil,
+			Events:     nil,
 		}
 		serializedRequest, _ := proto.Marshal(request)
 

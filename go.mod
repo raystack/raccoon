@@ -13,5 +13,5 @@ require (
 	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0
 	gopkg.in/confluentinc/confluent-kafka-go.v1 v1.4.2
-	source.golabs.io/mobile/clickstream-go-proto v0.0.6
+	source.golabs.io/mobile/clickstream-go-proto v1.0.1
 )

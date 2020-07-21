@@ -2,17 +2,20 @@ package integration
 
 import (
 	"fmt"
+	"math/rand"
+	"net/http"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
-	"math/rand"
-	"net/http"
-	"os"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
-	"testing"
-	"time"
+	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/common"
+	de "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
+	gofood "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/products/gofood"
 )
 
 var uuid string
@@ -65,16 +68,28 @@ func TestIntegration(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
+		var events []*de.Event
 
+		event1 := &gofood.AdCardEvent{
+			ServiceInfo: &common.ServiceInfo{
+				Type:	"service1",
+				AreaId: "A1",
+			},
+			Meta: &common.EventMeta{
+				EventGuid:      uuid,
+				EventName:      "ride",
+				EventTimestamp: ptypes.TimestampNow(),
+			},
+		}
+		eBytes,_ := proto.Marshal(event1)
+		eEvent := &de.Event{
+			EventBytes: eBytes,
+		}
+		events = append(events, eEvent)
 		req := &de.EventRequest{
 			ReqGuid:  "1234",
 			SentTime: ptypes.TimestampNow(),
-			Data: []*de.CSEventMessage{{
-				EventGuid:      uuid,
-				EventType:      "ride",
-				EventName:      "ride",
-				EventTimestamp: ptypes.TimestampNow()},
-			},
+			Events:   events,	
 		}
 		bReq, _ := proto.Marshal(req)
 		wss.WriteMessage(websocket.BinaryMessage, bReq)
@@ -118,9 +133,9 @@ func TestIntegration(t *testing.T) {
 				if err != nil {
 					continue
 				}
-				m := &de.CSEventMessage{}
+				m := &gofood.AdCardEvent{}
 				proto.Unmarshal(msg.Value, m)
-				if m.EventGuid == uuid {
+				if m.GetMeta().EventGuid == uuid {
 					return
 				}
 			}

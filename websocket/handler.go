@@ -96,14 +96,14 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 			continue
 		}
 		metrics.Increment("request.count", "type=ok")
-		metrics.Count("request.events.count", len(payload.Data), "type=ok")
+		metrics.Count("request.events.count", len(payload.Events), "type=ok")
 
 		wsHandler.bufferChannel <- EventsBatch{
 			EventReq:   *payload,
 			TimePushed: (time.Now()),
 		}
 
-		resp := createSuccessResponse(*payload)
+		resp := createSuccessResponse(payload.ReqGuid)
 		success, _ := proto.Marshal(&resp)
 		conn.WriteMessage(websocket.BinaryMessage, success)
 	}

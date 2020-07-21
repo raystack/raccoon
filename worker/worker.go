@@ -9,9 +9,6 @@ import (
 	"time"
 
 	"raccoon/publisher"
-
-	"github.com/golang/protobuf/proto"
-
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
@@ -46,14 +43,9 @@ func (w *Pool) StartWorkers() {
 				metrics.Timing("batch.idletime.inchannel", (time.Now().Sub(request.TimePushed)).Milliseconds(), "worker="+workerName)
 				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
-				batch := make([][]byte, 0, len(request.EventReq.GetData()))
-				for _, event := range request.EventReq.GetData() {
-					csByte, err := proto.Marshal(event)
-					if err != nil {
-						logger.Errorf("[worker] Fail to serialize message: %v", err)
-						metrics.Count("kafka.event.serialization.error", 1, "")
-						break
-					}
+				batch := make([][]byte, 0, len(request.EventReq.GetEvents()))
+				for _, event := range request.EventReq.GetEvents() {
+					csByte := event.GetEventBytes()
 					batch = append(batch, csByte)
 				}
 				err := w.kafkaProducer.ProduceBulk(batch, deliveryChan)

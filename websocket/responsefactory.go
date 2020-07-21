@@ -8,14 +8,14 @@ import (
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 )
 
-func createSuccessResponse(request de.EventRequest) de.EventResponse {
+func createSuccessResponse(requestGuid string) de.EventResponse {
 	response := de.EventResponse{
 		Status:   de.Status_SUCCESS,
 		Code:     de.Code_OK,
 		SentTime: time.Now().Unix(),
 		Reason:   "",
 		Data: map[string]string{
-			"req_guid": request.ReqGuid,
+			"req_guid": requestGuid,
 		},
 	}
 	return response

@@ -15,7 +15,8 @@ import (
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/common"
 	de "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
-	gofood "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/products/gofood"
+	eventsProto "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/products/events"
+	eventsCommon "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/products/common"
 )
 
 var uuid string
@@ -70,8 +71,8 @@ func TestIntegration(t *testing.T) {
 		}
 		var events []*de.Event
 
-		event1 := &gofood.AdCardEvent{
-			ServiceInfo: &common.ServiceInfo{
+		event1 := &eventsProto.AdCardEvent{
+			ServiceInfo: &eventsCommon.ServiceInfo{
 				Type:	"service1",
 				AreaId: "A1",
 			},
@@ -80,7 +81,9 @@ func TestIntegration(t *testing.T) {
 				EventName:      "ride",
 				EventTimestamp: ptypes.TimestampNow(),
 			},
+			Product: eventsCommon.Product_GoFood,
 		}
+
 		eBytes,_ := proto.Marshal(event1)
 		eEvent := &de.Event{
 			EventBytes: eBytes,
@@ -133,7 +136,7 @@ func TestIntegration(t *testing.T) {
 				if err != nil {
 					continue
 				}
-				m := &gofood.AdCardEvent{}
+				m := &eventsProto.AdCardEvent{}
 				proto.Unmarshal(msg.Value, m)
 				if m.GetMeta().EventGuid == uuid {
 					return

@@ -1,17 +1,20 @@
 package publisher
 
 import (
+	"encoding/json"
 	"fmt"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"raccoon/config"
 	"raccoon/logger"
-
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	"raccoon/metrics"
+	"strings"
 )
 
 // KafkaProducer Produce data to kafka synchronously
 type KafkaProducer interface {
 	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
 	ProduceBulk(messages [][]byte, deliveryChannel chan kafka.Event) error
+
 }
 
 func NewKafka(config config.KafkaConfig) (*Kafka, error) {
@@ -42,12 +45,14 @@ type Kafka struct {
 func (pr *Kafka) ProduceBulk(data [][]byte, deliveryChannel chan kafka.Event) error {
 	errors := make([]error, len(data))
 	totalProcessed := 0
+
 	for order, datum := range data {
 		message := &kafka.Message{
 			Value:          datum,
 			TopicPartition: kafka.TopicPartition{Topic: &pr.Config.Topic, Partition: kafka.PartitionAny},
 			Opaque:         order,
 		}
+
 		err := pr.kp.Produce(message, deliveryChannel)
 		if err != nil {
 			errors[order] = err
@@ -69,6 +74,32 @@ func (pr *Kafka) ProduceBulk(data [][]byte, deliveryChannel chan kafka.Event) er
 		return nil
 	}
 	return BulkError{Errors: errors}
+}
+
+func (pr *Kafka) ReportStats() {
+	for  v := range pr.kp.Events() {
+		switch e := v.(type) {
+		case *kafka.Stats:
+			var stats map[string]interface{}
+			json.Unmarshal([]byte(e.String()), &stats)
+
+			brokers := stats["brokers"].(map[string]interface{})
+			metrics.Gauge("kafka.total.produced", stats["txmsgs"], "")
+			metrics.Gauge("kafka.total_bytes.produced", stats["txmsg_bytes"],"")
+			for _, broker := range brokers {
+				brokerStats := broker.(map[string]interface{})
+				rttValue := brokerStats["rtt"].(map[string]interface{})
+				nodeName := strings.Split(brokerStats["nodename"].(string),":")[0]
+
+				metrics.Gauge("kafka.request.sent", brokerStats["tx"], fmt.Sprintf("host=%s,broker=true",nodeName))
+				metrics.Gauge("kafka.bytes.sent", brokerStats["txbytes"], fmt.Sprintf("host=%s,broker=true",nodeName))
+				metrics.Gauge("kafka.round_trip_time.ms", rttValue["avg"], fmt.Sprintf("host=%s,broker=true",nodeName))
+			}
+
+		default:
+			fmt.Printf("Ignored %v \n", e)
+		}
+	}
 }
 
 // Close wait for outstanding messages to be delivered within given flush interval timeout.

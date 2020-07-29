@@ -22,3 +22,7 @@ func (p *mockClient) Flush(config int) int {
 	args := p.Called(config)
 	return args.Int(0)
 }
+
+func (p *mockClient) Events() chan kafka.Event {
+	return make(chan kafka.Event)
+}

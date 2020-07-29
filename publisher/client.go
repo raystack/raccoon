@@ -8,6 +8,7 @@ type Client interface {
 	Produce(*kafka.Message, chan kafka.Event) error
 	Close()
 	Flush(int) int
+	Events() chan kafka.Event
 }
 
 func newKafkaClient(cfg *kafka.ConfigMap) (Client, error) {

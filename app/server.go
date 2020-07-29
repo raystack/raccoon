@@ -32,7 +32,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	logger.Info("Start worker -->")
 	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, config.WorkerConfigLoader().DeliveryChannelSize(), kPublisher)
 	workerPool.StartWorkers()
-
+	go kPublisher.ReportStats()
 	go shutDownServer(ctx, cancel, wssServer.HttpServer, bufferChannel, workerPool, kPublisher)
 }
 

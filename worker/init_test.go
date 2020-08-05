@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"os"
 	"raccoon/logger"
 	"testing"
 )
@@ -13,5 +14,5 @@ func (v void) Write(_ []byte) (int, error) {
 func TestMain(t *testing.M) {
 	logger.Setup()
 	logger.SetOutput(void{})
-	t.Run()
+	os.Exit(t.Run())
 }

@@ -15,8 +15,8 @@ import (
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/common"
 	de "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
-	eventsProto "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/products/events"
 	eventsCommon "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/products/common"
+	eventsProto "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/products/events"
 )
 
 var uuid string
@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 	topic = "de-test-raccoon"
 	url = fmt.Sprintf("%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
 	bootstrapServers = os.Getenv("INTEGTEST_BOOTSTRAP_SERVER")
-	m.Run()
+	os.Exit(m.Run())
 }
 
 func TestIntegration(t *testing.T) {
@@ -73,18 +73,33 @@ func TestIntegration(t *testing.T) {
 
 		event1 := &eventsProto.AdCardEvent{
 			ServiceInfo: &eventsCommon.ServiceInfo{
-				Type:	"service1",
+				Type:   "service1",
 				AreaId: "A1",
 			},
+			Type: eventsProto.AdCardType_Clicked,
 			Meta: &common.EventMeta{
-				EventGuid:      uuid,
-				EventName:      "ride",
-				EventTimestamp: ptypes.TimestampNow(),
+				EventGuid: uuid,
+				Location: &common.Location{
+					Latitude:  12.345467,
+					Longitude: 76.78687598,
+				},
+				Customer: &common.Customer{
+					SignedUpCountry: "id",
+					CurrentCountry:  "id",
+					Identity:        1238746,
+				},
+				Device: &common.Device{
+					OperatingSystem:        "iOs",
+					OperatingSystemVersion: "12.3",
+					DeviceMake:             "Apple",
+					DeviceModel:            "i10",
+				},
+				Session: &common.Session{SessionId: uuid},
 			},
 			Product: eventsCommon.Product_GoFood,
 		}
 
-		eBytes,_ := proto.Marshal(event1)
+		eBytes, _ := proto.Marshal(event1)
 		eEvent := &de.Event{
 			EventBytes: eBytes,
 		}
@@ -92,7 +107,7 @@ func TestIntegration(t *testing.T) {
 		req := &de.EventRequest{
 			ReqGuid:  "1234",
 			SentTime: ptypes.TimestampNow(),
-			Events:   events,	
+			Events:   events,
 		}
 		bReq, _ := proto.Marshal(req)
 		wss.WriteMessage(websocket.BinaryMessage, bReq)
@@ -102,8 +117,8 @@ func TestIntegration(t *testing.T) {
 		_ = proto.Unmarshal(resp, r)
 		assert.Equal(t, mType, websocket.BinaryMessage)
 		assert.Empty(t, err)
-		assert.Equal(t, r.Code, de.Code_OK)
-		assert.Equal(t, r.Status, de.Status_SUCCESS)
+		assert.Equal(t, r.Code.String(), de.Code_OK.String())
+		assert.Equal(t, r.Status.String(), de.Status_SUCCESS.String())
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
 
@@ -125,19 +140,22 @@ func TestIntegration(t *testing.T) {
 		if e != nil {
 			assert.Fail(t, fmt.Sprintf("Pls try again. %v", e))
 		}
-
+		timer := time.After(timeout)
 		for {
 			select {
-			case <-time.After(timeout):
-				assert.Fail(t, "timeout")
-				return
+			case <-timer:
+				t.Fatal("timeout")
 			default:
 				msg, err := c.ReadMessage(timeout)
 				if err != nil {
+					t.Log("error", err)
 					continue
 				}
 				m := &eventsProto.AdCardEvent{}
-				proto.Unmarshal(msg.Value, m)
+				err = proto.Unmarshal(msg.Value, m)
+				if err != nil {
+					continue
+				}
 				if m.GetMeta().EventGuid == uuid {
 					return
 				}

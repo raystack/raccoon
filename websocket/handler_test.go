@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"strings"
@@ -27,7 +28,7 @@ func TestMain(t *testing.M) {
 	logger.Setup()
 	logger.SetOutput(void{})
 	metrics.SetVoid()
-	t.Run()
+	os.Exit(t.Run())
 }
 
 func TestPingHandler(t *testing.T) {
@@ -72,7 +73,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		request := &de.EventRequest{
 			ReqGuid:  "1234",
 			SentTime: ptypes.TimestampNow(),
-			Events:     nil,
+			Events:   nil,
 		}
 		serializedRequest, _ := proto.Marshal(request)
 

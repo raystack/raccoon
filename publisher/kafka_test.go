@@ -2,6 +2,7 @@ package publisher
 
 import (
 	"fmt"
+	"os"
 	"raccoon/config"
 	"raccoon/logger"
 	"testing"
@@ -19,7 +20,7 @@ func (v void) Write(_ []byte) (int, error) {
 func TestMain(t *testing.M) {
 	logger.Setup()
 	logger.SetOutput(void{})
-	t.Run()
+	os.Exit(t.Run())
 }
 
 func TestProducer_Close(suite *testing.T) {

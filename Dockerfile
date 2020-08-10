@@ -2,8 +2,7 @@ FROM golang:latest
 
 WORKDIR /app
 COPY . .
-RUN go mod download && \
-    make build
+RUN make copy-config && make compile
 
 EXPOSE 8080
 

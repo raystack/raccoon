@@ -59,6 +59,7 @@ copy-config-ci:
 	cp application.yml.ci application.yml
 
 run:
+	go mod vendor
 	docker-compose build
 	docker-compose up -d
 

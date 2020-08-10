@@ -3,18 +3,18 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"raccoon/config"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"strings"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	_ "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka/librdkafka"
 )
 
 // KafkaProducer Produce data to kafka synchronously
 type KafkaProducer interface {
 	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
 	ProduceBulk(messages [][]byte, deliveryChannel chan kafka.Event) error
-
 }
 
 func NewKafka(config config.KafkaConfig) (*Kafka, error) {

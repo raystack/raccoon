@@ -47,7 +47,8 @@ test:
 	@go tool cover -func ${COVER_FILE} | tail -1 | xargs echo test coverage:
 
 test_ci:
-	ENVIRONMENT=test go test $(ALL_PACKAGES) -p=1 -race
+	make test
+	go mod vendor
 
 copy-config:
 	cp application.yml.sample application.yml

@@ -28,7 +28,7 @@ var bootstrapServers string
 func TestMain(m *testing.M) {
 	uuid = fmt.Sprintf("%d-test", rand.Int())
 	timeout = 120 * time.Second
-	topic = "de-test-raccoon"
+	topic = os.Getenv("INTEGTEST_TOPIC")
 	url = fmt.Sprintf("%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
 	bootstrapServers = os.Getenv("INTEGTEST_BOOTSTRAP_SERVER")
 	os.Exit(m.Run())

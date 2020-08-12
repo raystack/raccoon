@@ -153,7 +153,7 @@ func TestIntegration(t *testing.T) {
 				}
 				m := &eventsProto.AdCardEvent{}
 				err = proto.Unmarshal(msg.Value, m)
-				if err != nil {
+				if err != nil || m == nil || m.Meta == nil {
 					continue
 				}
 				if m.GetMeta().EventGuid == uuid {

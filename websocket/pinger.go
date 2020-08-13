@@ -14,7 +14,7 @@ type connection struct {
 	conn   *websocket.Conn
 }
 
-//Pinger is a worker groroutine that pings the connected peers based on ping interval. 
+//Pinger is a worker groroutine that pings the connected peers based on ping interval.
 func Pinger(c chan connection, size int, PingInterval time.Duration, WriteWaitInterval time.Duration) {
 	for i := 0; i < size; i++ {
 		go func() {

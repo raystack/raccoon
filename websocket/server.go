@@ -100,16 +100,12 @@ func Router(h *Handler) http.Handler {
 }
 
 func getWebSocketUpgrader(readBufferSize int, writeBufferSize int, checkOrigin bool) websocket.Upgrader {
-	origin := websocket.Upgrader{}.CheckOrigin
-	if checkOrigin == false {
-		origin = func(r *http.Request) bool {
-			return true
-		}
-	}
 	ug := websocket.Upgrader{
 		ReadBufferSize:  readBufferSize,
 		WriteBufferSize: writeBufferSize,
-		CheckOrigin:     origin,
+		CheckOrigin: func(r *http.Request) bool {
+			return checkOrigin
+		},
 	}
 	return ug
 }

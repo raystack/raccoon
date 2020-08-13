@@ -50,9 +50,6 @@ test_ci:
 	make test
 	go mod vendor
 
-test_integration:
-	INTEGTEST_BOOTSTRAP_SERVER=g-godata-id-mainstream-kafka.golabs.io:6668 INTEGTEST_HOST=wss://raccoon-integration.gojekapi.com INTEGTEST_TOPIC=raccoon-test-de go test ./integration -v
-
 copy-config:
 	cp application.yml.sample application.yml
 

@@ -2,7 +2,7 @@ FROM golang:latest
 
 WORKDIR /app
 COPY . .
-RUN make copy-config && make compile
+RUN make compile
 
 EXPOSE 8080
 

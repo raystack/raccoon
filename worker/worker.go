@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"raccoon/publisher"
+
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
@@ -58,12 +59,15 @@ func (w *Pool) StartWorkers() {
 						}
 					}
 				}
-				logger.Infof("Success sending messages, %v", len(batch))
-				if len(batch) > 0 {
-					eventTimingMs := time.Since(time.Unix(request.EventReq.SentTime.Seconds, 0)).Milliseconds() / int64(len(batch))
-					logger.Info(fmt.Sprintf("Currenttim: %d, eventTimingMs: %d", request.EventReq.SentTime.Seconds, eventTimingMs))
-					metrics.Timing("processing.latency", eventTimingMs, "")
-					metrics.Timing("worker.processing.latency", (time.Now().Sub(batchReadTime).Milliseconds())/int64(len(batch)), "worker="+workerName)
+				lenBatch := int64(len(batch))
+				logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch))
+				if lenBatch > 0 {
+					eventTimingMs := time.Since(time.Unix(request.EventReq.SentTime.Seconds, 0)).Milliseconds() / lenBatch
+					logger.Debug(fmt.Sprintf("Currenttime: %d, eventTimingMs: %d", request.EventReq.SentTime.Seconds, eventTimingMs))
+					metrics.Timing("event.processing.latency", eventTimingMs, "")
+					now := time.Now()
+					metrics.Timing("worker.processing.latency", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)
+					metrics.Timing("server.processing.latency", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, "")
 				}
 				metrics.Count("kafka.messages.delivered", totalErr, "success=false")
 				metrics.Count("kafka.messages.delivered", len(batch)-totalErr, "success=true")

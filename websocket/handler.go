@@ -23,6 +23,7 @@ type Handler struct {
 
 type EventsBatch struct {
 	EventReq   de.EventRequest
+	TimeConsumed time.Time
 	TimePushed time.Time
 }
 
@@ -35,7 +36,7 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 	GOUserID := r.Header.Get("GO-User-ID")
 	connectedTime := time.Now()
-	logger.Info(fmt.Sprintf("GO-User-ID %s connected at %v", GOUserID, connectedTime))
+	logger.Debug(fmt.Sprintf("GO-User-ID %s connected at %v", GOUserID, connectedTime))
 	conn, err := wsHandler.websocketUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Error(fmt.Sprintf("[websocket.Handler] Failed to upgrade connection  User ID: %s : %v", GOUserID, err))
@@ -79,27 +80,32 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 				websocket.CloseNormalClosure,
 				websocket.CloseNoStatusReceived,
 				websocket.CloseAbnormalClosure) {
-				logger.Error(fmt.Sprintf("[websocket.Handler] Connection Closed Abruptly: %v", err))
+				logger.Error(fmt.Sprintf("[websocket.Handler] User-ID %s Connection Closed Abruptly: %v", GOUserID, err))
+				metrics.Count("batches.read", 1, "status=failed,reason=closeerror")
 				break
 			}
+
+			metrics.Count("batches.read", 1, "status=failed,reason=unknown")
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v  User ID: %s ", err, GOUserID)) //no connection issue here
 			break
 		}
+		timeConsumed := time.Now()
 		metrics.Count("request.events.size", len(message), "")
 		payload := &de.EventRequest{}
 		err = proto.Unmarshal(message, payload)
 		if err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v  User ID: %s ", err, GOUserID))
-			metrics.Increment("request.count", "type=bad")
+			metrics.Count("batches.read", 1, "status=failed,reason=serde")
 			badrequest := createBadrequestResponse(err)
 			conn.WriteMessage(websocket.BinaryMessage, badrequest)
 			continue
 		}
-		metrics.Increment("request.count", "type=ok")
-		metrics.Count("request.events.count", len(payload.Events), "type=ok")
+		metrics.Count("batches.read", 1, "status=success")
+		metrics.Count("request.events.count", len(payload.Events), "")
 
 		wsHandler.bufferChannel <- EventsBatch{
 			EventReq:   *payload,
+			TimeConsumed: timeConsumed,
 			TimePushed: (time.Now()),
 		}
 
@@ -111,7 +117,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 
 func calculateSessionTime(userID string, connectedAt time.Time) {
 	connectionTime := time.Now().Sub(connectedAt)
-	logger.Info(fmt.Sprintf("[websocket.calculateSessionTime] UserID: %s, total time connected in minutes: %v", userID, connectionTime.Minutes()))
+	logger.Debug(fmt.Sprintf("[websocket.calculateSessionTime] UserID: %s, total time connected in minutes: %v", userID, connectionTime.Minutes()))
 	metrics.Timing("users.session.time", connectionTime.Milliseconds(), "")
 }
 

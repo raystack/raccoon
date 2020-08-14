@@ -3,6 +3,7 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
+
 	"raccoon/config"
 	"raccoon/logger"
 	"raccoon/metrics"
@@ -11,10 +12,15 @@ import (
 	_ "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka/librdkafka"
 )
 
+type Event struct {
+	Datum []byte
+	Topic string
+}
+
 // KafkaProducer Produce data to kafka synchronously
 type KafkaProducer interface {
 	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
-	ProduceBulk(messages [][]byte, deliveryChannel chan kafka.Event) error
+	ProduceBulk(events []Event, deliveryChannel chan kafka.Event) error
 }
 
 func NewKafka(config config.KafkaConfig) (*Kafka, error) {
@@ -38,18 +44,18 @@ func NewKafkaFromClient(client Client, config config.KafkaConfig) *Kafka {
 type Kafka struct {
 	kp     Client
 	Config config.KafkaConfig
+	topics map[string]string
 }
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
 // DeliveryChannel needs to be exclusive. DeliveryChannel is exposed for recyclability purpose.
-func (pr *Kafka) ProduceBulk(data [][]byte, deliveryChannel chan kafka.Event) error {
-	errors := make([]error, len(data))
+func (pr *Kafka) ProduceBulk(events []Event, deliveryChannel chan kafka.Event) error {
+	errors := make([]error, len(events))
 	totalProcessed := 0
-
-	for order, datum := range data {
+	for order, event := range events {
 		message := &kafka.Message{
-			Value:          datum,
-			TopicPartition: kafka.TopicPartition{Topic: &pr.Config.Topic, Partition: kafka.PartitionAny},
+			Value:          event.Datum,
+			TopicPartition: kafka.TopicPartition{Topic: &event.Topic, Partition: kafka.PartitionAny},
 			Opaque:         order,
 		}
 

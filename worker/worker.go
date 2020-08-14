@@ -20,16 +20,18 @@ type Pool struct {
 	EventsChannel       <-chan ws.EventsBatch
 	kafkaProducer       publisher.KafkaProducer
 	wg                  sync.WaitGroup
+	topic               string
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan ws.EventsBatch, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan ws.EventsBatch, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer, topic string) *Pool {
 	return &Pool{
 		Size:                size,
 		deliveryChannelSize: deliveryChannelSize,
 		EventsChannel:       eventsChannel,
 		kafkaProducer:       kafkaProducer,
 		wg:                  sync.WaitGroup{},
+		topic:               topic,
 	}
 }
 
@@ -44,10 +46,12 @@ func (w *Pool) StartWorkers() {
 				metrics.Timing("batch.idletime.inchannel", (time.Now().Sub(request.TimePushed)).Milliseconds(), "worker="+workerName)
 				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
-				batch := make([][]byte, 0, len(request.EventReq.GetEvents()))
+				batch := make([]publisher.Event, len(request.EventReq.GetEvents()))
 				for _, event := range request.EventReq.GetEvents() {
-					csByte := event.GetEventBytes()
-					batch = append(batch, csByte)
+					batch = append(batch, publisher.Event{
+						Datum: event.GetEventBytes(),
+						Topic: w.topic,
+					})
 				}
 				err := w.kafkaProducer.ProduceBulk(batch, deliveryChan)
 				totalErr := 0

@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"raccoon/publisher"
 	"testing"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -13,7 +14,7 @@ type mockKakfaPublisher struct {
 	mock.Mock
 }
 
-func (m *mockKakfaPublisher) ProduceBulk(message [][]byte, deliveryChannel chan kafka.Event) error {
+func (m *mockKakfaPublisher) ProduceBulk(events []publisher.Event, deliveryChannel chan kafka.Event) error {
 	mock := m.Called(mock.Anything, mock.Anything)
 	return mock.Error(0)
 }

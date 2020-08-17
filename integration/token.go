@@ -1,11 +1,11 @@
 package integration
 
 import (
-"bytes"
-"encoding/json"
-"fmt"
-"io/ioutil"
-"net/http"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 )
 
 func fetchOTP(phNumber string) (string, error) {
@@ -33,6 +33,9 @@ func fetchOTP(phNumber string) (string, error) {
 	req.Header.Add("x-user-type", "customer")
 	client := &http.Client{}
 	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("something went wrong when sending the request: %v", err)
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("something went wrong when reading response: %v", err)
@@ -149,7 +152,7 @@ func FetchAccessToken() (string, error) {
 	ph := "820040000101"
 	otpToken, err := fetchOTP(ph)
 	if err != nil {
-		return "", fmt.Errorf("fail to fetch OTP. %v",err)
+		return "", fmt.Errorf("fail to fetch OTP. %v", err)
 	}
 	a, err := login(ph)
 	if err != nil {

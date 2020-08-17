@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	"net/http"
 	"os"
 	"os/signal"
@@ -30,7 +31,13 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	}
 
 	logger.Info("Start worker -->")
-	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, config.WorkerConfigLoader().DeliveryChannelSize(), kPublisher, config.NewKafkaConfig().Topic)
+	adminClient, err := kafka.NewAdminClient(config.NewKafkaConfig().ToKafkaConfigMap())
+	if err != nil {
+		logger.Error("Error creating kafka admin client", err)
+		logger.Info("Exiting server")
+		os.Exit(0)
+	}
+	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, config.WorkerConfigLoader().DeliveryChannelSize(), kPublisher, config.NewKafkaConfig().Topic, adminClient)
 	workerPool.StartWorkers()
 	go kPublisher.ReportStats()
 	go shutDownServer(ctx, cancel, wssServer.HttpServer, bufferChannel, workerPool, kPublisher)

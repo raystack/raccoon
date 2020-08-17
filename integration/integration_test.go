@@ -42,7 +42,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestIntegration(t *testing.T) {
-	var accessToken string
+	accessToken := ""
 	var err error
 	if fetchToken {
 		accessToken, err = FetchAccessToken()

@@ -60,7 +60,14 @@ func TestWorker(t *testing.T) {
 				EventsChannel:       bc,
 				kafkaProducer:       &kp,
 				wg:                  sync.WaitGroup{},
-				router:              NewRouter(&tc),
+				router: &Router{
+					topicsCreator:     &tc,
+					format:            "%s",
+					numPartitions:     0,
+					replicationFactor: 0,
+					m:                 &sync.Mutex{},
+					topics:            make(map[string]string),
+				},
 			}
 			worker.StartWorkers()
 

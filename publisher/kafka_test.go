@@ -54,7 +54,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 					}
 				}()
 			})
-			kp := NewKafkaFromClient(client, config.KafkaConfig{Topic: topic})
+			kp := NewKafkaFromClient(client, config.KafkaConfig{})
 
 			err := kp.ProduceBulk([]Event{{Datum: []byte{}, Topic: topic}, {Datum: []byte{}, Topic: topic}}, make(chan kafka.Event, 2))
 			assert.NoError(t, err)
@@ -78,7 +78,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 				}()
 			}).Once()
 			client.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("buffer full")).Once()
-			kp := NewKafkaFromClient(client, config.KafkaConfig{Topic: topic})
+			kp := NewKafkaFromClient(client, config.KafkaConfig{})
 
 			err := kp.ProduceBulk([]Event{{Datum: []byte{}, Topic: topic}, {Datum: []byte{}, Topic: topic}, {Datum: []byte{}, Topic: topic}}, make(chan kafka.Event, 2))
 			assert.Len(t, err.(BulkError).Errors, 3)
@@ -105,7 +105,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 					}
 				}()
 			}).Once()
-			kp := NewKafkaFromClient(client, config.KafkaConfig{Topic: topic})
+			kp := NewKafkaFromClient(client, config.KafkaConfig{})
 
 			err := kp.ProduceBulk([]Event{{Datum: []byte{}, Topic: topic}, {Datum: []byte{}, Topic: topic}}, make(chan kafka.Event, 2))
 			assert.NotEmpty(t, err)

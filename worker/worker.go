@@ -24,7 +24,7 @@ type Pool struct {
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan ws.EventsBatch, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer, topic string, tc TopicsCreator) *Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan ws.EventsBatch, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer, tc TopicsCreator) *Pool {
 	return &Pool{
 		Size:                size,
 		deliveryChannelSize: deliveryChannelSize,

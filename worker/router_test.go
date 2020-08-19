@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"context"
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -9,15 +8,6 @@ import (
 	"sync"
 	"testing"
 )
-
-type mockTopicCreator struct {
-	mock.Mock
-}
-
-func (m *mockTopicCreator) CreateTopics(ctx context.Context, ts []kafka.TopicSpecification, opts ...kafka.CreateTopicsAdminOption) ([]kafka.TopicResult, error) {
-	args := m.Called(ctx, ts, opts)
-	return args.Get(0).([]kafka.TopicResult), args.Error(1)
-}
 
 func TestRouter(t *testing.T) {
 	t.Run("Should return topic according to format", func(t *testing.T) {

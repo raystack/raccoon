@@ -1,6 +1,9 @@
 package worker
 
 import (
+	"errors"
+	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	"raccoon/publisher"
 	ws "raccoon/websocket"
 	"sync"
 	"testing"
@@ -23,7 +26,7 @@ func TestWorker(t *testing.T) {
 
 	t.Run("StartWorkers", func(t *testing.T) {
 		t.Run("Should publish messages on bufferChannel to kafka", func(t *testing.T) {
-			kp := mockKakfaPublisher{}
+			kp := mockKafkaPublisher{}
 			m := &mockMetric{}
 			m.On("Timing", "processing.latency", mock.Anything, "")
 			m.On("Count", "kafka.messages.delivered", 0, "success=true")
@@ -38,8 +41,30 @@ func TestWorker(t *testing.T) {
 			}
 			worker.StartWorkers()
 
-			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil)
+			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Twice()
 			bc <- request
+			bc <- request
+			time.Sleep(10 * time.Millisecond)
+
+			kp.AssertExpectations(t)
+		})
+
+		t.Run("Should skip event with error topic", func(t *testing.T) {
+			kp := mockKafkaPublisher{}
+			bc := make(chan ws.EventsBatch, 2)
+			tc := mockTopicCreator{}
+			tc.On("CreateTopics", mock.Anything, mock.Anything, mock.Anything).Return([]kafka.TopicResult{{}}, errors.New("error"))
+			worker := Pool{
+				Size:                1,
+				deliveryChannelSize: 0,
+				EventsChannel:       bc,
+				kafkaProducer:       &kp,
+				wg:                  sync.WaitGroup{},
+				router:              NewRouter(&tc),
+			}
+			worker.StartWorkers()
+
+			kp.On("ProduceBulk", make([]publisher.Event, len(request.EventReq.GetEvents())), mock.Anything).Return(nil).Once()
 			bc <- request
 			time.Sleep(10 * time.Millisecond)
 
@@ -49,7 +74,7 @@ func TestWorker(t *testing.T) {
 
 	t.Run("Flush", func(t *testing.T) {
 		t.Run("Should block until all messages is processed", func(t *testing.T) {
-			kp := mockKakfaPublisher{}
+			kp := mockKafkaPublisher{}
 			bc := make(chan ws.EventsBatch, 2)
 			m := &mockMetric{}
 			m.On("Timing", "processing.latency", mock.Anything, "")

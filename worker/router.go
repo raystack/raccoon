@@ -11,6 +11,7 @@ type TopicsCreator interface {
 	CreateTopics(context.Context, []kafka.TopicSpecification, ...kafka.CreateTopicsAdminOption) ([]kafka.TopicResult, error)
 }
 
+// Router create and cache topic based on provided format.
 type Router struct {
 	topicsCreator TopicsCreator
 	format        string
@@ -31,6 +32,7 @@ func (r *Router) getTopic(eventType string) (string, error) {
 			// TODO: extract these as configuration
 			NumPartitions:     50,
 			ReplicationFactor: 3,
+			Config:            map[string]string{"retention.ms": "172800000"},
 		}})
 
 		for _, res := range topicResults {

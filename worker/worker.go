@@ -48,7 +48,12 @@ func (w *Pool) StartWorkers() {
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 				batch := make([]publisher.Event, len(request.EventReq.GetEvents()))
 				for _, event := range request.EventReq.GetEvents() {
-					topic, _ := w.router.getTopic(event.Type)
+					topic, err := w.router.getTopic(event.Type)
+					if err != nil {
+						logger.Error("topic creation failed: ", err)
+						metrics.Count("kafka.messages.delivered", 1, "success=false")
+						continue
+					}
 					batch = append(batch, publisher.Event{
 						Datum: event.GetEventBytes(),
 						Topic: topic,

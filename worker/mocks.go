@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"raccoon/publisher"
 	"testing"
 
@@ -10,12 +11,12 @@ import (
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
-type mockKakfaPublisher struct {
+type mockKafkaPublisher struct {
 	mock.Mock
 }
 
-func (m *mockKakfaPublisher) ProduceBulk(events []publisher.Event, deliveryChannel chan kafka.Event) error {
-	mock := m.Called(mock.Anything, mock.Anything)
+func (m *mockKafkaPublisher) ProduceBulk(events []publisher.Event, deliveryChannel chan kafka.Event) error {
+	mock := m.Called(events, deliveryChannel)
 	return mock.Error(0)
 }
 
@@ -38,4 +39,13 @@ func mockInstrumentation(t *testing.T, xTotal, xProcessed, xErr int, xSenttime t
 		assert.Equal(t, xErr, err)
 		assert.Equal(t, xSenttime, sentTime)
 	}
+}
+
+type mockTopicCreator struct {
+	mock.Mock
+}
+
+func (m *mockTopicCreator) CreateTopics(ctx context.Context, ts []kafka.TopicSpecification, opts ...kafka.CreateTopicsAdminOption) ([]kafka.TopicResult, error) {
+	args := m.Called(ctx, ts, opts)
+	return args.Get(0).([]kafka.TopicResult), args.Error(1)
 }

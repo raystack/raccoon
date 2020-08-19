@@ -13,10 +13,13 @@ func TestRouter(t *testing.T) {
 	t.Run("Should return topic according to format", func(t *testing.T) {
 		tc := &mockTopicCreator{}
 		router := Router{
-			m:             &sync.Mutex{},
-			topicsCreator: tc,
-			format:        "prefix_%s_suffix",
-			topics:        make(map[string]string),
+			m:                 &sync.Mutex{},
+			topicsCreator:     tc,
+			format:            "prefix_%s_suffix",
+			topics:            make(map[string]string),
+			topicConfigMap:    make(map[string]string),
+			replicationFactor: 1,
+			numPartitions:     1,
 		}
 
 		tc.On("CreateTopics", mock.Anything, mock.Anything, mock.Anything).Return([]kafka.TopicResult{{}}, nil)
@@ -27,10 +30,13 @@ func TestRouter(t *testing.T) {
 	t.Run("Should only create topic when it doesn't exist yet", func(t *testing.T) {
 		tc := &mockTopicCreator{}
 		router := Router{
-			m:             &sync.Mutex{},
-			topicsCreator: tc,
-			format:        "p_%s_s",
-			topics:        make(map[string]string),
+			m:                 &sync.Mutex{},
+			topicsCreator:     tc,
+			format:            "p_%s_s",
+			topics:            make(map[string]string),
+			topicConfigMap:    make(map[string]string),
+			replicationFactor: 1,
+			numPartitions:     1,
 		}
 
 		tc.On("CreateTopics", mock.Anything, mock.Anything, mock.Anything).Return([]kafka.TopicResult{{}}, nil).Once()
@@ -44,10 +50,13 @@ func TestRouter(t *testing.T) {
 	t.Run("Should return error when topic cannot be created", func(t *testing.T) {
 		tc := &mockTopicCreator{}
 		router := Router{
-			m:             &sync.Mutex{},
-			topicsCreator: tc,
-			format:        "p_%s_s",
-			topics:        make(map[string]string),
+			m:                 &sync.Mutex{},
+			topicsCreator:     tc,
+			format:            "p_%s_s",
+			topics:            make(map[string]string),
+			topicConfigMap:    make(map[string]string),
+			replicationFactor: 1,
+			numPartitions:     1,
 		}
 
 		tc.On("CreateTopics", mock.Anything, mock.Anything, mock.Anything).Return([]kafka.TopicResult{{}}, errors.New("error"))
@@ -59,10 +68,13 @@ func TestRouter(t *testing.T) {
 	t.Run("Should return error when topic cannot be created 2", func(t *testing.T) {
 		tc := &mockTopicCreator{}
 		router := Router{
-			m:             &sync.Mutex{},
-			topicsCreator: tc,
-			format:        "p_%s_s",
-			topics:        make(map[string]string),
+			m:                 &sync.Mutex{},
+			topicsCreator:     tc,
+			format:            "p_%s_s",
+			topics:            make(map[string]string),
+			topicConfigMap:    make(map[string]string),
+			replicationFactor: 1,
+			numPartitions:     1,
 		}
 
 		tc.On("CreateTopics", mock.Anything, mock.Anything, mock.Anything).Return([]kafka.TopicResult{{

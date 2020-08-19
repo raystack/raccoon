@@ -37,7 +37,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 		logger.Info("Exiting server")
 		os.Exit(0)
 	}
-	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, config.WorkerConfigLoader().DeliveryChannelSize(), kPublisher, config.NewKafkaConfig().Topic, adminClient)
+	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, config.WorkerConfigLoader().DeliveryChannelSize(), kPublisher, adminClient)
 	workerPool.StartWorkers()
 	go kPublisher.ReportStats()
 	go shutDownServer(ctx, cancel, wssServer.HttpServer, bufferChannel, workerPool, kPublisher)

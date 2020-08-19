@@ -56,7 +56,7 @@ func TestDynamicConfigLoad(t *testing.T) {
 	viper.MergeConfig(bytes.NewBuffer(dynamicConfigLoad("topic_cm_")))
 	assert.Equal(t, "anything", viper.AllSettings()["kafka_client_random"])
 	assert.Equal(t, "localhost:9092", viper.AllSettings()["kafka_client_bootstrap_servers"])
-	assert.Equal(t, "200000", viper.AllSettings()["topic_cm_retention_ms"])
+	assert.Equal(t, 200000, viper.AllSettings()["topic_cm_retention_ms"])
 
 	viper.Reset()
 }

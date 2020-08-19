@@ -22,7 +22,7 @@ import (
 
 var uuid string
 var timeout time.Duration
-var topic string
+var topicFormat string
 var url string
 var bootstrapServers string
 var fetchToken bool
@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 	var err error
 	uuid = fmt.Sprintf("%d-test", rand.Int())
 	timeout = 120 * time.Second
-	topic = os.Getenv("INTEGTEST_TOPIC")
+	topicFormat = os.Getenv("INTEGTEST_TOPIC_FORMAT")
 	url = fmt.Sprintf("%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
 	bootstrapServers = os.Getenv("INTEGTEST_BOOTSTRAP_SERVER")
 	fetchToken, err = strconv.ParseBool(os.Getenv("INTEGTEST_FETCH_TOKEN"))
@@ -111,10 +111,16 @@ func TestIntegration(t *testing.T) {
 		}
 
 		eBytes, _ := proto.Marshal(event1)
-		eEvent := &de.Event{
+		eEvent1 := &de.Event{
 			EventBytes: eBytes,
+			Type:       "adcard1",
 		}
-		events = append(events, eEvent)
+		eEvent2 := &de.Event{
+			EventBytes: eBytes,
+			Type:       "adcard2",
+		}
+		events = append(events, eEvent1)
+		events = append(events, eEvent2)
 		req := &de.EventRequest{
 			ReqGuid:  "1234",
 			SentTime: ptypes.TimestampNow(),
@@ -137,41 +143,83 @@ func TestIntegration(t *testing.T) {
 	})
 
 	t.Run("Should be able to consume published message", func(t *testing.T) {
-		c, err := kafka.NewConsumer(&kafka.ConfigMap{
-			"bootstrap.servers": bootstrapServers,
-			"group.id":          "my-local-group",
-			"auto.offset.reset": "earliest",
-		})
+		t.Run("adcard1", func(t *testing.T) {
+			t.Parallel()
+			c, err := kafka.NewConsumer(&kafka.ConfigMap{
+				"bootstrap.servers": bootstrapServers,
+				"group.id":          "my-local-group",
+				"auto.offset.reset": "earliest",
+			})
 
-		if err != nil {
-			assert.Fail(t, "setup kafka consumer failed")
-		}
+			if err != nil {
+				assert.Fail(t, "setup kafka consumer failed")
+			}
 
-		e := c.Subscribe(topic, nil)
-		if e != nil {
-			assert.Fail(t, fmt.Sprintf("Pls try again. %v", e))
-		}
-		timer := time.After(timeout)
-		for {
-			select {
-			case <-timer:
-				t.Fatal("timeout")
-			default:
-				msg, err := c.ReadMessage(timeout)
-				if err != nil {
-					t.Log("error", err)
-					continue
-				}
-				m := &eventsProto.AdCardEvent{}
-				err = proto.Unmarshal(msg.Value, m)
-				if err != nil || m == nil || m.Meta == nil {
-					continue
-				}
-				if m.GetMeta().EventGuid == uuid {
-					return
+			e := c.Subscribe(fmt.Sprintf(topicFormat, "adcard1"), nil)
+			if e != nil {
+				assert.Fail(t, fmt.Sprintf("Pls try again. %v", e))
+			}
+			timer := time.After(timeout)
+			for {
+				select {
+				case <-timer:
+					t.Fatal("timeout")
+				default:
+					msg, err := c.ReadMessage(timeout)
+					if err != nil {
+						t.Log("error", err)
+						continue
+					}
+					m := &eventsProto.AdCardEvent{}
+					err = proto.Unmarshal(msg.Value, m)
+					if err != nil || m == nil || m.Meta == nil {
+						continue
+					}
+					if m.GetMeta().EventGuid == uuid {
+						return
+					}
 				}
 			}
-		}
+		})
+
+		t.Run("adcard2", func(t *testing.T) {
+			t.Parallel()
+			c, err := kafka.NewConsumer(&kafka.ConfigMap{
+				"bootstrap.servers": bootstrapServers,
+				"group.id":          "my-local-group",
+				"auto.offset.reset": "earliest",
+			})
+
+			if err != nil {
+				assert.Fail(t, "setup kafka consumer failed")
+			}
+
+			e := c.Subscribe(fmt.Sprintf(topicFormat, "adcard2"), nil)
+			if e != nil {
+				assert.Fail(t, fmt.Sprintf("Pls try again. %v", e))
+			}
+			timer := time.After(timeout)
+			for {
+				select {
+				case <-timer:
+					t.Fatal("timeout")
+				default:
+					msg, err := c.ReadMessage(timeout)
+					if err != nil {
+						t.Log("error", err)
+						continue
+					}
+					m := &eventsProto.AdCardEvent{}
+					err = proto.Unmarshal(msg.Value, m)
+					if err != nil || m == nil || m.Meta == nil {
+						continue
+					}
+					if m.GetMeta().EventGuid == uuid {
+						return
+					}
+				}
+			}
+		})
 
 	})
 

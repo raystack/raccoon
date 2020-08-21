@@ -24,14 +24,14 @@ type Pool struct {
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan ws.EventsBatch, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer, tc TopicsCreator) *Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan ws.EventsBatch, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
 	return &Pool{
 		Size:                size,
 		deliveryChannelSize: deliveryChannelSize,
 		EventsChannel:       eventsChannel,
 		kafkaProducer:       kafkaProducer,
 		wg:                  sync.WaitGroup{},
-		router:              NewRouter(tc),
+		router:              NewRouter(),
 	}
 }
 
@@ -48,12 +48,7 @@ func (w *Pool) StartWorkers() {
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 				batch := make([]publisher.Event, len(request.EventReq.GetEvents()))
 				for _, event := range request.EventReq.GetEvents() {
-					topic, err := w.router.getTopic(event.Type)
-					if err != nil {
-						logger.Error("topic creation failed: ", err)
-						metrics.Count("kafka.messages.delivered", 1, "success=false")
-						continue
-					}
+					topic := w.router.getTopic(event.Type)
 					batch = append(batch, publisher.Event{
 						Datum: event.GetEventBytes(),
 						Topic: topic,

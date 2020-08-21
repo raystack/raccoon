@@ -50,13 +50,10 @@ func TestNewKafkaConfig(t *testing.T) {
 func TestDynamicConfigLoad(t *testing.T) {
 	os.Setenv("KAFKA_CLIENT_RANDOM", "anything")
 	os.Setenv("KAFKA_CLIENT_BOOTSTRAP_SERVERS", "localhost:9092")
-	os.Setenv("TOPIC_CM_RETENTION_MS", "200000")
 	viper.SetConfigType("yaml")
 	viper.ReadConfig(bytes.NewBuffer(dynamicConfigLoad("kafka_client_")))
-	viper.MergeConfig(bytes.NewBuffer(dynamicConfigLoad("topic_cm_")))
 	assert.Equal(t, "anything", viper.AllSettings()["kafka_client_random"])
 	assert.Equal(t, "localhost:9092", viper.AllSettings()["kafka_client_bootstrap_servers"])
-	assert.Equal(t, 200000, viper.AllSettings()["topic_cm_retention_ms"])
 
 	viper.Reset()
 }
@@ -85,25 +82,6 @@ func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
 	assert.Equal(t, "", topic)
 	assert.NotEqual(t, something, "anything")
 	assert.Equal(t, 3, len(*kafkaConfig))
-
-	viper.Reset()
-}
-
-func TestTopicConfig_ToTopicConfigMap(t *testing.T) {
-	os.Setenv("TOPIC_FORMAT", "p%ss")
-	os.Setenv("TOPIC_NUM_PARTITIONS", "3")
-	os.Setenv("TOPIC_REPLICATION_FACTOR", "2")
-	os.Setenv("TOPIC_CM_RETENTION_MS", "20000")
-	os.Setenv("TOPIC_CM_UNCLEAN_LEADER_ELECTION_ENABLE", "true")
-	os.Setenv("TOPIC_CM_MESSAGE_TIMESTAMP_TYPE", "CreateTime")
-
-	viper.AutomaticEnv()
-	viper.BindEnv("TOPIC_CM_RETENTION_MS")
-	viper.BindEnv("TOPIC_CM_UNCLEAN_LEADER_ELECTION_ENABLE")
-	viper.BindEnv("TOPIC_CM_MESSAGE_TIMESTAMP_TYPE")
-
-	tc := NewTopicConfig()
-	assert.Equal(t, "20000", tc.ToTopicConfigMap()["retention.ms"])
 
 	viper.Reset()
 }

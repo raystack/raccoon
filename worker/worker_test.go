@@ -1,9 +1,6 @@
 package worker
 
 import (
-	"errors"
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
-	"raccoon/publisher"
 	ws "raccoon/websocket"
 	"sync"
 	"testing"
@@ -43,35 +40,6 @@ func TestWorker(t *testing.T) {
 
 			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Twice()
 			bc <- request
-			bc <- request
-			time.Sleep(10 * time.Millisecond)
-
-			kp.AssertExpectations(t)
-		})
-
-		t.Run("Should skip event with error topic", func(t *testing.T) {
-			kp := mockKafkaPublisher{}
-			bc := make(chan ws.EventsBatch, 2)
-			tc := mockTopicCreator{}
-			tc.On("CreateTopics", mock.Anything, mock.Anything, mock.Anything).Return([]kafka.TopicResult{{}}, errors.New("error"))
-			worker := Pool{
-				Size:                1,
-				deliveryChannelSize: 0,
-				EventsChannel:       bc,
-				kafkaProducer:       &kp,
-				wg:                  sync.WaitGroup{},
-				router: &Router{
-					topicsCreator:     &tc,
-					format:            "%s",
-					numPartitions:     0,
-					replicationFactor: 0,
-					m:                 &sync.Mutex{},
-					topics:            make(map[string]string),
-				},
-			}
-			worker.StartWorkers()
-
-			kp.On("ProduceBulk", make([]publisher.Event, len(request.EventReq.GetEvents())), mock.Anything).Return(nil).Once()
 			bc <- request
 			time.Sleep(10 * time.Millisecond)
 

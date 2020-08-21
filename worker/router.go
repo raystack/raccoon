@@ -14,60 +14,32 @@ type TopicsCreator interface {
 
 // Router create and cache topic based on provided format.
 type Router struct {
-	topicsCreator     TopicsCreator
-	format            string
-	topicConfigMap    map[string]string
-	numPartitions     int
-	replicationFactor int
-	m                 *sync.Mutex
-	topics            map[string]string
+	format string
+	m      *sync.Mutex
+	topics map[string]string
 }
 
-func NewRouter(creator TopicsCreator) *Router {
+func NewRouter() *Router {
 	return &Router{
-		topicsCreator:     creator,
-		format:            config.NewTopicConfig().GetFormat(),
-		topicConfigMap:    config.NewTopicConfig().ToTopicConfigMap(),
-		numPartitions:     config.NewTopicConfig().NumPartitions,
-		replicationFactor: config.NewTopicConfig().GetReplicationFactor(),
-		m:                 &sync.Mutex{},
-		topics:            make(map[string]string),
+		format: config.NewTopicConfig().GetFormat(),
+		m:      &sync.Mutex{},
+		topics: make(map[string]string),
 	}
 }
 
-func (r *Router) getTopic(eventType string) (string, error) {
+func (r *Router) getTopic(eventType string) string {
 	if !r.isExist(eventType) {
-		ctx := context.Background()
-		topicResults, err := r.topicsCreator.CreateTopics(ctx, []kafka.TopicSpecification{{
-			Topic:             fmt.Sprintf(r.format, eventType),
-			NumPartitions:     r.numPartitions,
-			ReplicationFactor: r.replicationFactor,
-			Config:            r.topicConfigMap,
-		}})
-
-		for _, res := range topicResults {
-			if res.Error.Code() != kafka.ErrNoError && res.Error.Code() != kafka.ErrTopicAlreadyExists {
-				return "", res.Error
-			}
-			r.add(eventType)
-		}
-		if err != nil {
-			return "", err
-		}
+		r.m.Lock()
+		r.topics[eventType] = fmt.Sprintf(r.format, eventType)
+		r.m.Unlock()
 	}
-	return r.get(eventType), nil
+	return r.get(eventType)
 }
 
 func (r *Router) isExist(eventType string) bool {
 	r.m.Lock()
 	defer r.m.Unlock()
 	return r.topics[eventType] != ""
-}
-
-func (r *Router) add(eventType string) {
-	r.m.Lock()
-	r.topics[eventType] = fmt.Sprintf(r.format, eventType)
-	r.m.Unlock()
 }
 
 func (r *Router) get(eventType string) string {

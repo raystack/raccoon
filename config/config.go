@@ -22,8 +22,7 @@ func Load() {
 	viper.AddConfigPath("../../")
 	viper.SetConfigType("yaml")
 	viper.ReadInConfig()
-	viper.MergeConfig(bytes.NewBuffer(dynamicConfigLoad("kafka_client_")))
-	viper.MergeConfig(bytes.NewBuffer(dynamicConfigLoad("topic_cm_")))
+	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaConfigLoad()))
 	viper.AutomaticEnv()
 
 	serverConfigLoader()

@@ -3,6 +3,7 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
+	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	_ "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka/librdkafka"
@@ -12,15 +13,10 @@ import (
 	"strings"
 )
 
-type Event struct {
-	Datum []byte
-	Topic string
-}
-
 // KafkaProducer Produce data to kafka synchronously
 type KafkaProducer interface {
 	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
-	ProduceBulk(events []Event, deliveryChannel chan kafka.Event) error
+	ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Event) error
 }
 
 func NewKafka(config config.KafkaConfig) (*Kafka, error) {
@@ -31,6 +27,8 @@ func NewKafka(config config.KafkaConfig) (*Kafka, error) {
 	return &Kafka{
 		kp:     kp,
 		Config: config,
+		topicFormat: config.TopicFormat,
+		topics: make(map[string]string),
 	}, nil
 }
 
@@ -38,23 +36,28 @@ func NewKafkaFromClient(client Client, config config.KafkaConfig) *Kafka {
 	return &Kafka{
 		kp:     client,
 		Config: config,
+		topicFormat: config.TopicFormat,
+		topics: make(map[string]string),
 	}
 }
 
 type Kafka struct {
-	kp     Client
-	Config config.KafkaConfig
+	kp          Client
+	Config      config.KafkaConfig
+	topics      map[string]string
+	topicFormat string
 }
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
 // DeliveryChannel needs to be exclusive. DeliveryChannel is exposed for recyclability purpose.
-func (pr *Kafka) ProduceBulk(events []Event, deliveryChannel chan kafka.Event) error {
+func (pr *Kafka) ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Event) error {
 	errors := make([]error, len(events))
 	totalProcessed := 0
 	for order, event := range events {
+		topic := pr.getTopic(event.Type)
 		message := &kafka.Message{
-			Value:          event.Datum,
-			TopicPartition: kafka.TopicPartition{Topic: &event.Topic, Partition: kafka.PartitionAny},
+			Value:          event.EventBytes,
+			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 			Opaque:         order,
 		}
 
@@ -113,6 +116,13 @@ func (pr *Kafka) Close() int {
 	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
 	pr.kp.Close()
 	return remaining
+}
+
+func (pr *Kafka) getTopic(eventType string) string {
+	if pr.topics[eventType] == "" {
+		pr.topics[eventType] = fmt.Sprintf(pr.topicFormat, eventType)
+	}
+	return pr.topics[eventType]
 }
 
 func allNil(errors []error) bool {

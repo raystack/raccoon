@@ -20,7 +20,6 @@ type Pool struct {
 	EventsChannel       <-chan ws.EventsBatch
 	kafkaProducer       publisher.KafkaProducer
 	wg                  sync.WaitGroup
-	router              *Router
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
@@ -31,7 +30,6 @@ func CreateWorkerPool(size int, eventsChannel <-chan ws.EventsBatch, deliveryCha
 		EventsChannel:       eventsChannel,
 		kafkaProducer:       kafkaProducer,
 		wg:                  sync.WaitGroup{},
-		router:              NewRouter(),
 	}
 }
 
@@ -46,15 +44,8 @@ func (w *Pool) StartWorkers() {
 				metrics.Timing("batch.idletime.inchannel", (time.Now().Sub(request.TimePushed)).Milliseconds(), "worker="+workerName)
 				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
-				batch := make([]publisher.Event, len(request.EventReq.GetEvents()))
-				for _, event := range request.EventReq.GetEvents() {
-					topic := w.router.getTopic(event.Type)
-					batch = append(batch, publisher.Event{
-						Datum: event.GetEventBytes(),
-						Topic: topic,
-					})
-				}
-				err := w.kafkaProducer.ProduceBulk(batch, deliveryChan)
+
+				err := w.kafkaProducer.ProduceBulk(request.EventReq.GetEvents(), deliveryChan)
 				totalErr := 0
 				if err != nil {
 					for _, err := range err.(publisher.BulkError).Errors {
@@ -64,7 +55,7 @@ func (w *Pool) StartWorkers() {
 						}
 					}
 				}
-				lenBatch := int64(len(batch))
+				lenBatch := int64(len(request.EventReq.GetEvents()))
 				logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch))
 				if lenBatch > 0 {
 					eventTimingMs := time.Since(time.Unix(request.EventReq.SentTime.Seconds, 0)).Milliseconds() / lenBatch
@@ -75,7 +66,7 @@ func (w *Pool) StartWorkers() {
 					metrics.Timing("server.processing.latency", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, "")
 				}
 				metrics.Count("kafka.messages.delivered", totalErr, "success=false")
-				metrics.Count("kafka.messages.delivered", len(batch)-totalErr, "success=true")
+				metrics.Count("kafka.messages.delivered", len(request.EventReq.GetEvents())-totalErr, "success=true")
 			}
 			w.wg.Done()
 		}(fmt.Sprintf("worker-%d", i))
@@ -97,9 +88,4 @@ func (w *Pool) FlushWithTimeOut(timeout time.Duration) bool {
 	case <-time.After(timeout):
 		return true // timed out
 	}
-}
-
-type metric interface {
-	Count(string, int, string)
-	Timing(string, int64, string)
 }

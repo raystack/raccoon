@@ -5,6 +5,7 @@ import (
 	"os"
 	"raccoon/config"
 	"raccoon/logger"
+	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,7 +57,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 			})
 			kp := NewKafkaFromClient(client, config.KafkaConfig{})
 
-			err := kp.ProduceBulk([]Event{{Datum: []byte{}, Topic: topic}, {Datum: []byte{}, Topic: topic}}, make(chan kafka.Event, 2))
+			err := kp.ProduceBulk([]*de.Event{{EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
 			assert.NoError(t, err)
 		})
 	})
@@ -80,7 +81,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 			client.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("buffer full")).Once()
 			kp := NewKafkaFromClient(client, config.KafkaConfig{})
 
-			err := kp.ProduceBulk([]Event{{Datum: []byte{}, Topic: topic}, {Datum: []byte{}, Topic: topic}, {Datum: []byte{}, Topic: topic}}, make(chan kafka.Event, 2))
+			err := kp.ProduceBulk([]*de.Event{{EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
 			assert.Len(t, err.(BulkError).Errors, 3)
 			assert.Error(t, err.(BulkError).Errors[0])
 			assert.Empty(t, err.(BulkError).Errors[1])
@@ -107,7 +108,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 			}).Once()
 			kp := NewKafkaFromClient(client, config.KafkaConfig{})
 
-			err := kp.ProduceBulk([]Event{{Datum: []byte{}, Topic: topic}, {Datum: []byte{}, Topic: topic}}, make(chan kafka.Event, 2))
+			err := kp.ProduceBulk([]*de.Event{{EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
 			assert.NotEmpty(t, err)
 			assert.Len(t, err.(BulkError).Errors, 2)
 			assert.Equal(t, "buffer full", err.(BulkError).Errors[0].Error())

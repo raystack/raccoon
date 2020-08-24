@@ -34,10 +34,12 @@ func TestServerConfig(t *testing.T) {
 }
 
 func TestNewKafkaConfig(t *testing.T) {
+	os.Setenv("TOPIC_FORMAT", "%s")
 	os.Setenv("KAFKA_FLUSH_INTERVAL", "1000")
 
 	expectedKafkaConfig := KafkaConfig{
 		FlushInterval: 1000,
+		TopicFormat: "%s",
 	}
 
 	viper.AutomaticEnv()
@@ -51,7 +53,7 @@ func TestDynamicConfigLoad(t *testing.T) {
 	os.Setenv("KAFKA_CLIENT_RANDOM", "anything")
 	os.Setenv("KAFKA_CLIENT_BOOTSTRAP_SERVERS", "localhost:9092")
 	viper.SetConfigType("yaml")
-	viper.ReadConfig(bytes.NewBuffer(dynamicConfigLoad("kafka_client_")))
+	viper.ReadConfig(bytes.NewBuffer(dynamicKafkaConfigLoad()))
 	assert.Equal(t, "anything", viper.AllSettings()["kafka_client_random"])
 	assert.Equal(t, "localhost:9092", viper.AllSettings()["kafka_client_bootstrap_servers"])
 

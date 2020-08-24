@@ -25,27 +25,27 @@ func NewKafka(config config.KafkaConfig) (*Kafka, error) {
 		return &Kafka{}, err
 	}
 	return &Kafka{
-		kp:     kp,
-		Config: config,
-		topicFormat: config.TopicFormat,
-		topics: make(map[string]string),
+		kp:               kp,
+		Config:           config,
+		topicFormat:      config.TopicFormat,
+		typeToTopicCache: make(map[string]string),
 	}, nil
 }
 
 func NewKafkaFromClient(client Client, config config.KafkaConfig) *Kafka {
 	return &Kafka{
-		kp:     client,
-		Config: config,
-		topicFormat: config.TopicFormat,
-		topics: make(map[string]string),
+		kp:               client,
+		Config:           config,
+		topicFormat:      config.TopicFormat,
+		typeToTopicCache: make(map[string]string),
 	}
 }
 
 type Kafka struct {
-	kp          Client
-	Config      config.KafkaConfig
-	topics      map[string]string
-	topicFormat string
+	kp               Client
+	Config           config.KafkaConfig
+	typeToTopicCache map[string]string
+	topicFormat      string
 }
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
@@ -119,10 +119,10 @@ func (pr *Kafka) Close() int {
 }
 
 func (pr *Kafka) getTopic(eventType string) string {
-	if pr.topics[eventType] == "" {
-		pr.topics[eventType] = fmt.Sprintf(pr.topicFormat, eventType)
+	if pr.typeToTopicCache[eventType] == "" {
+		pr.typeToTopicCache[eventType] = fmt.Sprintf(pr.topicFormat, eventType)
 	}
-	return pr.topics[eventType]
+	return pr.typeToTopicCache[eventType]
 }
 
 func allNil(errors []error) bool {

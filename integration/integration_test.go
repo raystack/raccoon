@@ -82,7 +82,7 @@ func TestIntegration(t *testing.T) {
 		}
 		var events []*de.Event
 
-		event1 := &eventsProto.AdCardEvent{
+		event := &eventsProto.AdCardEvent{
 			ServiceInfo: &eventsCommon.ServiceInfo{
 				Type:   "service1",
 				AreaId: "A1",
@@ -110,7 +110,7 @@ func TestIntegration(t *testing.T) {
 			Product: eventsCommon.Product_GoFood,
 		}
 
-		eBytes, _ := proto.Marshal(event1)
+		eBytes, _ := proto.Marshal(event)
 		eEvent1 := &de.Event{
 			EventBytes: eBytes,
 			Type:       "adcard1",
@@ -215,6 +215,9 @@ func TestIntegration(t *testing.T) {
 						continue
 					}
 					if m.GetMeta().EventGuid == uuid {
+						assert.Equal(t, uuid, m.GetMeta().EventGuid)
+						assert.Equal(t, "service1", m.ServiceInfo.Type)
+						assert.Equal(t, eventsProto.AdCardType_Clicked, m.Type)
 						return
 					}
 				}

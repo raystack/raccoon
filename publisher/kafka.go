@@ -28,7 +28,6 @@ func NewKafka(config config.KafkaConfig) (*Kafka, error) {
 		kp:               kp,
 		Config:           config,
 		topicFormat:      config.TopicFormat,
-		typeToTopicCache: make(map[string]string),
 	}, nil
 }
 
@@ -37,14 +36,12 @@ func NewKafkaFromClient(client Client, config config.KafkaConfig) *Kafka {
 		kp:               client,
 		Config:           config,
 		topicFormat:      config.TopicFormat,
-		typeToTopicCache: make(map[string]string),
 	}
 }
 
 type Kafka struct {
 	kp               Client
 	Config           config.KafkaConfig
-	typeToTopicCache map[string]string
 	topicFormat      string
 }
 
@@ -54,7 +51,7 @@ func (pr *Kafka) ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Even
 	errors := make([]error, len(events))
 	totalProcessed := 0
 	for order, event := range events {
-		topic := pr.getTopic(event.Type)
+		topic := fmt.Sprintf(pr.topicFormat, event.Type)
 		message := &kafka.Message{
 			Value:          event.EventBytes,
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
@@ -116,13 +113,6 @@ func (pr *Kafka) Close() int {
 	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
 	pr.kp.Close()
 	return remaining
-}
-
-func (pr *Kafka) getTopic(eventType string) string {
-	if pr.typeToTopicCache[eventType] == "" {
-		pr.typeToTopicCache[eventType] = fmt.Sprintf(pr.topicFormat, eventType)
-	}
-	return pr.typeToTopicCache[eventType]
 }
 
 func allNil(errors []error) bool {

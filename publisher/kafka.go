@@ -52,6 +52,7 @@ func (pr *Kafka) ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Even
 	totalProcessed := 0
 	for order, event := range events {
 		topic := fmt.Sprintf(pr.topicFormat, event.Type)
+		logger.Debug("Sending to topic: " + topic)
 		message := &kafka.Message{
 			Value:          event.EventBytes,
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},

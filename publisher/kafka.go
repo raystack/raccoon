@@ -25,24 +25,24 @@ func NewKafka(config config.KafkaConfig) (*Kafka, error) {
 		return &Kafka{}, err
 	}
 	return &Kafka{
-		kp:               kp,
-		Config:           config,
-		topicFormat:      config.TopicFormat,
+		kp:          kp,
+		Config:      config,
+		topicFormat: config.TopicFormat,
 	}, nil
 }
 
 func NewKafkaFromClient(client Client, config config.KafkaConfig) *Kafka {
 	return &Kafka{
-		kp:               client,
-		Config:           config,
-		topicFormat:      config.TopicFormat,
+		kp:          client,
+		Config:      config,
+		topicFormat: config.TopicFormat,
 	}
 }
 
 type Kafka struct {
-	kp               Client
-	Config           config.KafkaConfig
-	topicFormat      string
+	kp          Client
+	Config      config.KafkaConfig
+	topicFormat string
 }
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
@@ -52,7 +52,6 @@ func (pr *Kafka) ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Even
 	totalProcessed := 0
 	for order, event := range events {
 		topic := fmt.Sprintf(pr.topicFormat, event.Type)
-		logger.Debug("Sending to topic: " + topic)
 		message := &kafka.Message{
 			Value:          event.EventBytes,
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
@@ -61,7 +60,11 @@ func (pr *Kafka) ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Even
 
 		err := pr.kp.Produce(message, deliveryChannel)
 		if err != nil {
-			errors[order] = err
+			if err.Error() == "Local: Unknown topic" {
+				errors[order] = fmt.Errorf("%v %s", err, topic)
+			} else {
+				errors[order] = err
+			}
 			continue
 		}
 		totalProcessed++

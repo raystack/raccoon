@@ -62,6 +62,7 @@ func (pr *Kafka) ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Even
 		if err != nil {
 			if err.Error() == "Local: Unknown topic" {
 				errors[order] = fmt.Errorf("%v %s", err, topic)
+				metrics.Increment("kafka.unknown.topic.failure", "topic="+topic)
 			} else {
 				errors[order] = err
 			}

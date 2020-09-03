@@ -87,6 +87,15 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 			assert.Empty(t, err.(BulkError).Errors[1])
 			assert.Error(t, err.(BulkError).Errors[2])
 		})
+
+		t.Run("Should return topic name when unknown topic is returned", func(t *testing.T) {
+			client := &mockClient{}
+			client.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("Local: Unknown topic")).Once()
+			kp := NewKafkaFromClient(client, config.KafkaConfig{TopicFormat: "%s"})
+
+			err := kp.ProduceBulk([]*de.Event{{EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
+			assert.EqualError(t, err.(BulkError).Errors[0], "Local: Unknown topic "+topic)
+		})
 	})
 
 	suite.Run("MessageFailedToProduce", func(t *testing.T) {

@@ -56,7 +56,7 @@ func (w *Pool) StartWorkers() {
 					}
 				}
 				lenBatch := int64(len(request.EventReq.GetEvents()))
-				logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch))
+				logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch-int64(totalErr)))
 				if lenBatch > 0 {
 					eventTimingMs := time.Since(time.Unix(request.EventReq.SentTime.Seconds, 0)).Milliseconds() / lenBatch
 					logger.Debug(fmt.Sprintf("Currenttime: %d, eventTimingMs: %d", request.EventReq.SentTime.Seconds, eventTimingMs))

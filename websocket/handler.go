@@ -22,6 +22,7 @@ type Handler struct {
 }
 
 type EventsBatch struct {
+	GOUserID  string
 	EventReq   de.EventRequest
 	TimeConsumed time.Time
 	TimePushed time.Time
@@ -104,6 +105,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		metrics.Count("request.events.count", len(payload.Events), "")
 
 		wsHandler.bufferChannel <- EventsBatch{
+			GOUserID: GOUserID,
 			EventReq:   *payload,
 			TimeConsumed: timeConsumed,
 			TimePushed: (time.Now()),

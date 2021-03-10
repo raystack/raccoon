@@ -19,6 +19,7 @@ type ServerCfg struct {
 	WriteWaitInterval         time.Duration
 	ServerShutDownGracePeriod time.Duration
 	PingerSize                int
+	UserIDHeader              string
 }
 
 func serverConfigLoader() {
@@ -44,5 +45,6 @@ func serverConfigLoader() {
 		WriteWaitInterval:         mustGetDurationInSeconds("WRITE_WAIT_INTERVAL"),
 		ServerShutDownGracePeriod: mustGetDurationInSeconds("SERVER_SHUTDOWN_GRACE_PERIOD"),
 		PingerSize:                mustGetInt("PINGER_SIZE"),
+		UserIDHeader:              mustGetString("USER_ID_HEADER"),
 	}
 }

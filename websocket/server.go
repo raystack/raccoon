@@ -77,6 +77,7 @@ func CreateServer() (*Server, chan EventsBatch) {
 		PongWaitInterval:  config.ServerConfig.PongWaitInterval,
 		WriteWaitInterval: config.ServerConfig.WriteWaitInterval,
 		PingChannel:       pingChannel,
+		UserIDHeader:      config.ServerConfig.UserIDHeader,
 	}
 	server := &Server{
 		HTTPServer: &http.Server{

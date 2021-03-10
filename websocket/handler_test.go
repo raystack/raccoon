@@ -57,13 +57,14 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		PongWaitInterval:  time.Duration(60 * time.Second),
 		WriteWaitInterval: time.Duration(5 * time.Second),
 		PingChannel:       make(chan connection, 100),
+		UserIDHeader:      "x-user-id",
 	}
 	ts := httptest.NewServer(Router(hlr))
 	defer ts.Close()
 
 	url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 	header := http.Header{
-		"GO-User-ID": []string{"test1-user1"},
+		"x-user-id": []string{"test1-user1"},
 	}
 
 	t.Run("Should return success response after successfully push to channel", func(t *testing.T) {
@@ -117,7 +118,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		defer ts.Close()
 		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 		header := http.Header{
-			"GO-User-ID": []string{"test1-user1"},
+			"x-user-id": []string{"test1-user1"},
 		}
 		firstWss, _, err := websocket.DefaultDialer.Dial(url, header)
 		require.NoError(t, err)
@@ -140,10 +141,10 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		defer ts.Close()
 		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 		header := http.Header{
-			"GO-User-ID": []string{"test1-user1"},
+			"x-user-id": []string{"test1-user1"},
 		}
-		websocket.DefaultDialer.Dial(url, http.Header{"GO-User-ID": []string{"test1-user2"}})
-		websocket.DefaultDialer.Dial(url, http.Header{"GO-User-ID": []string{"test1-user3"}})
+		websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user2"}})
+		websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user3"}})
 
 		ws, _, err := websocket.DefaultDialer.Dial(url, header)
 		require.NoError(t, err)
@@ -162,11 +163,11 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		defer ts.Close()
 		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 		header := http.Header{
-			"GO-User-ID": []string{"test1-user1"},
+			"x-user-id": []string{"test1-user1"},
 		}
-		firstWs, _, _ := websocket.DefaultDialer.Dial(url, http.Header{"GO-User-ID": []string{"test1-user2"}})
+		firstWs, _, _ := websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user2"}})
 		firstWs.Close()
-		websocket.DefaultDialer.Dial(url, http.Header{"GO-User-ID": []string{"test1-user3"}})
+		websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user3"}})
 
 		_, _, err := websocket.DefaultDialer.Dial(url, header)
 		assert.Equal(t, 2, hlr.user.TotalUsers())

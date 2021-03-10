@@ -23,6 +23,7 @@ func TestServerConfig(t *testing.T) {
 	os.Setenv("PING_INTERVAL", "1")
 	os.Setenv("PONG_WAIT_INTERVAL", "1")
 	os.Setenv("SERVER_SHUTDOWN_GRACE_PERIOD", "3")
+	os.Setenv("USER_ID_HEADER", "x-user-id")
 	viper.AutomaticEnv()
 	serverConfigLoader()
 	assert.Equal(t, "8080", ServerConfig.AppPort)

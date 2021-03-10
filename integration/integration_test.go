@@ -50,6 +50,7 @@ func TestIntegration(t *testing.T) {
 	assert.NoError(t, err)
 	header := http.Header{
 		"Authorization": []string{fmt.Sprintf("Bearer %v", accessToken)},
+		// TODO: Need to clean this before open source
 		"GO-User-ID":    []string{"1234"},
 	}
 	t.Run("Should response with BadRequest when sending invalid request", func(t *testing.T) {

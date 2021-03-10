@@ -19,13 +19,14 @@ type Handler struct {
 	PongWaitInterval  time.Duration
 	WriteWaitInterval time.Duration
 	PingChannel       chan connection
+	UserIDHeader      string
 }
 
 type EventsBatch struct {
-	GOUserID  string
-	EventReq   *de.EventRequest
+	UserID       string
+	EventReq     *de.EventRequest
 	TimeConsumed time.Time
-	TimePushed time.Time
+	TimePushed   time.Time
 }
 
 func PingHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,19 +36,19 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 
 //HandlerWSEvents handles the upgrade and the events sent by the peers
 func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
-	GOUserID := r.Header.Get("GO-User-ID")
+	UserID := r.Header.Get(wsHandler.UserIDHeader)
 	connectedTime := time.Now()
-	logger.Debug(fmt.Sprintf("GO-User-ID %s connected at %v", GOUserID, connectedTime))
+	logger.Debug(fmt.Sprintf("UserID %s connected at %v", UserID, connectedTime))
 	conn, err := wsHandler.websocketUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.Error(fmt.Sprintf("[websocket.Handler] Failed to upgrade connection  User ID: %s : %v", GOUserID, err))
+		logger.Error(fmt.Sprintf("[websocket.Handler] Failed to upgrade connection  User ID: %s : %v", UserID, err))
 		metrics.Increment("users.disconnected", "reason=ugfailure")
 		return
 	}
 	defer conn.Close()
 
-	if wsHandler.user.Exists(GOUserID) {
-		logger.Errorf("[websocket.Handler] Disconnecting %v, already connected", GOUserID)
+	if wsHandler.user.Exists(UserID) {
+		logger.Errorf("[websocket.Handler] Disconnecting %v, already connected", UserID)
 		duplicateConnResp := createEmptyErrorResponse(de.Code_MAX_USER_LIMIT_REACHED)
 
 		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
@@ -56,20 +57,20 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if wsHandler.user.HasReachedLimit() {
-		logger.Errorf("[websocket.Handler] Disconnecting %v, max connection reached", GOUserID)
+		logger.Errorf("[websocket.Handler] Disconnecting %v, max connection reached", UserID)
 		maxConnResp := createEmptyErrorResponse(de.Code_MAX_CONNECTION_LIMIT_REACHED)
 		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Max connection reached"))
 		metrics.Count("user.disconnected", 1, "reason=serverlimit")
 		return
 	}
-	wsHandler.user.Store(GOUserID)
-	defer wsHandler.user.Remove(GOUserID)
-	defer calculateSessionTime(GOUserID, connectedTime)
+	wsHandler.user.Store(UserID)
+	defer wsHandler.user.Remove(UserID)
+	defer calculateSessionTime(UserID, connectedTime)
 
-	setUpControlHandlers(conn, GOUserID, wsHandler.PongWaitInterval, wsHandler.WriteWaitInterval)
+	setUpControlHandlers(conn, UserID, wsHandler.PongWaitInterval, wsHandler.WriteWaitInterval)
 	wsHandler.PingChannel <- connection{
-		userID: GOUserID,
+		userID: UserID,
 		conn:   conn,
 	}
 	metrics.Increment("user.connected", "")
@@ -81,13 +82,13 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 				websocket.CloseNormalClosure,
 				websocket.CloseNoStatusReceived,
 				websocket.CloseAbnormalClosure) {
-				logger.Error(fmt.Sprintf("[websocket.Handler] User-ID %s Connection Closed Abruptly: %v", GOUserID, err))
+				logger.Error(fmt.Sprintf("[websocket.Handler] UserID %s Connection Closed Abruptly: %v", UserID, err))
 				metrics.Count("batches.read", 1, "status=failed,reason=closeerror")
 				break
 			}
 
 			metrics.Count("batches.read", 1, "status=failed,reason=unknown")
-			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v  User ID: %s ", err, GOUserID)) //no connection issue here
+			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v  User ID: %s ", err, UserID)) //no connection issue here
 			break
 		}
 		timeConsumed := time.Now()
@@ -95,7 +96,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		payload := &de.EventRequest{}
 		err = proto.Unmarshal(message, payload)
 		if err != nil {
-			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v  User ID: %s ", err, GOUserID))
+			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v  User ID: %s ", err, UserID))
 			metrics.Count("batches.read", 1, "status=failed,reason=serde")
 			badrequest := createBadrequestResponse(err)
 			conn.WriteMessage(websocket.BinaryMessage, badrequest)
@@ -105,10 +106,10 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		metrics.Count("request.events.count", len(payload.Events), "")
 
 		wsHandler.bufferChannel <- EventsBatch{
-			GOUserID: GOUserID,
-			EventReq:   payload,
+			UserID:       UserID,
+			EventReq:     payload,
 			TimeConsumed: timeConsumed,
-			TimePushed: (time.Now()),
+			TimePushed:   (time.Now()),
 		}
 
 		resp := createSuccessResponse(payload.ReqGuid)
@@ -123,7 +124,7 @@ func calculateSessionTime(userID string, connectedAt time.Time) {
 	metrics.Timing("users.session.time", connectionTime.Milliseconds(), "")
 }
 
-func setUpControlHandlers(conn *websocket.Conn, GOUserID string,
+func setUpControlHandlers(conn *websocket.Conn, UserID string,
 	PongWaitInterval time.Duration, WriteWaitInterval time.Duration) {
 	//expects the client to send a ping, mark this channel as idle timed out post the deadline
 	conn.SetReadDeadline(time.Now().Add(PongWaitInterval))
@@ -134,10 +135,10 @@ func setUpControlHandlers(conn *websocket.Conn, GOUserID string,
 	})
 
 	conn.SetPingHandler(func(s string) error {
-		logger.Debug(fmt.Sprintf("Client connection with User ID: %s Pinged", GOUserID))
+		logger.Debug(fmt.Sprintf("Client connection with UserID: %s Pinged", UserID))
 		if err := conn.WriteControl(websocket.PongMessage, []byte(s), time.Now().Add(WriteWaitInterval)); err != nil {
 			metrics.Count("server.pong.failed", 1, "")
-			logger.Debug(fmt.Sprintf("Failed to send pong event: %s User: %s", err, GOUserID))
+			logger.Debug(fmt.Sprintf("Failed to send pong event: %s UserID: %s", err, UserID))
 		}
 		return nil
 	})

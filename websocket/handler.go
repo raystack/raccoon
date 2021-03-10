@@ -23,7 +23,7 @@ type Handler struct {
 
 type EventsBatch struct {
 	GOUserID  string
-	EventReq   de.EventRequest
+	EventReq   *de.EventRequest
 	TimeConsumed time.Time
 	TimePushed time.Time
 }
@@ -106,13 +106,13 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 
 		wsHandler.bufferChannel <- EventsBatch{
 			GOUserID: GOUserID,
-			EventReq:   *payload,
+			EventReq:   payload,
 			TimeConsumed: timeConsumed,
 			TimePushed: (time.Now()),
 		}
 
 		resp := createSuccessResponse(payload.ReqGuid)
-		success, _ := proto.Marshal(&resp)
+		success, _ := proto.Marshal(resp)
 		conn.WriteMessage(websocket.BinaryMessage, success)
 	}
 }

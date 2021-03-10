@@ -16,7 +16,7 @@ import (
 
 func TestWorker(t *testing.T) {
 	request := ws.EventsBatch{
-		EventReq: de.EventRequest{
+		EventReq: &de.EventRequest{
 			SentTime: &timestamp.Timestamp{Seconds: 1593574343},
 		},
 	}

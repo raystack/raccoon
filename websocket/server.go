@@ -12,11 +12,12 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	// https://golang.org/pkg/net/http/pprof/
 	_ "net/http/pprof"
 )
 
 type Server struct {
-	HttpServer    *http.Server
+	HTTPServer    *http.Server
 	bufferChannel chan EventsBatch
 	user          *User
 	pingChannel   chan connection
@@ -25,7 +26,7 @@ type Server struct {
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
 	go func() {
 		logger.Info("WebSocket Server --> startHttpServer")
-		err := s.HttpServer.ListenAndServe()
+		err := s.HTTPServer.ListenAndServe()
 		if err != http.ErrServerClosed {
 			logger.Errorf("WebSocket Server --> HTTP Server could not be started = %s", err.Error())
 			cancel()
@@ -78,7 +79,7 @@ func CreateServer() (*Server, chan EventsBatch) {
 		PingChannel:       pingChannel,
 	}
 	server := &Server{
-		HttpServer: &http.Server{
+		HTTPServer: &http.Server{
 			Handler: Router(wsHandler),
 			Addr:    ":" + config.ServerConfig.AppPort,
 		},

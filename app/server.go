@@ -33,7 +33,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, config.WorkerConfigLoader().DeliveryChannelSize(), kPublisher)
 	workerPool.StartWorkers()
 	go kPublisher.ReportStats()
-	go shutDownServer(ctx, cancel, wssServer.HttpServer, bufferChannel, workerPool, kPublisher)
+	go shutDownServer(ctx, cancel, wssServer.HTTPServer, bufferChannel, workerPool, kPublisher)
 }
 
 func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *http.Server, bufferChannel chan ws.EventsBatch, workerPool *worker.Pool, kp *publisher.Kafka) {

@@ -96,13 +96,13 @@ type Auth struct {
 
 func fetchAccessToken(auth Auth) (string, error) {
 	type ReqBody struct {
-		ClientId     string            `json:"client_id"`
+		ClientID     string            `json:"client_id"`
 		ClientSecret string            `json:"client_secret"`
 		GrantType    string            `json:"grant_type"`
 		Data         map[string]string `json:"data"`
 	}
 	reqBody := ReqBody{
-		ClientId:     "gojek:consumer:app",
+		ClientID:     "gojek:consumer:app",
 		ClientSecret: "xKMPsxLFkMVlpZPRojqPwLl54X1Qch",
 		GrantType:    "otp",
 		Data: map[string]string{
@@ -156,14 +156,14 @@ func FetchAccessToken() (string, error) {
 	}
 	a, err := login(ph)
 	if err != nil {
-		return "", fmt.Errorf("Fail to get credential. %v\n", err)
+		return "", fmt.Errorf("fail to get credential. %v", err)
 	}
 	token, err := fetchAccessToken(Auth{
 		Otp:      a.Otp,
 		OtpToken: otpToken,
 	})
 	if err != nil {
-		return "", fmt.Errorf("Fail to fetch access token. %v\n", err)
+		return "", fmt.Errorf("fail to fetch access token. %v", err)
 	}
 	return token, nil
 }

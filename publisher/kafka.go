@@ -6,6 +6,7 @@ import (
 	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
 
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	// Importing librd to make it work on vendor mode
 	_ "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka/librdkafka"
 	"raccoon/config"
 	"raccoon/logger"

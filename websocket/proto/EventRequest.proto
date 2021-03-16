@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package odpf.clickstream.proto;
+
+option go_package="raccoon/websocket/proto";
+
+import "Event.proto";
+import "google/protobuf/timestamp.proto";
+
+message EventRequest {
+  string req_guid = 1;
+  google.protobuf.Timestamp sent_time = 2;
+  repeated Event events = 3;
+}

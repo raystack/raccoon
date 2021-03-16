@@ -3,7 +3,7 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
+	pb "raccoon/websocket/proto"
 
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	// Importing librd to make it work on vendor mode
@@ -17,7 +17,7 @@ import (
 // KafkaProducer Produce data to kafka synchronously
 type KafkaProducer interface {
 	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
-	ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Event) error
+	ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) error
 }
 
 func NewKafka(config config.KafkaConfig) (*Kafka, error) {
@@ -48,7 +48,7 @@ type Kafka struct {
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
 // DeliveryChannel needs to be exclusive. DeliveryChannel is exposed for recyclability purpose.
-func (pr *Kafka) ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Event) error {
+func (pr *Kafka) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) error {
 	errors := make([]error, len(events))
 	totalProcessed := 0
 	for order, event := range events {

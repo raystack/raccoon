@@ -3,14 +3,14 @@ package worker
 import (
 	"github.com/stretchr/testify/mock"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
+	pb "raccoon/websocket/proto"
 )
 
 type mockKafkaPublisher struct {
 	mock.Mock
 }
 
-func (m *mockKafkaPublisher) ProduceBulk(events []*de.Event, deliveryChannel chan kafka.Event) error {
+func (m *mockKafkaPublisher) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) error {
 	mock := m.Called(events, deliveryChannel)
 	return mock.Error(0)
 }

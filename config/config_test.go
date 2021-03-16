@@ -64,7 +64,7 @@ func TestDynamicConfigLoad(t *testing.T) {
 func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
 	os.Setenv("KAFKA_TOPIC", "test1")
 	os.Setenv("KAFKA_FLUSH_INTERVAL", "1000")
-	os.Setenv("KAFKA_CLIENT_BOOTSTRAP_SERVERS", "kafka:6668")
+	os.Setenv("KAFKA_CLIENT_BOOTSTRAP_SERVERS", "kafka:9092")
 	os.Setenv("KAFKA_CLIENT_ACKS", "1")
 	os.Setenv("KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES", "10000")
 	os.Setenv("SOMETHING_KAFKA_CLIENT_SOMETHING", "anything")
@@ -81,7 +81,7 @@ func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
 	bootstrapServer, _ := kafkaConfig.Get("bootstrap.servers", "")
 	topic, _ := kafkaConfig.Get("topic", "")
 	something, _ := kafkaConfig.Get("client.something", "")
-	assert.Equal(t, "kafka:6668", bootstrapServer)
+	assert.Equal(t, "kafka:9092", bootstrapServer)
 	assert.Equal(t, "", topic)
 	assert.NotEqual(t, something, "anything")
 	assert.Equal(t, 3, len(*kafkaConfig))

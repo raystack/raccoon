@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
+	pb "raccoon/websocket/proto"
 )
 
 type void struct{}
@@ -71,7 +71,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)
 		require.NoError(t, err)
 
-		request := &de.EventRequest{
+		request := &pb.EventRequest{
 			ReqGuid:  "1234",
 			SentTime: ptypes.TimestampNow(),
 			Events:   nil,
@@ -85,12 +85,12 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		responseMsgType, response, err := wss.ReadMessage()
 		require.NoError(t, err)
 
-		resp := &de.EventResponse{}
+		resp := &pb.EventResponse{}
 		proto.Unmarshal(response, resp)
 		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
 		assert.Equal(t, request.ReqGuid, resp.GetData()["req_guid"])
-		assert.Equal(t, de.Status_SUCCESS, resp.GetStatus())
-		assert.Equal(t, de.Code_OK, resp.GetCode())
+		assert.Equal(t, pb.Status_SUCCESS, resp.GetStatus())
+		assert.Equal(t, pb.Code_OK, resp.GetCode())
 		assert.Equal(t, "", resp.GetReason())
 	})
 
@@ -105,11 +105,11 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		responseMsgType, response, err := wss.ReadMessage()
 		require.NoError(t, err)
 
-		resp := &de.EventResponse{}
+		resp := &pb.EventResponse{}
 		proto.Unmarshal(response, resp)
 		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
-		assert.Equal(t, de.Status_ERROR, resp.GetStatus())
-		assert.Equal(t, de.Code_BAD_REQUEST, resp.GetCode())
+		assert.Equal(t, pb.Status_ERROR, resp.GetStatus())
+		assert.Equal(t, pb.Code_BAD_REQUEST, resp.GetCode())
 		assert.Empty(t, resp.GetData())
 	})
 
@@ -126,10 +126,10 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		secondWss, _, err := websocket.DefaultDialer.Dial(url, header)
 		require.NoError(t, err)
 		_, message, err := secondWss.ReadMessage()
-		p := &de.EventResponse{}
+		p := &pb.EventResponse{}
 		proto.Unmarshal(message, p)
-		assert.Equal(t, p.Code, de.Code_MAX_USER_LIMIT_REACHED)
-		assert.Equal(t, p.Status, de.Status_ERROR)
+		assert.Equal(t, p.Code, pb.Code_MAX_USER_LIMIT_REACHED)
+		assert.Equal(t, p.Status, pb.Status_ERROR)
 		_, _, err = secondWss.ReadMessage()
 		assert.True(t, websocket.IsCloseError(err, websocket.ClosePolicyViolation))
 		assert.Equal(t, "Duplicate connection", err.(*websocket.CloseError).Text)
@@ -149,10 +149,10 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		ws, _, err := websocket.DefaultDialer.Dial(url, header)
 		require.NoError(t, err)
 		_, message, err := ws.ReadMessage()
-		p := &de.EventResponse{}
+		p := &pb.EventResponse{}
 		proto.Unmarshal(message, p)
-		assert.Equal(t, p.Code, de.Code_MAX_CONNECTION_LIMIT_REACHED)
-		assert.Equal(t, p.Status, de.Status_ERROR)
+		assert.Equal(t, p.Code, pb.Code_MAX_CONNECTION_LIMIT_REACHED)
+		assert.Equal(t, p.Status, pb.Status_ERROR)
 		_, _, err = ws.ReadMessage()
 		assert.True(t, websocket.IsCloseError(err, websocket.ClosePolicyViolation))
 		assert.Equal(t, "Max connection reached", err.(*websocket.CloseError).Text)

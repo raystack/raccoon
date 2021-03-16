@@ -5,13 +5,13 @@ import (
 	"github.com/golang/protobuf/proto"
 	"time"
 
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
+	pb "raccoon/websocket/proto"
 )
 
-func createSuccessResponse(requestGUID string) *de.EventResponse {
-	response := &de.EventResponse{
-		Status:   de.Status_SUCCESS,
-		Code:     de.Code_OK,
+func createSuccessResponse(requestGUID string) *pb.EventResponse {
+	response := &pb.EventResponse{
+		Status:   pb.Status_SUCCESS,
+		Code:     pb.Code_OK,
 		SentTime: time.Now().Unix(),
 		Reason:   "",
 		Data: map[string]string{
@@ -22,9 +22,9 @@ func createSuccessResponse(requestGUID string) *de.EventResponse {
 }
 
 func createBadrequestResponse(err error) []byte {
-	response := de.EventResponse{
-		Status:   de.Status_ERROR,
-		Code:     de.Code_BAD_REQUEST,
+	response := pb.EventResponse{
+		Status:   pb.Status_ERROR,
+		Code:     pb.Code_BAD_REQUEST,
 		SentTime: time.Now().Unix(),
 		Reason:   fmt.Sprintf("cannot deserialize request: %s", err),
 		Data:     nil,
@@ -33,9 +33,9 @@ func createBadrequestResponse(err error) []byte {
 	return badrequestResp
 }
 
-func createEmptyErrorResponse(errCode de.Code) []byte {
-	resp := de.EventResponse{
-		Status:   de.Status_ERROR,
+func createEmptyErrorResponse(errCode pb.Code) []byte {
+	resp := pb.EventResponse{
+		Status:   pb.Status_ERROR,
 		Code:     errCode,
 		SentTime: time.Now().Unix(),
 		Reason:   "",

@@ -5,6 +5,7 @@ APP_EXECUTABLE="out/raccoon"
 COVER_FILE="/tmp/coverage.out"
 
 setup:
+	make generate-proto
 	go mod tidy -v
 
 source:
@@ -69,3 +70,7 @@ ps:
 
 kill:
 	docker-compose kill
+
+generate-proto:
+	protoc --proto_path=websocket/proto $(wildcard websocket/proto/*.proto) --go_out=websocket/proto --go_opt=paths=source_relative
+

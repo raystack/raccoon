@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
+	pb "raccoon/websocket/proto"
 )
 
 type Handler struct {
@@ -24,7 +24,7 @@ type Handler struct {
 
 type EventsBatch struct {
 	UserID       string
-	EventReq     *de.EventRequest
+	EventReq     *pb.EventRequest
 	TimeConsumed time.Time
 	TimePushed   time.Time
 }
@@ -49,7 +49,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 
 	if wsHandler.user.Exists(UserID) {
 		logger.Errorf("[websocket.Handler] Disconnecting %v, already connected", UserID)
-		duplicateConnResp := createEmptyErrorResponse(de.Code_MAX_USER_LIMIT_REACHED)
+		duplicateConnResp := createEmptyErrorResponse(pb.Code_MAX_USER_LIMIT_REACHED)
 
 		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Duplicate connection"))
@@ -58,7 +58,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 	}
 	if wsHandler.user.HasReachedLimit() {
 		logger.Errorf("[websocket.Handler] Disconnecting %v, max connection reached", UserID)
-		maxConnResp := createEmptyErrorResponse(de.Code_MAX_CONNECTION_LIMIT_REACHED)
+		maxConnResp := createEmptyErrorResponse(pb.Code_MAX_CONNECTION_LIMIT_REACHED)
 		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Max connection reached"))
 		metrics.Count("user.disconnected", 1, "reason=serverlimit")
@@ -93,7 +93,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		}
 		timeConsumed := time.Now()
 		metrics.Count("request.events.size", len(message), "")
-		payload := &de.EventRequest{}
+		payload := &pb.EventRequest{}
 		err = proto.Unmarshal(message, payload)
 		if err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v  User ID: %s ", err, UserID))

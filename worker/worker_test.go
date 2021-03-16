@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
+	pb "raccoon/websocket/proto"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -16,7 +16,7 @@ import (
 
 func TestWorker(t *testing.T) {
 	request := ws.EventsBatch{
-		EventReq: &de.EventRequest{
+		EventReq: &pb.EventRequest{
 			SentTime: &timestamp.Timestamp{Seconds: 1593574343},
 		},
 	}

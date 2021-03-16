@@ -14,10 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
-	"source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/common"
-	de "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/de"
-	eventsCommon "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/products/common"
-	eventsProto "source.golabs.io/mobile/clickstream-go-proto/gojek/clickstream/products/events"
+	pb "raccoon/websocket/proto"
 )
 
 var uuid string
@@ -63,12 +60,12 @@ func TestIntegration(t *testing.T) {
 		wss.WriteMessage(websocket.BinaryMessage, []byte{1})
 
 		mType, resp, err := wss.ReadMessage()
-		r := &de.EventResponse{}
+		r := &pb.EventResponse{}
 		_ = proto.Unmarshal(resp, r)
 		assert.Equal(t, mType, websocket.BinaryMessage)
 		assert.Empty(t, err)
-		assert.Equal(t, de.Status_ERROR, r.Status)
-		assert.Equal(t, de.Code_BAD_REQUEST, r.Code)
+		assert.Equal(t, pb.Status_ERROR, r.Status)
+		assert.Equal(t, pb.Code_BAD_REQUEST, r.Code)
 		assert.NotEmpty(t, r.Reason)
 		assert.Empty(t, r.Data)
 
@@ -81,48 +78,19 @@ func TestIntegration(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		var events []*de.Event
+		var events []*pb.Event
 
-		event := &eventsProto.AdCardEvent{
-			ServiceInfo: &eventsCommon.ServiceInfo{
-				Type:   "service1",
-				AreaId: "A1",
-			},
-			Type: eventsProto.AdCardType_Clicked,
-			Meta: &common.EventMeta{
-				EventGuid: uuid,
-				Location: &common.Location{
-					Latitude:  12.345467,
-					Longitude: 76.78687598,
-				},
-				Customer: &common.Customer{
-					SignedUpCountry: "id",
-					CurrentCountry:  "id",
-					Identity:        1238746,
-				},
-				Device: &common.Device{
-					OperatingSystem:        "iOs",
-					OperatingSystemVersion: "12.3",
-					DeviceMake:             "Apple",
-					DeviceModel:            "i10",
-				},
-				Session: &common.Session{SessionId: uuid},
-			},
-			Product: eventsCommon.Product_GoFood,
+		eEvent1 := &pb.Event{
+			EventBytes: []byte("event_1"),
+			Type:       "type_a",
 		}
-
-		eBytes, _ := proto.Marshal(event)
-		eEvent1 := &de.Event{
-			EventBytes: eBytes,
-			Type:       "adcard1",
-		}
-		eEvent2 := &de.Event{
-			EventBytes: eBytes,
-			Type:       "adcard2",
+		eEvent2 := &pb.Event{
+			EventBytes: []byte("event_2"),
+			Type:       "type_b",
 		}
 		events = append(events, eEvent1)
 		events = append(events, eEvent2)
-		req := &de.EventRequest{
+		req := &pb.EventRequest{
 			ReqGuid:  "1234",
 			SentTime: ptypes.TimestampNow(),
 			Events:   events,
@@ -131,12 +99,12 @@ func TestIntegration(t *testing.T) {
 		wss.WriteMessage(websocket.BinaryMessage, bReq)
 
 		mType, resp, err := wss.ReadMessage()
-		r := &de.EventResponse{}
+		r := &pb.EventResponse{}
 		_ = proto.Unmarshal(resp, r)
 		assert.Equal(t, mType, websocket.BinaryMessage)
 		assert.Empty(t, err)
-		assert.Equal(t, r.Code.String(), de.Code_OK.String())
-		assert.Equal(t, r.Status.String(), de.Status_SUCCESS.String())
+		assert.Equal(t, r.Code.String(), pb.Code_OK.String())
+		assert.Equal(t, r.Status.String(), pb.Status_SUCCESS.String())
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
 
@@ -144,7 +112,7 @@ func TestIntegration(t *testing.T) {
 	})
 
 	t.Run("Should be able to consume published message", func(t *testing.T) {
-		t.Run("adcard1", func(t *testing.T) {
+		t.Run("type_a", func(t *testing.T) {
 			t.Parallel()
 			c, err := kafka.NewConsumer(&kafka.ConfigMap{
 				"bootstrap.servers": bootstrapServers,
@@ -156,7 +124,7 @@ func TestIntegration(t *testing.T) {
 				assert.Fail(t, "setup kafka consumer failed")
 			}
 
-			e := c.Subscribe(fmt.Sprintf(topicFormat, "adcard1"), nil)
+			e := c.Subscribe(fmt.Sprintf(topicFormat, "type_a"), nil)
 			if e != nil {
 				assert.Fail(t, fmt.Sprintf("Pls try again. %v", e))
 			}
@@ -171,19 +139,14 @@ func TestIntegration(t *testing.T) {
 						t.Log("error", err)
 						continue
 					}
-					m := &eventsProto.AdCardEvent{}
-					err = proto.Unmarshal(msg.Value, m)
-					if err != nil || m == nil || m.Meta == nil {
-						continue
-					}
-					if m.GetMeta().EventGuid == uuid {
+					if (string(msg.Value) == "event_1") {
 						return
 					}
 				}
 			}
 		})
 
-		t.Run("adcard2", func(t *testing.T) {
+		t.Run("type_b", func(t *testing.T) {
 			t.Parallel()
 			c, err := kafka.NewConsumer(&kafka.ConfigMap{
 				"bootstrap.servers": bootstrapServers,
@@ -195,7 +158,7 @@ func TestIntegration(t *testing.T) {
 				assert.Fail(t, "setup kafka consumer failed")
 			}
 
-			e := c.Subscribe(fmt.Sprintf(topicFormat, "adcard2"), nil)
+			e := c.Subscribe(fmt.Sprintf(topicFormat, "type_b"), nil)
 			if e != nil {
 				assert.Fail(t, fmt.Sprintf("Pls try again. %v", e))
 			}
@@ -210,15 +173,7 @@ func TestIntegration(t *testing.T) {
 						t.Log("error", err)
 						continue
 					}
-					m := &eventsProto.AdCardEvent{}
-					err = proto.Unmarshal(msg.Value, m)
-					if err != nil || m == nil || m.Meta == nil {
-						continue
-					}
-					if m.GetMeta().EventGuid == uuid {
-						assert.Equal(t, uuid, m.GetMeta().EventGuid)
-						assert.Equal(t, "service1", m.ServiceInfo.Type)
-						assert.Equal(t, eventsProto.AdCardType_Clicked, m.Type)
+					if (string(msg.Value) == "event_2") {
 						return
 					}
 				}

@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -22,33 +21,21 @@ var timeout time.Duration
 var topicFormat string
 var url string
 var bootstrapServers string
-var fetchToken bool
 
 func TestMain(m *testing.M) {
-	var err error
 	uuid = fmt.Sprintf("%d-test", rand.Int())
 	timeout = 120 * time.Second
 	topicFormat = os.Getenv("INTEGTEST_TOPIC_FORMAT")
 	url = fmt.Sprintf("%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
 	bootstrapServers = os.Getenv("INTEGTEST_BOOTSTRAP_SERVER")
-	fetchToken, err = strconv.ParseBool(os.Getenv("INTEGTEST_FETCH_TOKEN"))
-	if err != nil {
-		fetchToken = true
-	}
 	os.Exit(m.Run())
 }
 
 func TestIntegration(t *testing.T) {
-	accessToken := ""
 	var err error
-	if fetchToken {
-		accessToken, err = FetchAccessToken()
-	}
 	assert.NoError(t, err)
 	header := http.Header{
-		"Authorization": []string{fmt.Sprintf("Bearer %v", accessToken)},
-		// TODO: Need to clean this before open source
-		"GO-User-ID":    []string{"1234"},
+		"x-user-id":    []string{"1234"},
 	}
 	t.Run("Should response with BadRequest when sending invalid request", func(t *testing.T) {
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)

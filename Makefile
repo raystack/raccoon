@@ -4,27 +4,44 @@ ALL_PACKAGES=$(shell go list ./... | grep -v "vendor")
 APP_EXECUTABLE="out/raccoon"
 COVER_FILE="/tmp/coverage.out"
 
-setup:
-	make generate-proto
-	go mod tidy -v
+all: install-protoc setup compile
 
-source:
-	source ".env.sample"
+# Setups
+setup: generate-proto
+	make update-deps
 
-build-deps:
-	go mod tidy -v
+install-protoc:
+	@echo "> installing dependencies"
+	go get -u github.com/golang/protobuf/proto@v1.4.3
+	go get -u github.com/golang/protobuf/protoc-gen-go@v1.4.3
 
 update-deps:
 	go mod tidy -v
+	go mod vendor
 
+copy-config:
+	cp application.yml.sample application.yml
+
+generate-proto:
+	protoc --proto_path=websocket/proto $(wildcard websocket/proto/*.proto) --go_out=websocket/proto --go_opt=paths=source_relative
+
+# Build Lifecycle
 compile:
 	mkdir -p out/
 	go build -o $(APP_EXECUTABLE)
 
-build: copy-config build-deps compile
+build: copy-config update-deps compile
 
 install:
 	go install $(ALL_PACKAGES)
+
+start: build
+	./$(APP_EXECUTABLE)
+
+clean: ## Clean the builds
+	rm -rf out/
+
+# Utility
 
 fmt:
 	go fmt $(ALL_PACKAGES)
@@ -38,39 +55,20 @@ lint:
 		golint $$p | { grep -vwE "exported (var|function|method|type|const) \S+ should have comment" || true; } \
 	done
 
-clean: ## Clean the builds
-	rm -rf out/
+# Tests
 
-test:
-	make lint
+test: lint
 	ENVIRONMENT=test go test $(shell go list ./... | grep -v "vendor" | grep -v "integration") -p=2 -v
 	@go list ./... | grep -v "vendor" | grep -v "integration" | xargs go test -count 1 -cover -short -race -timeout 1m -coverprofile ${COVER_FILE}
 	@go tool cover -func ${COVER_FILE} | tail -1 | xargs echo test coverage:
 
-test_ci:
-	make test
-	go mod vendor
+test_ci: install-protoc setup test
 
-copy-config:
-	cp application.yml.sample application.yml
+# Docker Run
 
-start:
-	./$(APP_EXECUTABLE) start
-
-copy-config-ci:
-	cp application.yml.ci application.yml
-
-run:
-	go mod vendor
+docker-run:
 	docker-compose build
 	docker-compose up -d
 
-ps:
-	docker-compose ps
-
-kill:
+docker-kill:
 	docker-compose kill
-
-generate-proto:
-	protoc --proto_path=websocket/proto $(wildcard websocket/proto/*.proto) --go_out=websocket/proto --go_opt=paths=source_relative
-

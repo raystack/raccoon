@@ -1,4 +1,4 @@
-package config
+package util
 
 import (
 	"fmt"
@@ -8,16 +8,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-func allSettings() map[string]interface{} {
-	return viper.AllSettings()
-}
-
-func mustGetString(key string) string {
+func MustGetString(key string) string {
 	mustHave(key)
 	return viper.GetString(key)
 }
 
-func mustGetInt(key string) int {
+func MustGetInt(key string) int {
 	mustHave(key)
 	v, err := strconv.Atoi(viper.GetString(key))
 	if err != nil {
@@ -27,17 +23,17 @@ func mustGetInt(key string) int {
 	return v
 }
 
-func mustGetBool(key string) bool {
+func MustGetBool(key string) bool {
 	mustHave(key)
 	return viper.GetBool(key)
+}
+
+func MustGetDurationInSeconds(key string) time.Duration {
+	return time.Second * time.Duration(MustGetInt(key))
 }
 
 func mustHave(key string) {
 	if !viper.IsSet(key) {
 		panic(fmt.Sprintf("key %s is not set", key))
 	}
-}
-
-func mustGetDurationInSeconds(key string) time.Duration {
-	return time.Second * time.Duration(mustGetInt(key))
 }

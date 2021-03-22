@@ -8,6 +8,7 @@ import (
 
 var loaded bool
 
+// Load configs from env or yaml and set it to respective keys
 func Load() {
 	if loaded {
 		return

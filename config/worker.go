@@ -1,6 +1,10 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"raccoon/config/util"
+
+	"github.com/spf13/viper"
+)
 
 var configLoaded bool
 var wc WorkerConfig
@@ -43,10 +47,10 @@ func WorkerConfigLoader() WorkerConfig {
 		viper.SetDefault("WORKER_FLUSH_TIMEOUT", 5)
 
 		wc = WorkerConfig{
-			workersPoolSize:     mustGetInt("WORKER_POOL_SIZE"),
-			channelSize:         mustGetInt("BUFFER_CHANNEL_SIZE"),
-			deliveryChannelSize: mustGetInt("DELIVERY_CHANNEL_SIZE"),
-			workerFlushTimeout:  mustGetInt("WORKER_FLUSH_TIMEOUT"),
+			workersPoolSize:     util.MustGetInt("WORKER_POOL_SIZE"),
+			channelSize:         util.MustGetInt("BUFFER_CHANNEL_SIZE"),
+			deliveryChannelSize: util.MustGetInt("DELIVERY_CHANNEL_SIZE"),
+			workerFlushTimeout:  util.MustGetInt("WORKER_FLUSH_TIMEOUT"),
 		}
 	}
 	return wc

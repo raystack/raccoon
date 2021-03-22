@@ -1,9 +1,11 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"os"
+	"raccoon/config/util"
 	"strings"
+
+	"github.com/spf13/viper"
 
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
@@ -24,15 +26,15 @@ func (kc KafkaConfig) GetTopicFormat() string {
 func NewKafkaConfig() KafkaConfig {
 	viper.SetDefault("topic_format", "%s")
 	kc := KafkaConfig{
-		FlushInterval: mustGetInt("KAFKA_FLUSH_INTERVAL"),
-		TopicFormat: mustGetString("TOPIC_FORMAT"),
+		FlushInterval: util.MustGetInt("KAFKA_FLUSH_INTERVAL"),
+		TopicFormat:   util.MustGetString("TOPIC_FORMAT"),
 	}
 	return kc
 }
 
 func (kc KafkaConfig) ToKafkaConfigMap() *kafka.ConfigMap {
 	configMap := &kafka.ConfigMap{}
-	for key, value := range allSettings() {
+	for key, value := range viper.AllSettings() {
 		if len(key) > 13 && key[0:13] == "kafka_client_" {
 			configMap.SetKey(strings.Join(strings.Split(key, "_")[2:], "."), value)
 		}

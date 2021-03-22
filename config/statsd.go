@@ -2,8 +2,10 @@ package config
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
+	"raccoon/config/util"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 type Statsd struct {
@@ -23,7 +25,7 @@ func StatsdConfigLoader() Statsd {
 	viper.SetDefault("STATSD_ADDRESS", ":8125")
 	viper.SetDefault("STATSD_FLUSH_PERIOD_MS", 10000)
 	return Statsd{
-		Address:       mustGetString("STATSD_ADDRESS"),
-		FlushPeriodMs: mustGetInt("STATSD_FLUSH_PERIOD_MS"),
+		Address:       util.MustGetString("STATSD_ADDRESS"),
+		FlushPeriodMs: util.MustGetInt("STATSD_FLUSH_PERIOD_MS"),
 	}
 }

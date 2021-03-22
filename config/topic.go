@@ -1,6 +1,8 @@
 package config
 
 import (
+	"raccoon/config/util"
+
 	"github.com/spf13/viper"
 )
 
@@ -15,7 +17,7 @@ func (tc TopicConfig) GetFormat() string {
 func NewTopicConfig() TopicConfig {
 	viper.SetDefault("TOPIC_FORMAT", "%s")
 	tc := TopicConfig{
-		Format: mustGetString("TOPIC_FORMAT"),
+		Format: util.MustGetString("TOPIC_FORMAT"),
 	}
 
 	return tc

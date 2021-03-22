@@ -1,6 +1,7 @@
 package config
 
 import (
+	"raccoon/config/util"
 	"time"
 
 	"github.com/spf13/viper"
@@ -35,16 +36,16 @@ func serverConfigLoader() {
 	viper.SetDefault("PINGER_SIZE", 1)
 
 	ServerConfig = ServerCfg{
-		AppPort:                   mustGetString("APP_PORT"),
-		ServerMaxConn:             mustGetInt("SERVER_MAX_CONN"),
-		ReadBufferSize:            mustGetInt("READ_BUFFER_SIZE"),
-		WriteBufferSize:           mustGetInt("WRITE_BUFFER_SIZE"),
-		CheckOrigin:               mustGetBool("CHECK_ORIGIN"),
-		PingInterval:              mustGetDurationInSeconds("PING_INTERVAL"),
-		PongWaitInterval:          mustGetDurationInSeconds("PONG_WAIT_INTERVAL"),
-		WriteWaitInterval:         mustGetDurationInSeconds("WRITE_WAIT_INTERVAL"),
-		ServerShutDownGracePeriod: mustGetDurationInSeconds("SERVER_SHUTDOWN_GRACE_PERIOD"),
-		PingerSize:                mustGetInt("PINGER_SIZE"),
-		UserIDHeader:              mustGetString("USER_ID_HEADER"),
+		AppPort:                   util.MustGetString("APP_PORT"),
+		ServerMaxConn:             util.MustGetInt("SERVER_MAX_CONN"),
+		ReadBufferSize:            util.MustGetInt("READ_BUFFER_SIZE"),
+		WriteBufferSize:           util.MustGetInt("WRITE_BUFFER_SIZE"),
+		CheckOrigin:               util.MustGetBool("CHECK_ORIGIN"),
+		PingInterval:              util.MustGetDurationInSeconds("PING_INTERVAL"),
+		PongWaitInterval:          util.MustGetDurationInSeconds("PONG_WAIT_INTERVAL"),
+		WriteWaitInterval:         util.MustGetDurationInSeconds("WRITE_WAIT_INTERVAL"),
+		ServerShutDownGracePeriod: util.MustGetDurationInSeconds("SERVER_SHUTDOWN_GRACE_PERIOD"),
+		PingerSize:                util.MustGetInt("PINGER_SIZE"),
+		UserIDHeader:              util.MustGetString("USER_ID_HEADER"),
 	}
 }

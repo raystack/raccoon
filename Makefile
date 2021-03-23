@@ -70,5 +70,8 @@ docker-run:
 	docker-compose build
 	docker-compose up -d
 
-docker-kill:
-	docker-compose kill
+docker-stop:
+	docker-compose stop
+
+docker-start:
+	docker-compose start

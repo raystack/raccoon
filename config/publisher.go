@@ -12,6 +12,7 @@ import (
 )
 
 var Kafka kafka
+var dynamicKafkaClientConfigPrefix = "PUBLISHER-KAFKA-CLIENT-"
 
 type kafka struct {
 	FlushInterval int
@@ -20,8 +21,9 @@ type kafka struct {
 func (k kafka) ToKafkaConfigMap() *confluent.ConfigMap {
 	configMap := &confluent.ConfigMap{}
 	for key, value := range viper.AllSettings() {
-		if len(key) > 13 && key[0:13] == "kafka_client_" {
-			configMap.SetKey(strings.Join(strings.Split(key, "_")[2:], "."), value)
+		if strings.HasPrefix(strings.ToUpper(key), dynamicKafkaClientConfigPrefix) {
+			clientConfig := key[len(dynamicKafkaClientConfigPrefix):]
+			configMap.SetKey(strings.Join(strings.Split(clientConfig, "_"), "."), value)
 		}
 	}
 	return configMap
@@ -30,7 +32,7 @@ func (k kafka) ToKafkaConfigMap() *confluent.ConfigMap {
 func dynamicKafkaClientConfigLoad() []byte {
 	var kafkaConfigs []string
 	for _, v := range os.Environ() {
-		if strings.HasPrefix(strings.ToLower(v), "kafka_client_") {
+		if strings.HasPrefix(strings.ToUpper(v), dynamicKafkaClientConfigPrefix) {
 			kafkaConfigs = append(kafkaConfigs, v)
 		}
 	}
@@ -39,13 +41,12 @@ func dynamicKafkaClientConfigLoad() []byte {
 	return yamlFormatted
 }
 
-func kafkaConfigLoader() {
-	viper.SetDefault("kafka_client_queue_buffering_max_messages", "100000")
-	viper.SetDefault("kafka_flush_interval", "1000")
-	viper.SetDefault("delivery_channel_size", "100")
+func publisherConfigLoader() {
+	viper.SetDefault("PUBLISHER-KAFKA-CLIENT-QUEUE_BUFFERING_MAX_MESSAGES", "100000")
+	viper.SetDefault("PUBLISHER-KAFKA-FLUSH_INTERVAL", "1000")
 	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaClientConfigLoad()))
 
 	Kafka = kafka{
-		FlushInterval: util.MustGetInt("KAFKA_FLUSH_INTERVAL"),
+		FlushInterval: util.MustGetInt("PUBLISHER-KAFKA-FLUSH_INTERVAL"),
 	}
 }

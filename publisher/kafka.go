@@ -28,7 +28,7 @@ func NewKafka() (*Kafka, error) {
 	return &Kafka{
 		kp:            kp,
 		flushInterval: config.Kafka.FlushInterval,
-		topicFormat:   config.Topic.Format,
+		topicFormat:   config.DISTRIBUTION.PublisherPattern,
 	}, nil
 }
 

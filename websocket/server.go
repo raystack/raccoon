@@ -33,7 +33,7 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 		}
 	}()
 	go s.ReportServerMetrics()
-	go Pinger(s.pingChannel, config.Server.PingerSize, config.Server.PingInterval, config.Server.WriteWaitInterval)
+	go Pinger(s.pingChannel, config.Websocket.PingerSize, config.Websocket.PingInterval, config.Websocket.WriteWaitInterval)
 	go func() {
 		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
 			logger.Errorf("WebSocket Server --> pprof could not be enabled: %s", err.Error())
@@ -68,21 +68,21 @@ func (s *Server) ReportServerMetrics() {
 func CreateServer() (*Server, chan EventsBatch) {
 	//create the websocket handler that upgrades the http request
 	bufferChannel := make(chan EventsBatch, config.Worker.ChannelSize)
-	pingChannel := make(chan connection, config.Server.ServerMaxConn)
-	user := NewUserStore(config.Server.ServerMaxConn)
+	pingChannel := make(chan connection, config.Websocket.ServerMaxConn)
+	user := NewUserStore(config.Websocket.ServerMaxConn)
 	wsHandler := &Handler{
-		websocketUpgrader: getWebSocketUpgrader(config.Server.ReadBufferSize, config.Server.WriteBufferSize, config.Server.CheckOrigin),
+		websocketUpgrader: getWebSocketUpgrader(config.Websocket.ReadBufferSize, config.Websocket.WriteBufferSize, config.Websocket.CheckOrigin),
 		bufferChannel:     bufferChannel,
 		user:              user,
-		PongWaitInterval:  config.Server.PongWaitInterval,
-		WriteWaitInterval: config.Server.WriteWaitInterval,
+		PongWaitInterval:  config.Websocket.PongWaitInterval,
+		WriteWaitInterval: config.Websocket.WriteWaitInterval,
 		PingChannel:       pingChannel,
-		UserIDHeader:      config.Server.UserIDHeader,
+		UserIDHeader:      config.Websocket.UserIDHeader,
 	}
 	server := &Server{
 		HTTPServer: &http.Server{
 			Handler: Router(wsHandler),
-			Addr:    ":" + config.Server.AppPort,
+			Addr:    ":" + config.Websocket.AppPort,
 		},
 		bufferChannel: bufferChannel,
 		user:          user,

@@ -13,7 +13,6 @@ import (
 	ws "raccoon/websocket"
 	"raccoon/worker"
 	"syscall"
-	"time"
 )
 
 // StartServer starts the server

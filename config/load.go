@@ -21,9 +21,9 @@ func init() {
 	viper.ReadInConfig()
 
 	logConfigLoader()
-	kafkaConfigLoader()
+	publisherConfigLoader()
 	serverConfigLoader()
 	workerConfigLoader()
-	statsdConfigLoader()
-	topicConfigLoader()
+	metricConfigLoader()
+	distributionConfigLoader()
 }

@@ -24,15 +24,15 @@ type worker struct {
 
 //workerConfigLoader constructs a singleton instance of the worker pool config
 func workerConfigLoader() {
-	viper.SetDefault("WORKER_POOL_SIZE", 5)
-	viper.SetDefault("BUFFER_CHANNEL_SIZE", 100)
-	viper.SetDefault("DELIVERY_CHANNEL_SIZE", 10)
-	viper.SetDefault("WORKER_FLUSH_TIMEOUT", 5)
+	viper.SetDefault("WORKER-POOL-SIZE", 5)
+	viper.SetDefault("WORKER-BUFFER-CHANNEL_SIZE", 100)
+	viper.SetDefault("WORKER-BUFFER-FLUSH_TIMEOUT", 5)
+	viper.SetDefault("WORKER-KAFKA-DELIVERY_CHANNEL_SIZE", 10)
 
 	Worker = worker{
-		WorkersPoolSize:     util.MustGetInt("WORKER_POOL_SIZE"),
-		ChannelSize:         util.MustGetInt("BUFFER_CHANNEL_SIZE"),
-		DeliveryChannelSize: util.MustGetInt("DELIVERY_CHANNEL_SIZE"),
-		WorkerFlushTimeout:  util.MustGetDuration("WORKER_FLUSH_TIMEOUT", time.Second),
+		WorkersPoolSize:     util.MustGetInt("WORKER-POOL-SIZE"),
+		ChannelSize:         util.MustGetInt("WORKER-BUFFER-CHANNEL_SIZE"),
+		DeliveryChannelSize: util.MustGetInt("WORKER-KAFKA-DELIVERY_CHANNEL_SIZE"),
+		WorkerFlushTimeout:  util.MustGetDuration("WORKER-BUFFER-FLUSH_TIMEOUT", time.Second),
 	}
 }

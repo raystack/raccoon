@@ -22,7 +22,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	logger.Info("Start Server -->")
 	wssServer.StartHTTPServer(ctx, cancel)
 	logger.Info("Start publisher -->")
-	kPublisher, err := publisher.NewKafka(config.NewKafkaConfig())
+	kPublisher, err := publisher.NewKafka()
 	if err != nil {
 		logger.Error("Error creating kafka producer", err)
 		logger.Info("Exiting server")
@@ -30,7 +30,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	}
 
 	logger.Info("Start worker -->")
-	workerPool := worker.CreateWorkerPool(config.WorkerConfigLoader().WorkersPoolSize(), bufferChannel, config.WorkerConfigLoader().DeliveryChannelSize(), kPublisher)
+	workerPool := worker.CreateWorkerPool(config.Worker.WorkersPoolSize, bufferChannel, config.Worker.DeliveryChannelSize, kPublisher)
 	workerPool.StartWorkers()
 	go kPublisher.ReportStats()
 	go shutDownServer(ctx, cancel, wssServer.HTTPServer, bufferChannel, workerPool, kPublisher)
@@ -46,11 +46,11 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *h
 			logger.Info(fmt.Sprintf("[App.Server] Received a signal %s", sig))
 			wssServer.Shutdown(ctx)
 			logger.Info("Server shutdown all the listeners")
-			timedOut := workerPool.FlushWithTimeOut(time.Duration(config.WorkerConfigLoader().WorkerFlushTimeout()) * time.Second)
+			timedOut := workerPool.FlushWithTimeOut(config.Worker.WorkerFlushTimeout)
 			if timedOut {
 				logger.Info(fmt.Sprintf("WorkerPool flush timedout %t", timedOut))
 			}
-			flushInterval := config.NewKafkaConfig().GetFlushInterval()
+			flushInterval := config.Kafka.FlushInterval
 			logger.Info("Closing Kafka producer")
 			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
 			eventsInProducer := kp.Close()

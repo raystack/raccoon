@@ -1,39 +1,24 @@
 package config
 
 import (
+	"bytes"
 	"os"
 	"raccoon/config/util"
 	"strings"
 
 	"github.com/spf13/viper"
 
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+	confluent "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
-type KafkaConfig struct {
+var Kafka kafka
+
+type kafka struct {
 	FlushInterval int
-	TopicFormat   string
 }
 
-func (kc KafkaConfig) GetFlushInterval() int {
-	return kc.FlushInterval
-}
-
-func (kc KafkaConfig) GetTopicFormat() string {
-	return kc.TopicFormat
-}
-
-func NewKafkaConfig() KafkaConfig {
-	viper.SetDefault("topic_format", "%s")
-	kc := KafkaConfig{
-		FlushInterval: util.MustGetInt("KAFKA_FLUSH_INTERVAL"),
-		TopicFormat:   util.MustGetString("TOPIC_FORMAT"),
-	}
-	return kc
-}
-
-func (kc KafkaConfig) ToKafkaConfigMap() *kafka.ConfigMap {
-	configMap := &kafka.ConfigMap{}
+func (k kafka) ToKafkaConfigMap() *confluent.ConfigMap {
+	configMap := &confluent.ConfigMap{}
 	for key, value := range viper.AllSettings() {
 		if len(key) > 13 && key[0:13] == "kafka_client_" {
 			configMap.SetKey(strings.Join(strings.Split(key, "_")[2:], "."), value)
@@ -42,7 +27,7 @@ func (kc KafkaConfig) ToKafkaConfigMap() *kafka.ConfigMap {
 	return configMap
 }
 
-func dynamicKafkaConfigLoad() []byte {
+func dynamicKafkaClientConfigLoad() []byte {
 	var kafkaConfigs []string
 	for _, v := range os.Environ() {
 		if strings.HasPrefix(strings.ToLower(v), "kafka_client_") {
@@ -52,4 +37,15 @@ func dynamicKafkaConfigLoad() []byte {
 	yamlFormatted := []byte(
 		strings.Replace(strings.Join(kafkaConfigs, "\n"), "=", ": ", -1))
 	return yamlFormatted
+}
+
+func kafkaConfigLoader() {
+	viper.SetDefault("kafka_client_queue_buffering_max_messages", "100000")
+	viper.SetDefault("kafka_flush_interval", "1000")
+	viper.SetDefault("delivery_channel_size", "100")
+	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaClientConfigLoad()))
+
+	Kafka = kafka{
+		FlushInterval: util.MustGetInt("KAFKA_FLUSH_INTERVAL"),
+	}
 }

@@ -33,7 +33,7 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 		}
 	}()
 	go s.ReportServerMetrics()
-	go Pinger(s.pingChannel, config.ServerConfig.PingerSize, config.ServerConfig.PingInterval, config.ServerConfig.WriteWaitInterval)
+	go Pinger(s.pingChannel, config.Server.PingerSize, config.Server.PingInterval, config.Server.WriteWaitInterval)
 	go func() {
 		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
 			logger.Errorf("WebSocket Server --> pprof could not be enabled: %s", err.Error())
@@ -45,7 +45,7 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 }
 
 func (s *Server) ReportServerMetrics() {
-	t := time.Tick(config.StatsdConfigLoader().FlushPeriod())
+	t := time.Tick(config.Statsd.FlushPeriodMs)
 	m := &runtime.MemStats{}
 	for {
 		<-t
@@ -67,22 +67,22 @@ func (s *Server) ReportServerMetrics() {
 //CreateServer - instantiates the http server
 func CreateServer() (*Server, chan EventsBatch) {
 	//create the websocket handler that upgrades the http request
-	bufferChannel := make(chan EventsBatch, config.WorkerConfigLoader().ChannelSize())
-	pingChannel := make(chan connection, config.ServerConfig.ServerMaxConn)
-	user := NewUserStore(config.ServerConfig.ServerMaxConn)
+	bufferChannel := make(chan EventsBatch, config.Worker.ChannelSize)
+	pingChannel := make(chan connection, config.Server.ServerMaxConn)
+	user := NewUserStore(config.Server.ServerMaxConn)
 	wsHandler := &Handler{
-		websocketUpgrader: getWebSocketUpgrader(config.ServerConfig.ReadBufferSize, config.ServerConfig.WriteBufferSize, config.ServerConfig.CheckOrigin),
+		websocketUpgrader: getWebSocketUpgrader(config.Server.ReadBufferSize, config.Server.WriteBufferSize, config.Server.CheckOrigin),
 		bufferChannel:     bufferChannel,
 		user:              user,
-		PongWaitInterval:  config.ServerConfig.PongWaitInterval,
-		WriteWaitInterval: config.ServerConfig.WriteWaitInterval,
+		PongWaitInterval:  config.Server.PongWaitInterval,
+		WriteWaitInterval: config.Server.WriteWaitInterval,
 		PingChannel:       pingChannel,
-		UserIDHeader:      config.ServerConfig.UserIDHeader,
+		UserIDHeader:      config.Server.UserIDHeader,
 	}
 	server := &Server{
 		HTTPServer: &http.Server{
 			Handler: Router(wsHandler),
-			Addr:    ":" + config.ServerConfig.AppPort,
+			Addr:    ":" + config.Server.AppPort,
 		},
 		bufferChannel: bufferChannel,
 		user:          user,

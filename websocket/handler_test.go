@@ -11,12 +11,13 @@ import (
 	"testing"
 	"time"
 
+	pb "raccoon/websocket/proto"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	pb "raccoon/websocket/proto"
 )
 
 type void struct{}
@@ -25,7 +26,6 @@ func (v void) Write(_ []byte) (int, error) {
 	return 0, nil
 }
 func TestMain(t *testing.M) {
-	logger.Setup()
 	logger.SetOutput(void{})
 	metrics.SetVoid()
 	os.Exit(t.Run())

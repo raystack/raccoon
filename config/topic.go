@@ -6,19 +6,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-type TopicConfig struct {
+var Topic topic
+
+type topic struct {
 	Format string
 }
 
-func (tc TopicConfig) GetFormat() string {
-	return tc.Format
-}
-
-func NewTopicConfig() TopicConfig {
+func topicConfigLoader() {
 	viper.SetDefault("TOPIC_FORMAT", "%s")
-	tc := TopicConfig{
+	Topic = topic{
 		Format: util.MustGetString("TOPIC_FORMAT"),
 	}
-
-	return tc
 }

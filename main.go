@@ -2,14 +2,12 @@ package main
 
 import (
 	"raccoon/app"
-	"raccoon/config"
+	_ "raccoon/config"
 	"raccoon/logger"
 	"raccoon/metrics"
 )
 
 func main() {
-	config.Load()
-	logger.Setup()
 	metrics.Setup()
 	err := app.Run()
 	metrics.Close()

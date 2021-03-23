@@ -6,7 +6,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-func LogLevel() string {
+var Log log
+
+type log struct {
+	Level string
+}
+
+func logConfigLoader() {
 	viper.SetDefault("LOG_LEVEL", "info")
-	return util.MustGetString("LOG_LEVEL")
+	Log = log{Level: util.MustGetString("LOG_LEVEL")}
 }

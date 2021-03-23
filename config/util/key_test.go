@@ -39,11 +39,11 @@ func TestConfigUtil(t *testing.T) {
 		})
 	})
 
-	t.Run("MustGetDurationInSeconds", func(t *testing.T) {
+	t.Run("MustGetDuration", func(t *testing.T) {
 		t.Run("Should get correct value", func(t *testing.T) {
 			os.Setenv("DURATION_CONFIG", "20")
 			viper.AutomaticEnv()
-			assert.IsType(t, time.Second, MustGetDurationInSeconds("DURATION_CONFIG"))
+			assert.IsType(t, time.Second, MustGetDuration("DURATION_CONFIG", time.Second))
 		})
 	})
 }

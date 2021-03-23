@@ -10,11 +10,11 @@ import (
 
 var logger *log.Logger
 
-func Setup() {
+func init() {
 	if logger != nil {
 		return
 	}
-	logLevel, err := log.ParseLevel(config.LogLevel())
+	logLevel, err := log.ParseLevel(config.Log.Level)
 	if err != nil {
 		log.Panic(err)
 	}

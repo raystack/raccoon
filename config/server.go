@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-var ServerConfig ServerCfg
+var Server server
 
-type ServerCfg struct {
+type server struct {
 	AppPort                   string
 	ServerMaxConn             int
 	ReadBufferSize            int
@@ -35,16 +35,16 @@ func serverConfigLoader() {
 	viper.SetDefault("SERVER_SHUTDOWN_GRACE_PERIOD", "3")
 	viper.SetDefault("PINGER_SIZE", 1)
 
-	ServerConfig = ServerCfg{
+	Server = server{
 		AppPort:                   util.MustGetString("APP_PORT"),
 		ServerMaxConn:             util.MustGetInt("SERVER_MAX_CONN"),
 		ReadBufferSize:            util.MustGetInt("READ_BUFFER_SIZE"),
 		WriteBufferSize:           util.MustGetInt("WRITE_BUFFER_SIZE"),
 		CheckOrigin:               util.MustGetBool("CHECK_ORIGIN"),
-		PingInterval:              util.MustGetDurationInSeconds("PING_INTERVAL"),
-		PongWaitInterval:          util.MustGetDurationInSeconds("PONG_WAIT_INTERVAL"),
-		WriteWaitInterval:         util.MustGetDurationInSeconds("WRITE_WAIT_INTERVAL"),
-		ServerShutDownGracePeriod: util.MustGetDurationInSeconds("SERVER_SHUTDOWN_GRACE_PERIOD"),
+		PingInterval:              util.MustGetDuration("PING_INTERVAL", time.Second),
+		PongWaitInterval:          util.MustGetDuration("PONG_WAIT_INTERVAL", time.Second),
+		WriteWaitInterval:         util.MustGetDuration("WRITE_WAIT_INTERVAL", time.Second),
+		ServerShutDownGracePeriod: util.MustGetDuration("SERVER_SHUTDOWN_GRACE_PERIOD", time.Second),
 		PingerSize:                util.MustGetInt("PINGER_SIZE"),
 		UserIDHeader:              util.MustGetString("USER_ID_HEADER"),
 	}

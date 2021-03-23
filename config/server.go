@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-var Server server
+var Websocket websocket
 
-type server struct {
+type websocket struct {
 	AppPort                   string
 	ServerMaxConn             int
 	ReadBufferSize            int
@@ -24,28 +24,28 @@ type server struct {
 }
 
 func serverConfigLoader() {
-	viper.SetDefault("APP_PORT", "8080")
-	viper.SetDefault("SERVER_MAX_CONN", 30000)
-	viper.SetDefault("READ_BUFFER_SIZE", 10240)
-	viper.SetDefault("WRITE_BUFFER_SIZE", 10240)
-	viper.SetDefault("CHECK_ORIGIN", true)
-	viper.SetDefault("PING_INTERVAL", "30")
-	viper.SetDefault("PONG_WAIT_INTERVAL", "60") //should be more than the ping period
-	viper.SetDefault("WRITE_WAIT_INTERVAL", "5")
-	viper.SetDefault("SERVER_SHUTDOWN_GRACE_PERIOD", "3")
-	viper.SetDefault("PINGER_SIZE", 1)
+	viper.SetDefault("SERVER-WEBSOCKET-PORT", "8080")
+	viper.SetDefault("SERVER-WEBSOCKET-MAX_CONN", 30000)
+	viper.SetDefault("SERVER-WEBSOCKET-READ_BUFFER_SIZE", 10240)
+	viper.SetDefault("SERVER-WEBSOCKET-WRITE_BUFFER_SIZE", 10240)
+	viper.SetDefault("SERVER-WEBSOCKET-CHECK_ORIGIN", true)
+	viper.SetDefault("SERVER-WEBSOCKET-PING_INTERVAL", "30")
+	viper.SetDefault("SERVER-WEBSOCKET-PONG_WAIT_INTERVAL", "60") //should be more than the ping period
+	viper.SetDefault("SERVER-WEBSOCKET-WRITE_WAIT_INTERVAL", "5")
+	viper.SetDefault("SERVER-WEBSOCKET-SERVER_SHUTDOWN_GRACE_PERIOD", "3")
+	viper.SetDefault("SERVER-WEBSOCKET-PINGER_SIZE", 1)
 
-	Server = server{
-		AppPort:                   util.MustGetString("APP_PORT"),
-		ServerMaxConn:             util.MustGetInt("SERVER_MAX_CONN"),
-		ReadBufferSize:            util.MustGetInt("READ_BUFFER_SIZE"),
-		WriteBufferSize:           util.MustGetInt("WRITE_BUFFER_SIZE"),
-		CheckOrigin:               util.MustGetBool("CHECK_ORIGIN"),
-		PingInterval:              util.MustGetDuration("PING_INTERVAL", time.Second),
-		PongWaitInterval:          util.MustGetDuration("PONG_WAIT_INTERVAL", time.Second),
-		WriteWaitInterval:         util.MustGetDuration("WRITE_WAIT_INTERVAL", time.Second),
-		ServerShutDownGracePeriod: util.MustGetDuration("SERVER_SHUTDOWN_GRACE_PERIOD", time.Second),
-		PingerSize:                util.MustGetInt("PINGER_SIZE"),
-		UserIDHeader:              util.MustGetString("USER_ID_HEADER"),
+	Websocket = websocket{
+		AppPort:                   util.MustGetString("SERVER-WEBSOCKET-PORT"),
+		ServerMaxConn:             util.MustGetInt("SERVER-WEBSOCKET-MAX_CONN"),
+		ReadBufferSize:            util.MustGetInt("SERVER-WEBSOCKET-READ_BUFFER_SIZE"),
+		WriteBufferSize:           util.MustGetInt("SERVER-WEBSOCKET-WRITE_BUFFER_SIZE"),
+		CheckOrigin:               util.MustGetBool("SERVER-WEBSOCKET-CHECK_ORIGIN"),
+		PingInterval:              util.MustGetDuration("SERVER-WEBSOCKET-PING_INTERVAL", time.Second),
+		PongWaitInterval:          util.MustGetDuration("SERVER-WEBSOCKET-PONG_WAIT_INTERVAL", time.Second),
+		WriteWaitInterval:         util.MustGetDuration("SERVER-WEBSOCKET-WRITE_WAIT_INTERVAL", time.Second),
+		ServerShutDownGracePeriod: util.MustGetDuration("SERVER-WEBSOCKET-SERVER_SHUTDOWN_GRACE_PERIOD", time.Second),
+		PingerSize:                util.MustGetInt("SERVER-WEBSOCKET-PINGER_SIZE"),
+		UserIDHeader:              util.MustGetString("SERVER-WEBSOKCET-USER_ID_HEADER"),
 	}
 }

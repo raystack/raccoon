@@ -3,7 +3,6 @@ package publisher
 import (
 	"fmt"
 	"os"
-	"raccoon/config"
 	"raccoon/logger"
 	pb "raccoon/websocket/proto"
 	"testing"
@@ -19,7 +18,6 @@ func (v void) Write(_ []byte) (int, error) {
 	return 0, nil
 }
 func TestMain(t *testing.M) {
-	logger.Setup()
 	logger.SetOutput(void{})
 	os.Exit(t.Run())
 }
@@ -29,9 +27,7 @@ func TestProducer_Close(suite *testing.T) {
 		client := &mockClient{}
 		client.On("Flush", 10).Return(0)
 		client.On("Close").Return()
-		kp := NewKafkaFromClient(client, config.KafkaConfig{
-			FlushInterval: 10,
-		})
+		kp := NewKafkaFromClient(client, 10, "%s")
 		kp.Close()
 		client.AssertExpectations(t)
 	})
@@ -55,7 +51,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 					}
 				}()
 			})
-			kp := NewKafkaFromClient(client, config.KafkaConfig{})
+			kp := NewKafkaFromClient(client, 10, "%s")
 
 			err := kp.ProduceBulk([]*pb.Event{{EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
 			assert.NoError(t, err)
@@ -79,7 +75,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 				}()
 			}).Once()
 			client.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("buffer full")).Once()
-			kp := NewKafkaFromClient(client, config.KafkaConfig{})
+			kp := NewKafkaFromClient(client, 10, "%s")
 
 			err := kp.ProduceBulk([]*pb.Event{{EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
 			assert.Len(t, err.(BulkError).Errors, 3)
@@ -91,7 +87,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 		t.Run("Should return topic name when unknown topic is returned", func(t *testing.T) {
 			client := &mockClient{}
 			client.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("Local: Unknown topic")).Once()
-			kp := NewKafkaFromClient(client, config.KafkaConfig{TopicFormat: "%s"})
+			kp := NewKafkaFromClient(client, 10, "%s")
 
 			err := kp.ProduceBulk([]*pb.Event{{EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
 			assert.EqualError(t, err.(BulkError).Errors[0], "Local: Unknown topic "+topic)
@@ -115,7 +111,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 					}
 				}()
 			}).Once()
-			kp := NewKafkaFromClient(client, config.KafkaConfig{})
+			kp := NewKafkaFromClient(client, 10, "%s")
 
 			err := kp.ProduceBulk([]*pb.Event{{EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
 			assert.NotEmpty(t, err)

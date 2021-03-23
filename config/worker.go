@@ -2,56 +2,37 @@ package config
 
 import (
 	"raccoon/config/util"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
-var configLoaded bool
-var wc WorkerConfig
+// Worker contains configs for kafka publisher worker pool
+var Worker worker
 
-// WorkerConfig contains configs for kafka publisher worker pool
-type WorkerConfig struct {
-	workersPoolSize     int
-	channelSize         int
-	deliveryChannelSize int
-	workerFlushTimeout  int
+type worker struct {
+	// WorkersPoolSize number of worker to push to kafka initiated at the start of Raccoon
+	WorkersPoolSize int
+	// ChannelSize channel size to buffer events before processed by worker
+	ChannelSize int
+	//DeliveryChannelSize fetches the size of the delivery channel as configured
+	DeliveryChannelSize int
+	//WorkerFlushTimeout specifies a timeout interval that the workers use to timeout
+	//in case the workers could not complete the flush. This enables a non-blocking flush.
+	WorkerFlushTimeout time.Duration
 }
 
-// WorkersPoolSize number of worker to push to kafka initiated at the start of Raccoon
-func (bc WorkerConfig) WorkersPoolSize() int {
-	return bc.workersPoolSize
-}
+//workerConfigLoader constructs a singleton instance of the worker pool config
+func workerConfigLoader() {
+	viper.SetDefault("WORKER_POOL_SIZE", 5)
+	viper.SetDefault("BUFFER_CHANNEL_SIZE", 100)
+	viper.SetDefault("DELIVERY_CHANNEL_SIZE", 10)
+	viper.SetDefault("WORKER_FLUSH_TIMEOUT", 5)
 
-// ChannelSize channel size to buffer events before processed by worker
-func (bc WorkerConfig) ChannelSize() int {
-	return bc.channelSize
-}
-
-//DeliveryChannelSize fetches the size of the delivery channel as configured
-func (bc WorkerConfig) DeliveryChannelSize() int {
-	return bc.deliveryChannelSize
-}
-
-//WorkerFlushTimeout specifies a timeout interval that the workers use to timeout
-//in case the workers could not complete the flush. This enables a non-blocking flush.
-func (bc WorkerConfig) WorkerFlushTimeout() int {
-	return bc.workerFlushTimeout
-}
-
-//WorkerConfigLoader constructs a singleton instance of the worker pool config
-func WorkerConfigLoader() WorkerConfig {
-	if !configLoaded {
-		viper.SetDefault("WORKER_POOL_SIZE", 5)
-		viper.SetDefault("BUFFER_CHANNEL_SIZE", 100)
-		viper.SetDefault("DELIVERY_CHANNEL_SIZE", 10)
-		viper.SetDefault("WORKER_FLUSH_TIMEOUT", 5)
-
-		wc = WorkerConfig{
-			workersPoolSize:     util.MustGetInt("WORKER_POOL_SIZE"),
-			channelSize:         util.MustGetInt("BUFFER_CHANNEL_SIZE"),
-			deliveryChannelSize: util.MustGetInt("DELIVERY_CHANNEL_SIZE"),
-			workerFlushTimeout:  util.MustGetInt("WORKER_FLUSH_TIMEOUT"),
-		}
+	Worker = worker{
+		WorkersPoolSize:     util.MustGetInt("WORKER_POOL_SIZE"),
+		ChannelSize:         util.MustGetInt("BUFFER_CHANNEL_SIZE"),
+		DeliveryChannelSize: util.MustGetInt("DELIVERY_CHANNEL_SIZE"),
+		WorkerFlushTimeout:  util.MustGetDuration("WORKER_FLUSH_TIMEOUT", time.Second),
 	}
-	return wc
 }

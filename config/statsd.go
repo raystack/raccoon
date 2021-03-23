@@ -1,31 +1,24 @@
 package config
 
 import (
-	"fmt"
 	"raccoon/config/util"
 	"time"
 
 	"github.com/spf13/viper"
 )
 
-type Statsd struct {
+var Statsd statsd
+
+type statsd struct {
 	Address       string
-	FlushPeriodMs int
+	FlushPeriodMs time.Duration
 }
 
-func (s Statsd) FlushPeriod() time.Duration {
-	d, err := time.ParseDuration(fmt.Sprintf("%dms", s.FlushPeriodMs))
-	if err != nil {
-		panic(fmt.Sprintf("FlushPeriod cannot be parsed: %v", err))
-	}
-	return d
-}
-
-func StatsdConfigLoader() Statsd {
+func statsdConfigLoader() {
 	viper.SetDefault("STATSD_ADDRESS", ":8125")
 	viper.SetDefault("STATSD_FLUSH_PERIOD_MS", 10000)
-	return Statsd{
+	Statsd = statsd{
 		Address:       util.MustGetString("STATSD_ADDRESS"),
-		FlushPeriodMs: util.MustGetInt("STATSD_FLUSH_PERIOD_MS"),
+		FlushPeriodMs: util.MustGetDuration("STATSD_FLUSH_PERIOD_MS", time.Millisecond),
 	}
 }

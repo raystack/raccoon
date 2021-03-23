@@ -20,30 +20,30 @@ type KafkaProducer interface {
 	ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) error
 }
 
-func NewKafka(config config.KafkaConfig) (*Kafka, error) {
-	kp, err := newKafkaClient(config.ToKafkaConfigMap())
+func NewKafka() (*Kafka, error) {
+	kp, err := newKafkaClient(config.Kafka.ToKafkaConfigMap())
 	if err != nil {
 		return &Kafka{}, err
 	}
 	return &Kafka{
-		kp:          kp,
-		Config:      config,
-		topicFormat: config.TopicFormat,
+		kp:            kp,
+		flushInterval: config.Kafka.FlushInterval,
+		topicFormat:   config.Topic.Format,
 	}, nil
 }
 
-func NewKafkaFromClient(client Client, config config.KafkaConfig) *Kafka {
+func NewKafkaFromClient(client Client, flushInterval int, topicFormat string) *Kafka {
 	return &Kafka{
-		kp:          client,
-		Config:      config,
-		topicFormat: config.TopicFormat,
+		kp:            client,
+		flushInterval: flushInterval,
+		topicFormat:   topicFormat,
 	}
 }
 
 type Kafka struct {
-	kp          Client
-	Config      config.KafkaConfig
-	topicFormat string
+	kp            Client
+	flushInterval int
+	topicFormat   string
 }
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
@@ -115,7 +115,7 @@ func (pr *Kafka) ReportStats() {
 
 // Close wait for outstanding messages to be delivered within given flush interval timeout.
 func (pr *Kafka) Close() int {
-	remaining := pr.kp.Flush(pr.Config.GetFlushInterval())
+	remaining := pr.kp.Flush(pr.flushInterval)
 	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
 	pr.kp.Close()
 	return remaining

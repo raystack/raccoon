@@ -28,8 +28,8 @@ func MustGetBool(key string) bool {
 	return viper.GetBool(key)
 }
 
-func MustGetDurationInSeconds(key string) time.Duration {
-	return time.Second * time.Duration(MustGetInt(key))
+func MustGetDuration(key string, d time.Duration) time.Duration {
+	return d * time.Duration(MustGetInt(key))
 }
 
 func mustHave(key string) {

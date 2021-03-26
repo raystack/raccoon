@@ -59,7 +59,7 @@ func (w *Pool) StartWorkers() {
 				logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch-int64(totalErr)))
 				if lenBatch > 0 {
 					eventTimingMs := time.Since(time.Unix(request.EventReq.SentTime.Seconds, 0)).Milliseconds() / lenBatch
-					logger.Debug(fmt.Sprintf("Currenttime: %d, eventTimingMs: %d, UserID: %s, ReqGUID: %s", request.EventReq.SentTime.Seconds, eventTimingMs, request.UserID, request.EventReq.ReqGuid))
+					logger.Debug(fmt.Sprintf("Currenttime: %d, eventTimingMs: %d, UniqConnID: %s, ReqGUID: %s", request.EventReq.SentTime.Seconds, eventTimingMs, request.UniqConnID, request.EventReq.ReqGuid))
 					metrics.Timing("event_processing_duration_milliseconds", eventTimingMs, "")
 					now := time.Now()
 					metrics.Timing("worker_processing_duration_milliseconds", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)

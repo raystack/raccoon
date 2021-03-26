@@ -57,7 +57,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		PongWaitInterval:  time.Duration(60 * time.Second),
 		WriteWaitInterval: time.Duration(5 * time.Second),
 		PingChannel:       make(chan connection, 100),
-		UserIDHeader:      "x-user-id",
+		UniqConnIDHeader:      "x-user-id",
 	}
 	ts := httptest.NewServer(Router(hlr))
 	defer ts.Close()

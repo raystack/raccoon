@@ -20,7 +20,7 @@ type serverWs struct {
 	WriteWaitInterval         time.Duration
 	ServerShutDownGracePeriod time.Duration
 	PingerSize                int
-	UserIDHeader              string
+	UniqConnIDHeader          string
 }
 
 func serverWsConfigLoader() {
@@ -46,6 +46,6 @@ func serverWsConfigLoader() {
 		WriteWaitInterval:         util.MustGetDuration("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL", time.Second),
 		ServerShutDownGracePeriod: util.MustGetDuration("SERVER_WEBSOCKET_SERVER_SHUTDOWN_GRACE_PERIOD", time.Second),
 		PingerSize:                util.MustGetInt("SERVER_WEBSOCKET_PINGER_SIZE"),
-		UserIDHeader:              util.MustGetString("SERVER_WEBSOCKET_USER_ID_HEADER"),
+		UniqConnIDHeader:          util.MustGetString("SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER"),
 	}
 }

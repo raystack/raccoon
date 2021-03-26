@@ -10,8 +10,8 @@ import (
 )
 
 type connection struct {
-	userID string
-	conn   *websocket.Conn
+	uniqConnID string
+	conn       *websocket.Conn
 }
 
 //Pinger is a worker groroutine that pings the connected peers based on ping interval.
@@ -23,14 +23,14 @@ func Pinger(c chan connection, size int, PingInterval time.Duration, WriteWaitIn
 			for {
 				select {
 				case conn := <-c:
-					cSet[conn.userID] = conn.conn
+					cSet[conn.uniqConnID] = conn.conn
 				case <-timer.C:
-					for userID, conn := range cSet {
-						logger.Debug(fmt.Sprintf("Pinging UserId: %s ", userID))
+					for uniqConnID, conn := range cSet {
+						logger.Debug(fmt.Sprintf("Pinging UniqConnID: %s ", uniqConnID))
 						if err := conn.WriteControl(websocket.PingMessage, []byte("--ping--"), time.Now().Add(WriteWaitInterval)); err != nil {
-							logger.Error(fmt.Sprintf("[websocket.pingPeer] - Failed to ping User: %s Error: %v", userID, err))
+							logger.Error(fmt.Sprintf("[websocket.pingPeer] - Failed to ping User: %s Error: %v", uniqConnID, err))
 							metrics.Increment("server_ping_failure_total", "")
-							delete(cSet, userID)
+							delete(cSet, uniqConnID)
 						}
 					}
 				}

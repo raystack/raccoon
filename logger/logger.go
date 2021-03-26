@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"raccoon/config"
@@ -9,6 +10,7 @@ import (
 )
 
 var logger *log.Logger
+var defaultLevel = log.InfoLevel
 
 func init() {
 	if logger != nil {
@@ -16,7 +18,9 @@ func init() {
 	}
 	logLevel, err := log.ParseLevel(config.Log.Level)
 	if err != nil {
-		log.Panic(err)
+		fmt.Printf("[init] Fail to parse log level during init: %s\n", err)
+		fmt.Println("[init] Fallback to info log level")
+		logLevel = log.InfoLevel
 	}
 	logger = &log.Logger{
 		Out: os.Stdout,

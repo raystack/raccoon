@@ -45,8 +45,8 @@ func withTags(bucket, tags string) string {
 func Setup() error {
 	if instance == nil {
 		c, err := client.New(
-			client.Address(config.Statsd.Address),
-			client.FlushPeriod(config.Statsd.FlushPeriodMs))
+			client.Address(config.MetricStatsd.Address),
+			client.FlushPeriod(config.MetricStatsd.FlushPeriodMs))
 		if err != nil {
 			logger.Errorf("StatsD Set up failed to create client: %s", err.Error())
 			return err

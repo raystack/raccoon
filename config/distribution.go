@@ -6,15 +6,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-var DISTRIBUTION distribution
+var EventDistribution eventDistribution
 
-type distribution struct {
+type eventDistribution struct {
 	PublisherPattern string
 }
 
-func distributionConfigLoader() {
-	viper.SetDefault("DISTRIBUTION-EVENT_DISTRIBUTION_PUBLISHER_PATTERN", "clickstream-%s-log")
-	DISTRIBUTION = distribution{
-		PublisherPattern: util.MustGetString("DISTRIBUTION-EVENT_DISTRIBUTION_PUBLISHER_PATTERN"),
+func eventDistributionConfigLoader() {
+	viper.SetDefault("EVENT_DISTRIBUTION_PUBLISHER_PATTERN", "clickstream-%s-log")
+	EventDistribution = eventDistribution{
+		PublisherPattern: util.MustGetString("EVENT_DISTRIBUTION_PUBLISHER_PATTERN"),
 	}
 }

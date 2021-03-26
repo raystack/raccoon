@@ -49,7 +49,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *h
 			if timedOut {
 				logger.Info(fmt.Sprintf("WorkerPool flush timedout %t", timedOut))
 			}
-			flushInterval := config.Kafka.FlushInterval
+			flushInterval := config.PublisherKafka.FlushInterval
 			logger.Info("Closing Kafka producer")
 			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
 			eventsInProducer := kp.Close()

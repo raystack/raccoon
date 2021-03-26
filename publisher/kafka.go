@@ -21,14 +21,14 @@ type KafkaProducer interface {
 }
 
 func NewKafka() (*Kafka, error) {
-	kp, err := newKafkaClient(config.Kafka.ToKafkaConfigMap())
+	kp, err := newKafkaClient(config.PublisherKafka.ToKafkaConfigMap())
 	if err != nil {
 		return &Kafka{}, err
 	}
 	return &Kafka{
 		kp:            kp,
-		flushInterval: config.Kafka.FlushInterval,
-		topicFormat:   config.DISTRIBUTION.PublisherPattern,
+		flushInterval: config.PublisherKafka.FlushInterval,
+		topicFormat:   config.EventDistribution.PublisherPattern,
 	}, nil
 }
 

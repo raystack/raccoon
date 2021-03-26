@@ -17,41 +17,41 @@ func TestMain(m *testing.M) {
 }
 
 func TestLogLevel(t *testing.T) {
-	os.Setenv("LOG-LEVEL", "debug")
+	os.Setenv("LOG_LEVEL", "debug")
 	logConfigLoader()
 	assert.Equal(t, "debug", Log.Level)
 }
 
 func TestServerConfig(t *testing.T) {
-	os.Setenv("SERVER-WEBSOCKET-PORT", "8080")
-	os.Setenv("SERVER-WEBSOCKET-PING_INTERVAL", "1")
-	os.Setenv("SERVER-WEBSOCKET-PONG_WAIT_INTERVAL", "1")
-	os.Setenv("SERVER-WEBSOCKET-SERVER_SHUTDOWN_GRACE_PERIOD", "3")
-	os.Setenv("SERVER-WEBSOKCET-USER_ID_HEADER", "x-user-id")
-	serverConfigLoader()
-	assert.Equal(t, "8080", Websocket.AppPort)
-	assert.Equal(t, time.Duration(1)*time.Second, Websocket.PingInterval)
-	assert.Equal(t, time.Duration(1)*time.Second, Websocket.PongWaitInterval)
-	assert.Equal(t, time.Duration(3)*time.Second, Websocket.ServerShutDownGracePeriod)
+	os.Setenv("SERVER_WEBSOCKET_PORT", "8080")
+	os.Setenv("SERVER_WEBSOCKET_PING_INTERVAL", "1")
+	os.Setenv("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL", "1")
+	os.Setenv("SERVER_WEBSOCKET_SERVER_SHUTDOWN_GRACE_PERIOD", "3")
+	os.Setenv("SERVER_WEBSOCKET_USER_ID_HEADER", "x-user-id")
+	serverWsConfigLoader()
+	assert.Equal(t, "8080", ServerWs.AppPort)
+	assert.Equal(t, time.Duration(1)*time.Second, ServerWs.PingInterval)
+	assert.Equal(t, time.Duration(1)*time.Second, ServerWs.PongWaitInterval)
+	assert.Equal(t, time.Duration(3)*time.Second, ServerWs.ServerShutDownGracePeriod)
 }
 
 func TestDynamicConfigLoad(t *testing.T) {
-	os.Setenv("PUBLISHER-KAFKA-CLIENT-RANDOM", "anything")
-	os.Setenv("PUBLISHER-KAFKA-CLIENT-BOOTSTRAP_SERVERS", "localhost:9092")
+	os.Setenv("PUBLISHER_KAFKA_CLIENT_RANDOM", "anything")
+	os.Setenv("PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS", "localhost:9092")
 	viper.SetConfigType("yaml")
 	viper.ReadConfig(bytes.NewBuffer(dynamicKafkaClientConfigLoad()))
-	assert.Equal(t, "anything", viper.GetString("PUBLISHER-KAFKA-CLIENT-RANDOM"))
-	assert.Equal(t, "localhost:9092", viper.GetString("PUBLISHER-KAFKA-CLIENT-BOOTSTRAP_SERVERS"))
+	assert.Equal(t, "anything", viper.GetString("PUBLISHER_KAFKA_CLIENT_RANDOM"))
+	assert.Equal(t, "localhost:9092", viper.GetString("PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS"))
 }
 
 func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
-	os.Setenv("PUBLISHER-KAFKA-FLUSH_INTERVAL", "1000")
-	os.Setenv("PUBLISHER-KAFKA-CLIENT-BOOTSTRAP_SERVERS", "kafka:9092")
-	os.Setenv("PUBLISHER-KAFKA-CLIENT-ACKS", "1")
-	os.Setenv("PUBLISHER-KAFKA-CLIENT-QUEUE_BUFFERING_MAX_MESSAGES", "10000")
-	os.Setenv("SOMETHING-PUBLISHER-KAFKA-CLIENT-SOMETHING", "anything")
-	publisherConfigLoader()
-	kafkaConfig := Kafka.ToKafkaConfigMap()
+	os.Setenv("PUBLISHER_KAFKA_FLUSH_INTERVAL", "1000")
+	os.Setenv("PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS", "kafka:9092")
+	os.Setenv("PUBLISHER_KAFKA_CLIENT_ACKS", "1")
+	os.Setenv("PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES", "10000")
+	os.Setenv("SOMETHING_PUBLISHER_KAFKA_CLIENT_SOMETHING", "anything")
+	publisherKafkaConfigLoader()
+	kafkaConfig := PublisherKafka.ToKafkaConfigMap()
 	bootstrapServer, _ := kafkaConfig.Get("bootstrap.servers", "")
 	topic, _ := kafkaConfig.Get("topic", "")
 	something, _ := kafkaConfig.Get("client.something", "")
@@ -62,10 +62,10 @@ func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
 }
 
 func TestWorkerConfig(t *testing.T) {
-	os.Setenv("WORKER-POOL-SIZE", "2")
-	os.Setenv("WORKER-BUFFER-CHANNEL_SIZE", "5")
-	os.Setenv("WORKER-KAFKA-DELIVERY_CHANNEL_SIZE", "10")
-	os.Setenv("WORKER-BUFFER-FLUSH_TIMEOUT", "100")
+	os.Setenv("WORKER_POOL_SIZE", "2")
+	os.Setenv("WORKER_BUFFER_CHANNEL_SIZE", "5")
+	os.Setenv("WORKER_KAFKA_DELIVERY_CHANNEL_SIZE", "10")
+	os.Setenv("WORKER_BUFFER_FLUSH_TIMEOUT", "100")
 	workerConfigLoader()
 	assert.Equal(t, time.Duration(100)*time.Second, Worker.WorkerFlushTimeout)
 	assert.Equal(t, 10, Worker.DeliveryChannelSize)

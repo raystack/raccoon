@@ -11,14 +11,14 @@ import (
 	confluent "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
-var Kafka kafka
-var dynamicKafkaClientConfigPrefix = "PUBLISHER-KAFKA-CLIENT-"
+var PublisherKafka publisherKafka
+var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
 
-type kafka struct {
+type publisherKafka struct {
 	FlushInterval int
 }
 
-func (k kafka) ToKafkaConfigMap() *confluent.ConfigMap {
+func (k publisherKafka) ToKafkaConfigMap() *confluent.ConfigMap {
 	configMap := &confluent.ConfigMap{}
 	for key, value := range viper.AllSettings() {
 		if strings.HasPrefix(strings.ToUpper(key), dynamicKafkaClientConfigPrefix) {
@@ -41,12 +41,12 @@ func dynamicKafkaClientConfigLoad() []byte {
 	return yamlFormatted
 }
 
-func publisherConfigLoader() {
-	viper.SetDefault("PUBLISHER-KAFKA-CLIENT-QUEUE_BUFFERING_MAX_MESSAGES", "100000")
-	viper.SetDefault("PUBLISHER-KAFKA-FLUSH_INTERVAL", "1000")
+func publisherKafkaConfigLoader() {
+	viper.SetDefault("PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES", "100000")
+	viper.SetDefault("PUBLISHER_KAFKA_FLUSH_INTERVAL", "1000")
 	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaClientConfigLoad()))
 
-	Kafka = kafka{
-		FlushInterval: util.MustGetInt("PUBLISHER-KAFKA-FLUSH_INTERVAL"),
+	PublisherKafka = publisherKafka{
+		FlushInterval: util.MustGetInt("PUBLISHER_KAFKA_FLUSH_INTERVAL"),
 	}
 }

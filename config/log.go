@@ -13,6 +13,6 @@ type log struct {
 }
 
 func logConfigLoader() {
-	viper.SetDefault("LOG-LEVEL", "info")
-	Log = log{Level: util.MustGetString("LOG-LEVEL")}
+	viper.SetDefault("LOG_LEVEL", "info")
+	Log = log{Level: util.MustGetString("LOG_LEVEL")}
 }

@@ -33,7 +33,7 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 		}
 	}()
 	go s.ReportServerMetrics()
-	go Pinger(s.pingChannel, config.Websocket.PingerSize, config.Websocket.PingInterval, config.Websocket.WriteWaitInterval)
+	go Pinger(s.pingChannel, config.ServerWs.PingerSize, config.ServerWs.PingInterval, config.ServerWs.WriteWaitInterval)
 	go func() {
 		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
 			logger.Errorf("WebSocket Server --> pprof could not be enabled: %s", err.Error())
@@ -45,7 +45,7 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 }
 
 func (s *Server) ReportServerMetrics() {
-	t := time.Tick(config.Statsd.FlushPeriodMs)
+	t := time.Tick(config.MetricStatsd.FlushPeriodMs)
 	m := &runtime.MemStats{}
 	for {
 		<-t
@@ -68,21 +68,21 @@ func (s *Server) ReportServerMetrics() {
 func CreateServer() (*Server, chan EventsBatch) {
 	//create the websocket handler that upgrades the http request
 	bufferChannel := make(chan EventsBatch, config.Worker.ChannelSize)
-	pingChannel := make(chan connection, config.Websocket.ServerMaxConn)
-	user := NewUserStore(config.Websocket.ServerMaxConn)
+	pingChannel := make(chan connection, config.ServerWs.ServerMaxConn)
+	user := NewUserStore(config.ServerWs.ServerMaxConn)
 	wsHandler := &Handler{
-		websocketUpgrader: getWebSocketUpgrader(config.Websocket.ReadBufferSize, config.Websocket.WriteBufferSize, config.Websocket.CheckOrigin),
+		websocketUpgrader: getWebSocketUpgrader(config.ServerWs.ReadBufferSize, config.ServerWs.WriteBufferSize, config.ServerWs.CheckOrigin),
 		bufferChannel:     bufferChannel,
 		user:              user,
-		PongWaitInterval:  config.Websocket.PongWaitInterval,
-		WriteWaitInterval: config.Websocket.WriteWaitInterval,
+		PongWaitInterval:  config.ServerWs.PongWaitInterval,
+		WriteWaitInterval: config.ServerWs.WriteWaitInterval,
 		PingChannel:       pingChannel,
-		UserIDHeader:      config.Websocket.UserIDHeader,
+		UserIDHeader:      config.ServerWs.UserIDHeader,
 	}
 	server := &Server{
 		HTTPServer: &http.Server{
 			Handler: Router(wsHandler),
-			Addr:    ":" + config.Websocket.AppPort,
+			Addr:    ":" + config.ServerWs.AppPort,
 		},
 		bufferChannel: bufferChannel,
 		user:          user,

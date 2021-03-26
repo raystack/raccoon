@@ -7,18 +7,18 @@ import (
 	"github.com/spf13/viper"
 )
 
-var Statsd statsd
+var MetricStatsd metricStatsdCfg
 
-type statsd struct {
+type metricStatsdCfg struct {
 	Address       string
 	FlushPeriodMs time.Duration
 }
 
-func metricConfigLoader() {
-	viper.SetDefault("METRIC-STATSD-ADDRESS", ":8125")
-	viper.SetDefault("METRIC-STATSD-FLUSH_PERIOD_MS", 10000)
-	Statsd = statsd{
-		Address:       util.MustGetString("METRIC-STATSD-ADDRESS"),
-		FlushPeriodMs: util.MustGetDuration("METRIC-STATSD-FLUSH_PERIOD_MS", time.Millisecond),
+func metricStatsdConfigLoader() {
+	viper.SetDefault("METRIC_STATSD_ADDRESS", ":8125")
+	viper.SetDefault("METRIC_STATSD_FLUSH_PERIOD_MS", 10000)
+	MetricStatsd = metricStatsdCfg{
+		Address:       util.MustGetString("METRIC_STATSD_ADDRESS"),
+		FlushPeriodMs: util.MustGetDuration("METRIC_STATSD_FLUSH_PERIOD_MS", time.Millisecond),
 	}
 }

@@ -43,10 +43,10 @@ func dynamicKafkaClientConfigLoad() []byte {
 
 func publisherKafkaConfigLoader() {
 	viper.SetDefault("PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES", "100000")
-	viper.SetDefault("PUBLISHER_KAFKA_FLUSH_INTERVAL", "1000")
+	viper.SetDefault("PUBLISHER_KAFKA_FLUSH_INTERVAL_MS", "1000")
 	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaClientConfigLoad()))
 
 	PublisherKafka = publisherKafka{
-		FlushInterval: util.MustGetInt("PUBLISHER_KAFKA_FLUSH_INTERVAL"),
+		FlushInterval: util.MustGetInt("PUBLISHER_KAFKA_FLUSH_INTERVAL_MS"),
 	}
 }

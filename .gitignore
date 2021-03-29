@@ -17,3 +17,4 @@ application.yml
 clickstream-service
 raccoon
 websocket/proto/*.pb.go
+.temp

@@ -22,8 +22,12 @@ update-deps:
 copy-config:
 	cp application.yml.sample application.yml
 
+PROTO_PACKAGE=/websocket/proto
 generate-proto:
-	protoc --proto_path=websocket/proto $(wildcard websocket/proto/*.proto) --go_out=websocket/proto --go_opt=paths=source_relative
+	rm -rf .temp
+	mkdir -p .temp
+	cd ./.temp; curl -o proton.tar.gz -L http://api.github.com/repos/odpf/proton/tarball/main; tar xvf proton.tar.gz -C . --strip-components 1
+	protoc --proto_path=.temp/ $(wildcard .temp/odpf/raccoon/*.proto) --go_out=./ --go_opt=paths=import --go_opt=Modpf/raccoon/Event.proto=$(PROTO_PACKAGE) --go_opt=Modpf/raccoon/EventRequest.proto=$(PROTO_PACKAGE) --go_opt=Modpf/raccoon/EventResponse.proto=$(PROTO_PACKAGE)
 
 # Build Lifecycle
 compile:

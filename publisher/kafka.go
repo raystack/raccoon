@@ -63,7 +63,7 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Even
 		if err != nil {
 			if err.Error() == "Local: Unknown topic" {
 				errors[order] = fmt.Errorf("%v %s", err, topic)
-				metrics.Increment("kafka.unknown.topic.failure", "topic="+topic)
+				metrics.Increment("kafka_unknown_topic_failure_total", "topic="+topic)
 			} else {
 				errors[order] = err
 			}
@@ -95,16 +95,16 @@ func (pr *Kafka) ReportStats() {
 			json.Unmarshal([]byte(e.String()), &stats)
 
 			brokers := stats["brokers"].(map[string]interface{})
-			metrics.Gauge("kafka.total.produced", stats["txmsgs"], "")
-			metrics.Gauge("kafka.total_bytes.produced", stats["txmsg_bytes"], "")
+			metrics.Gauge("kafka_tx_messages_total", stats["txmsgs"], "")
+			metrics.Gauge("kafka_tx_messages_bytes_total", stats["txmsg_bytes"], "")
 			for _, broker := range brokers {
 				brokerStats := broker.(map[string]interface{})
 				rttValue := brokerStats["rtt"].(map[string]interface{})
 				nodeName := strings.Split(brokerStats["nodename"].(string), ":")[0]
 
-				metrics.Gauge("kafka.request.sent", brokerStats["tx"], fmt.Sprintf("host=%s,broker=true", nodeName))
-				metrics.Gauge("kafka.bytes.sent", brokerStats["txbytes"], fmt.Sprintf("host=%s,broker=true", nodeName))
-				metrics.Gauge("kafka.round_trip_time.ms", rttValue["avg"], fmt.Sprintf("host=%s,broker=true", nodeName))
+				metrics.Gauge("kafka_brokers_tx_total", brokerStats["tx"], fmt.Sprintf("host=%s,broker=true", nodeName))
+				metrics.Gauge("kafka_brokers_tx_bytes_total", brokerStats["txbytes"], fmt.Sprintf("host=%s,broker=true", nodeName))
+				metrics.Gauge("kafka_brokers_rtt_average_milliseconds", rttValue["avg"], fmt.Sprintf("host=%s,broker=true", nodeName))
 			}
 
 		default:

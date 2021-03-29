@@ -42,7 +42,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 	conn, err := wsHandler.websocketUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Error(fmt.Sprintf("[websocket.Handler] Failed to upgrade connection  User ID: %s : %v", UserID, err))
-		metrics.Increment("users.disconnected", "reason=ugfailure")
+		metrics.Increment("user_connection_failure_total", "reason=ugfailure")
 		return
 	}
 	defer conn.Close()
@@ -53,7 +53,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 
 		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Duplicate connection"))
-		metrics.Count("user.disconnected", 1, "reason=exists")
+		metrics.Increment("user_connection_failure_total", "reason=exists")
 		return
 	}
 	if wsHandler.user.HasReachedLimit() {
@@ -61,7 +61,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		maxConnResp := createEmptyErrorResponse(pb.Code_MAX_CONNECTION_LIMIT_REACHED)
 		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Max connection reached"))
-		metrics.Count("user.disconnected", 1, "reason=serverlimit")
+		metrics.Increment("user_connection_failure_total", "reason=serverlimit")
 		return
 	}
 	wsHandler.user.Store(UserID)
@@ -73,7 +73,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		userID: UserID,
 		conn:   conn,
 	}
-	metrics.Increment("user.connected", "")
+	metrics.Increment("user_connection_success_total", "")
 
 	for {
 		_, message, err := conn.ReadMessage()
@@ -83,27 +83,27 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 				websocket.CloseNoStatusReceived,
 				websocket.CloseAbnormalClosure) {
 				logger.Error(fmt.Sprintf("[websocket.Handler] UserID %s Connection Closed Abruptly: %v", UserID, err))
-				metrics.Count("batches.read", 1, "status=failed,reason=closeerror")
+				metrics.Increment("batches_read_total", "status=failed,reason=closeerror")
 				break
 			}
 
-			metrics.Count("batches.read", 1, "status=failed,reason=unknown")
+			metrics.Increment("batches_read_total", "status=failed,reason=unknown")
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v  User ID: %s ", err, UserID)) //no connection issue here
 			break
 		}
 		timeConsumed := time.Now()
-		metrics.Count("request.events.size", len(message), "")
+		metrics.Count("events_rx_bytes_total", len(message), "")
 		payload := &pb.EventRequest{}
 		err = proto.Unmarshal(message, payload)
 		if err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v  User ID: %s ", err, UserID))
-			metrics.Count("batches.read", 1, "status=failed,reason=serde")
+			metrics.Increment("batches_read_total", "status=failed,reason=serde")
 			badrequest := createBadrequestResponse(err)
 			conn.WriteMessage(websocket.BinaryMessage, badrequest)
 			continue
 		}
-		metrics.Count("batches.read", 1, "status=success")
-		metrics.Count("request.events.count", len(payload.Events), "")
+		metrics.Increment("batches_read_total", "status=success")
+		metrics.Count("events_rx_total", len(payload.Events), "")
 
 		wsHandler.bufferChannel <- EventsBatch{
 			UserID:       UserID,
@@ -121,7 +121,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 func calculateSessionTime(userID string, connectedAt time.Time) {
 	connectionTime := time.Now().Sub(connectedAt)
 	logger.Debug(fmt.Sprintf("[websocket.calculateSessionTime] UserID: %s, total time connected in minutes: %v", userID, connectionTime.Minutes()))
-	metrics.Timing("users.session.time", connectionTime.Milliseconds(), "")
+	metrics.Timing("user_session_duration_milliseconds", connectionTime.Milliseconds(), "")
 }
 
 func setUpControlHandlers(conn *websocket.Conn, UserID string,
@@ -137,7 +137,7 @@ func setUpControlHandlers(conn *websocket.Conn, UserID string,
 	conn.SetPingHandler(func(s string) error {
 		logger.Debug(fmt.Sprintf("Client connection with UserID: %s Pinged", UserID))
 		if err := conn.WriteControl(websocket.PongMessage, []byte(s), time.Now().Add(WriteWaitInterval)); err != nil {
-			metrics.Count("server.pong.failed", 1, "")
+			metrics.Increment("server_pong_failure_total", "")
 			logger.Debug(fmt.Sprintf("Failed to send pong event: %s UserID: %s", err, UserID))
 		}
 		return nil

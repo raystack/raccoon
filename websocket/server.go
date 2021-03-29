@@ -49,18 +49,18 @@ func (s *Server) ReportServerMetrics() {
 	m := &runtime.MemStats{}
 	for {
 		<-t
-		metrics.Gauge("connections.count", s.user.TotalUsers(), "")
-		metrics.Gauge("go.routines.count", runtime.NumGoroutine(), "")
+		metrics.Gauge("connections_count_current", s.user.TotalUsers(), "")
+		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), "")
 
 		runtime.ReadMemStats(m)
-		metrics.Gauge("heap.alloc", m.HeapAlloc, "")
-		metrics.Gauge("heap.inuse", m.HeapInuse, "")
-		metrics.Gauge("heap.object", m.HeapObjects, "")
-		metrics.Gauge("stack.inuse", m.StackInuse, "")
-		metrics.Gauge("gc.triggered", m.LastGC/1000, "")
-		metrics.Gauge("gc.pauseNs", m.PauseNs[(m.NumGC+255)%256]/1000, "")
-		metrics.Gauge("gc.count", m.NumGC, "")
-		metrics.Gauge("gc.pauseTotalNs", m.PauseTotalNs, "")
+		metrics.Gauge("server_mem_heap_alloc_bytes_current", m.HeapAlloc, "")
+		metrics.Gauge("server_mem_heap_inuse_bytes_current", m.HeapInuse, "")
+		metrics.Gauge("server_mem_heap_objects_total_current", m.HeapObjects, "")
+		metrics.Gauge("server_mem_stack_inuse_bytes_current", m.StackInuse, "")
+		metrics.Gauge("server_mem_gc_triggered_current", m.LastGC/1000, "")
+		metrics.Gauge("server_mem_gc_pauseNs_current", m.PauseNs[(m.NumGC+255)%256]/1000, "")
+		metrics.Gauge("server_mem_gc_count_current", m.NumGC, "")
+		metrics.Gauge("server_mem_gc_pauseTotalNs_current", m.PauseTotalNs, "")
 	}
 }
 

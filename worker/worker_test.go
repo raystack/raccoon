@@ -26,8 +26,8 @@ func TestWorker(t *testing.T) {
 			kp := mockKafkaPublisher{}
 			m := &mockMetric{}
 			m.On("Timing", "processing.latency", mock.Anything, "")
-			m.On("Count", "kafka.messages.delivered", 0, "success=true")
-			m.On("Count", "kafka.messages.delivered", 0, "success=false")
+			m.On("Count", "kafka_messages_delivered_total", 0, "success=true")
+			m.On("Count", "kafka_messages_delivered_total", 0, "success=false")
 			bc := make(chan ws.EventsBatch, 2)
 			worker := Pool{
 				Size:                1,
@@ -53,8 +53,8 @@ func TestWorker(t *testing.T) {
 			bc := make(chan ws.EventsBatch, 2)
 			m := &mockMetric{}
 			m.On("Timing", "processing.latency", mock.Anything, "")
-			m.On("Count", "kafka.messages.delivered", 0, "success=true")
-			m.On("Count", "kafka.messages.delivered", 0, "success=false")
+			m.On("Count", "kafka_messages_delivered_total", 0, "success=false")
+			m.On("Count", "kafka_messages_delivered_total", 0, "success=true")
 
 			worker := Pool{
 				Size:                1,

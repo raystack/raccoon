@@ -24,15 +24,15 @@ func TestLogLevel(t *testing.T) {
 
 func TestServerConfig(t *testing.T) {
 	os.Setenv("SERVER_WEBSOCKET_PORT", "8080")
-	os.Setenv("SERVER_WEBSOCKET_PING_INTERVAL", "1")
-	os.Setenv("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL", "1")
-	os.Setenv("SERVER_WEBSOCKET_SERVER_SHUTDOWN_GRACE_PERIOD", "3")
+	os.Setenv("SERVER_WEBSOCKET_PING_INTERVAL_MS", "1")
+	os.Setenv("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", "1")
+	os.Setenv("SERVER_WEBSOCKET_SERVER_SHUTDOWN_GRACE_PERIOD_MS", "3")
 	os.Setenv("SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER", "x-user-id")
 	serverWsConfigLoader()
 	assert.Equal(t, "8080", ServerWs.AppPort)
-	assert.Equal(t, time.Duration(1)*time.Second, ServerWs.PingInterval)
-	assert.Equal(t, time.Duration(1)*time.Second, ServerWs.PongWaitInterval)
-	assert.Equal(t, time.Duration(3)*time.Second, ServerWs.ServerShutDownGracePeriod)
+	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PingInterval)
+	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PongWaitInterval)
+	assert.Equal(t, time.Duration(3)*time.Millisecond, ServerWs.ServerShutDownGracePeriod)
 }
 
 func TestDynamicConfigLoad(t *testing.T) {
@@ -45,7 +45,7 @@ func TestDynamicConfigLoad(t *testing.T) {
 }
 
 func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
-	os.Setenv("PUBLISHER_KAFKA_FLUSH_INTERVAL", "1000")
+	os.Setenv("PUBLISHER_KAFKA_FLUSH_INTERVAL_MS", "1000")
 	os.Setenv("PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS", "kafka:9092")
 	os.Setenv("PUBLISHER_KAFKA_CLIENT_ACKS", "1")
 	os.Setenv("PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES", "10000")
@@ -65,7 +65,7 @@ func TestWorkerConfig(t *testing.T) {
 	os.Setenv("WORKER_POOL_SIZE", "2")
 	os.Setenv("WORKER_BUFFER_CHANNEL_SIZE", "5")
 	os.Setenv("WORKER_KAFKA_DELIVERY_CHANNEL_SIZE", "10")
-	os.Setenv("WORKER_BUFFER_FLUSH_TIMEOUT", "100")
+	os.Setenv("WORKER_BUFFER_FLUSH_TIMEOUT_MS", "100000")
 	workerConfigLoader()
 	assert.Equal(t, time.Duration(100)*time.Second, Worker.WorkerFlushTimeout)
 	assert.Equal(t, 10, Worker.DeliveryChannelSize)

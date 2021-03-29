@@ -26,13 +26,13 @@ type worker struct {
 func workerConfigLoader() {
 	viper.SetDefault("WORKER_POOL_SIZE", 5)
 	viper.SetDefault("WORKER_BUFFER_CHANNEL_SIZE", 100)
-	viper.SetDefault("WORKER_BUFFER_FLUSH_TIMEOUT", 5)
+	viper.SetDefault("WORKER_BUFFER_FLUSH_TIMEOUT_MS", 5000)
 	viper.SetDefault("WORKER_KAFKA_DELIVERY_CHANNEL_SIZE", 10)
 
 	Worker = worker{
 		WorkersPoolSize:     util.MustGetInt("WORKER_POOL_SIZE"),
 		ChannelSize:         util.MustGetInt("WORKER_BUFFER_CHANNEL_SIZE"),
 		DeliveryChannelSize: util.MustGetInt("WORKER_KAFKA_DELIVERY_CHANNEL_SIZE"),
-		WorkerFlushTimeout:  util.MustGetDuration("WORKER_BUFFER_FLUSH_TIMEOUT", time.Second),
+		WorkerFlushTimeout:  util.MustGetDuration("WORKER_BUFFER_FLUSH_TIMEOUT_MS", time.Millisecond),
 	}
 }

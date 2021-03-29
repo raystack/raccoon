@@ -41,7 +41,7 @@ func (w *Pool) StartWorkers() {
 			logger.Info("Running worker: " + workerName)
 			deliveryChan := make(chan kafka.Event, w.deliveryChannelSize)
 			for request := range w.EventsChannel {
-				metrics.Timing("batch.idletime.inchannel", (time.Now().Sub(request.TimePushed)).Milliseconds(), "worker="+workerName)
+				metrics.Timing("batch_idle_in_channel_milliseconds", (time.Now().Sub(request.TimePushed)).Milliseconds(), "worker="+workerName)
 				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 
@@ -60,13 +60,13 @@ func (w *Pool) StartWorkers() {
 				if lenBatch > 0 {
 					eventTimingMs := time.Since(time.Unix(request.EventReq.SentTime.Seconds, 0)).Milliseconds() / lenBatch
 					logger.Debug(fmt.Sprintf("Currenttime: %d, eventTimingMs: %d, UserID: %s, ReqGUID: %s", request.EventReq.SentTime.Seconds, eventTimingMs, request.UserID, request.EventReq.ReqGuid))
-					metrics.Timing("event.processing.latency", eventTimingMs, "")
+					metrics.Timing("event_processing_duration_milliseconds", eventTimingMs, "")
 					now := time.Now()
-					metrics.Timing("worker.processing.latency", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)
-					metrics.Timing("server.processing.latency", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, "")
+					metrics.Timing("worker_processing_duration_milliseconds", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)
+					metrics.Timing("server_processing_latency_milliseconds", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, "")
 				}
-				metrics.Count("kafka.messages.delivered", totalErr, "success=false")
-				metrics.Count("kafka.messages.delivered", len(request.EventReq.GetEvents())-totalErr, "success=true")
+				metrics.Count("kafka_messages_delivered_total", totalErr, "success=false")
+				metrics.Count("kafka_messages_delivered_total", len(request.EventReq.GetEvents())-totalErr, "success=true")
 			}
 			w.wg.Done()
 		}(fmt.Sprintf("worker-%d", i))

@@ -29,7 +29,7 @@ func Pinger(c chan connection, size int, PingInterval time.Duration, WriteWaitIn
 						logger.Debug(fmt.Sprintf("Pinging UserId: %s ", userID))
 						if err := conn.WriteControl(websocket.PingMessage, []byte("--ping--"), time.Now().Add(WriteWaitInterval)); err != nil {
 							logger.Error(fmt.Sprintf("[websocket.pingPeer] - Failed to ping User: %s Error: %v", userID, err))
-							metrics.Count("server.ping.failed", 1, "")
+							metrics.Increment("server_ping_failure_total", "")
 							delete(cSet, userID)
 						}
 					}

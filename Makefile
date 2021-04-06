@@ -7,7 +7,7 @@ COVER_FILE="/tmp/coverage.out"
 all: install-protoc setup compile
 
 # Setups
-setup: generate-proto
+setup: generate-proto copy-config
 	make update-deps
 
 install-protoc:

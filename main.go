@@ -10,6 +10,7 @@ import (
 func main() {
 	config.Load()
 	metrics.Setup()
+	logger.SetLevel(config.Log.Level)
 	err := app.Run()
 	metrics.Close()
 	if err != nil {

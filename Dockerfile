@@ -8,12 +8,11 @@ unzip -o $PROTOC_ZIP -d /usr/local bin/protoc && \
 unzip -o $PROTOC_ZIP -d /usr/local 'include/*' && \
 rm -f $PROTOC_ZIP
 COPY . .
-RUN make install-protoc
-RUN make generate-proto
-RUN make update-deps
-RUN make compile
+RUN make install-protoc && make generate-proto && make update-deps && make compile
 
+FROM debian:buster-slim
+WORKDIR /app
+COPY --from=0 /app/out/raccoon ./raccoon
+COPY ./application.yml .
 EXPOSE 8080
-
-# Command to run the executable
-CMD ["./out/raccoon"]
+CMD ["./raccoon"]

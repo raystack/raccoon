@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"raccoon/config"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -16,19 +15,13 @@ func init() {
 	if logger != nil {
 		return
 	}
-	logLevel, err := log.ParseLevel(config.Log.Level)
-	if err != nil {
-		fmt.Printf("[init] Fail to parse log level during init: %s\n", err)
-		fmt.Println("[init] Fallback to info log level")
-		logLevel = log.InfoLevel
-	}
 	logger = &log.Logger{
 		Out: os.Stdout,
 		Formatter: &log.TextFormatter{
 			FullTimestamp: true,
 		},
 		Hooks: make(log.LevelHooks),
-		Level: logLevel,
+		Level: defaultLevel,
 	}
 
 	return
@@ -72,4 +65,12 @@ func Set(log *log.Logger) {
 
 func SetOutput(out io.Writer) {
 	logger.SetOutput(out)
+}
+
+func SetLevel(level string) {
+	if l, err := log.ParseLevel(level); err == nil {
+		logger.SetLevel(l)
+	} else {
+		fmt.Printf("[logger] NoOps, Fail to parse log level: %v\n", err)
+	}
 }

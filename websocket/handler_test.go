@@ -95,7 +95,9 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 	})
 
 	t.Run("Should return unknown request when request fail to deserialize", func(t *testing.T) {
-		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+		wss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
+			"x-user-id": []string{"test2-user2"},
+		})
 		defer wss.Close()
 		require.NoError(t, err)
 

@@ -68,7 +68,7 @@ func SetOutput(out io.Writer) {
 }
 
 func SetLevel(level string) {
-	if l, err := log.ParseLevel(level); err != nil {
+	if l, err := log.ParseLevel(level); err == nil {
 		logger.SetLevel(l)
 	} else {
 		fmt.Printf("[logger] NoOps, Fail to parse log level: %v\n", err)

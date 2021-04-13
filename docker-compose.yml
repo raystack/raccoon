@@ -41,7 +41,7 @@ services:
   cs:
     build:
       context: .
-    command: ["/bin/sh", "-c", "./out/raccoon"]
+    command: ["/bin/sh", "-c", "./raccoon"]
     hostname: cs
     container_name: cs
     stdin_open: true

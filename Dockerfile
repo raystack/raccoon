@@ -13,6 +13,6 @@ RUN make install-protoc && make generate-proto && make update-deps && make compi
 FROM debian:buster-slim
 WORKDIR /app
 COPY --from=0 /app/out/raccoon ./raccoon
-COPY ./application.yml .
+COPY . .
 EXPOSE 8080
 CMD ["./raccoon"]

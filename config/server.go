@@ -18,7 +18,6 @@ type serverWs struct {
 	PingInterval              time.Duration
 	PongWaitInterval          time.Duration
 	WriteWaitInterval         time.Duration
-	ServerShutDownGracePeriod time.Duration
 	PingerSize                int
 	UniqConnIDHeader          string
 }
@@ -32,7 +31,6 @@ func serverWsConfigLoader() {
 	viper.SetDefault("SERVER_WEBSOCKET_PING_INTERVAL_MS", "30000")
 	viper.SetDefault("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", "60000") //should be more than the ping period
 	viper.SetDefault("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS", "5000")
-	viper.SetDefault("SERVER_WEBSOCKET_SERVER_SHUTDOWN_GRACE_PERIOD_MS", "3000")
 	viper.SetDefault("SERVER_WEBSOCKET_PINGER_SIZE", 1)
 
 	ServerWs = serverWs{
@@ -44,7 +42,6 @@ func serverWsConfigLoader() {
 		PingInterval:              util.MustGetDuration("SERVER_WEBSOCKET_PING_INTERVAL_MS", time.Millisecond),
 		PongWaitInterval:          util.MustGetDuration("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", time.Millisecond),
 		WriteWaitInterval:         util.MustGetDuration("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS", time.Microsecond),
-		ServerShutDownGracePeriod: util.MustGetDuration("SERVER_WEBSOCKET_SERVER_SHUTDOWN_GRACE_PERIOD_MS", time.Millisecond),
 		PingerSize:                util.MustGetInt("SERVER_WEBSOCKET_PINGER_SIZE"),
 		UniqConnIDHeader:          util.MustGetString("SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER"),
 	}

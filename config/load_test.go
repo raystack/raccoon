@@ -32,7 +32,6 @@ func TestServerConfig(t *testing.T) {
 	assert.Equal(t, "8080", ServerWs.AppPort)
 	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PingInterval)
 	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PongWaitInterval)
-	assert.Equal(t, time.Duration(3)*time.Millisecond, ServerWs.ServerShutDownGracePeriod)
 }
 
 func TestDynamicConfigLoad(t *testing.T) {

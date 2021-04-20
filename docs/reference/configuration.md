@@ -2,12 +2,12 @@
 This page contains reference for all the application configurations for Raccoon.
 
 ## Table of Contents
-- [Server](configuration.md#Server)
-- [Worker](configuration.md#Worker)
-- [Publisher](configuration.md#Publisher)
-- [Event Distribution](configuration.md#Event%20Distribution)
-- [Metric](configuration.md#Metric)
-- [Log](configuration.md#Log)
+- [Server](#server)
+- [Worker](#worker)
+- [Publisher](#publisher)
+- [Event Distribution](#event-distribution)
+- [Metric](#metric)
+- [Log](#log)
 
 ## Server
 ### `SERVER_WEBSOCKET_PORT`
@@ -104,7 +104,7 @@ librdkafka statistics emit interval. The application also needs to register a st
 Maximum number of messages allowed on the producer queue. This queue is shared by all topics and partitions.
 - Type `Optional`
 - Default value: `100000`
-### `PUBLISHER_KAFKA_CLIENT_*
+### `PUBLISHER_KAFKA_CLIENT_*`
 Kafka client config is dynamically configured. You can see for other configuration [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
 - Type `Optional`
 - Default value: see the [reference](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)

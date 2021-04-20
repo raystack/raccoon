@@ -2,10 +2,10 @@
 
 Raccoon uses Statsd protocol as way to report metrics. You can capture the metrics using any supported statsd collector like [Telegraf](https://github.com/influxdata/telegraf).
 
-- [Server Connection](metrics.md#server%20connection): Connection related metrics such as connection count
-- [Kafka Publisher](metrics.md#kafka%20publisher): Publisher related metrics such as total delievered
-- [Resource Usage](metrics.md#resource%20usage): Resource related metrics such as memory, number of goroutine, etc
-- [Event Delivery](metrics.md#event%20delivery): Event related metrics such as latency, delievered count, etc
+- [Server Connection](#server-connection): Connection related metrics such as connection count
+- [Kafka Publisher](#kafka-publisher): Publisher related metrics such as total delievered
+- [Resource Usage](#resource-usage): Resource related metrics such as memory, number of goroutine, etc
+- [Event Delivery](#event-delivery): Event related metrics such as latency, delievered count, etc
 
 ## Server Connection
 ### `server_ping_failure_total`

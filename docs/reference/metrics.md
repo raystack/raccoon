@@ -4,8 +4,8 @@ Raccoon uses Statsd protocol as way to report metrics. You can capture the metri
 
 - [Server Connection](metrics.md#server%20connection): Connection related metrics such as connection count
 - [Kafka Publisher](metrics.md#kafka%20publisher): Publisher related metrics such as total delievered
-- [Resource](metrics.md#resource): Resource related metrics such as memory, number of goroutine, etc
-- [Event](metrics.md#event): Event related metrics such as latency, delievered count, etc
+- [Resource Usage](metrics.md#resource%20usage): Resource related metrics such as memory, number of goroutine, etc
+- [Event Delivery](metrics.md#event%20delivery): Event related metrics such as latency, delievered count, etc
 
 ## Server Connection
 ### `server_ping_failure_total`
@@ -31,10 +31,6 @@ Number of fail connections established to the server
 
 ### `user_session_duration_milliseconds`
 Duration of alive connection per session per connection
-- Type: `Timing`
-
-### `server_processing_latency_milliseconds`
-Server processing latency per event. The latency is calculated from when the event is accepted to when the event is sent. The formula is `(TimePublished - TimeConsumed)/countEventsInBatch`
 - Type: `Timing`
   
 ## Kafka Publisher
@@ -71,7 +67,7 @@ Broker latency / round-trip time in microseconds
 - Type: `Gauge`
 - Tags: `host=broker_nodes` `broker=true`
 
-## Resource
+## Resource Usage
 ### `server_mem_gc_triggered_current`
 The time the last garbage collection finished in Unix timestamp
 - Type: `Gauge`
@@ -108,25 +104,36 @@ Number of goroutine spawn in a single flush
 Bytes in stack spans
 - Type: `Gauge`
 
-## Event
+## Event Delivery
+Following metrics are event delivery reports. Each metrics reported at a different point in time. See the diagram below for to understand when each metrics are reported.
+<p align="center"><img src="../assets/metrics_report_time.svg" /></p>
 
 ### `events_rx_bytes_total`
-Total byte in a request
+Total byte receieved in requests
 - Type: `Count`
+
 ### `events_rx_total`
-Number of events received in a request
+Number of events received in requests
 - Type: `Count`
+
+### `batches_read_total`
+Request count
+- Type: `Count`
+- Tags: `status=failed` `status=success` `reason=*`
+
 ### `batch_idle_in_channel_milliseconds`
-Duration from when the request is received to when the request is processed. High value of this metric indicates the downstream is slow.
+Duration from when the request is received to when the request is processed. High value of this metric indicates the publisher is slow.
 - Type: `Timing`
 - Tags: `worker=worker-name`
-### `batches_read_total`
-Total push event request received
-- Type: `Timing`
-- Tags: `status=failed` `status=success` `reason=*`
+
 ### `event_processing_duration_milliseconds`
-Duration from the time request is sent to request is published
+Duration from the time request is sent to the time events are published. This metric is calculated per event by following formula `(PublishedTime - SentTime)/CountEvents`
 - Type: `Timing`
+
+### `server_processing_latency_milliseconds`
+Duration from the time request is receieved to the time events are published. This metric is calculated per event by following formula`(PublishedTime - ReceievedTime)/CountEvents`
+- Type: `Timing`
+
 ### `worker_processing_duration_milliseconds`
-Duration from when the request is receieved to when the events are published per event.
+Duration from the time request is processed to the time events are published. This metric is calculated per event by following formula`(PublishedTime - ProcessedTime)/CountEvents`
 - Type: `Timing`

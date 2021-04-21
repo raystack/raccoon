@@ -2,7 +2,7 @@
 
 The following is a set of guidelines for contributing to Raccoon. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request. Here are some important resources:
 
-* [Concepts]() section will explain you about Raccoon architecture,
+* [Concepts](contribution.md) section will explain you about Raccoon architecture,
 * Our [roadmap](https://github.com/odpf/raccoon/docs/roadmap.md) is the 10k foot view of how we envision Raccoon to evolve
 * Github [issues](https://github.com/odpf/raccoon/issues) track the ongoing and reported issues.
 
@@ -30,7 +30,8 @@ We are always interested in adding new maintainers. What we look for is a series
 
 Please follow these practices for you change to get merged fast and smoothly:
 
-* Contributions can only be accepted if they contain appropriate testing (Unit and Integration Tests.)
+* Contributions can only be accepted if they contain appropriate testing \(Unit and Integration Tests.\)
 * If you are introducing a completely new feature or making any major changes in an existing one, we recommend to start with an RFC and get consensus on the basic design first.
 * Make sure your local build is running with all the tests and [golint](https://github.com/golang/lint) checks passing.
 * Docs live in the code repo under [`docs`](https://github.com/odpf/raccoon/docs/README.md) so that changes to that can be done in the same PR as changes to the code.
+

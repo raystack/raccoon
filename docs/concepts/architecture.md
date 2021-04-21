@@ -53,7 +53,7 @@ Cons:
 
 Considering that kafka is set up in a clustered, cross-region, cross-zone environment, the chances of it going down are mostly unlikely. In case if it does, the amount of events lost is negligible considering it is a streaming system and is expected to forward millions of events/sec.
 
-When an EventRequest proto below containing events are sent over the wire 
+When an [EventRequest](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventRequest.proto) proto below containing events are sent over the wire 
 
 ```
 message EventRequest {
@@ -66,7 +66,7 @@ message EventRequest {
 }
 ```
 
-a corresponding EventResponse is sent by the server on the same connection that the events were consumed.
+a corresponding [EventResponse](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventResponse.proto) is sent by the server on the same connection that the events were consumed.
 
 ```
 message EventResponse {
@@ -97,7 +97,7 @@ For eg. setting the
 ```
 EVENT_DISTRIBUTION_PUBLISHER_PATTERN=topic-%s-log
 ```
-and a type such as ```type=viewed``` in the event format
+and a type such as ```type=viewed``` in the [event](https://github.com/odpf/proton/blob/main/odpf/raccoon/Event.proto) format
 
 ```
 message Event {

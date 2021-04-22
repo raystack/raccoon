@@ -7,17 +7,24 @@
 ## Guides
 
 * [Overview](guides/overview.md)
+* [Publishing Events](guides/publishing.md)
+* [Deployment](guides/deployment.md)
+* [Monitoring](guides/monitoring.md)
+* [Troubleshooting](guides/troubleshooting.md)
 
 ## Concepts
 
 * [Architecture](concepts/architecture.md)
+* [Structure](concepts/structure.md)
 
 ## Reference
 
-* [Configurations](reference/configuration.md)
+* [Configurations](reference/configurations.md)
 * [Metrics](reference/metrics.md)
 
 ## Contribute
 
 * [Contribution Process](contribute/contribution.md)
-* [Development Guide](contribute/development.md)
+* [Development Guide](contribute/development-guide.md)
+* [Release Process](contribute/release.md)
+

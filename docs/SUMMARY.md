@@ -25,6 +25,6 @@
 ## Contribute
 
 * [Contribution Process](contribute/contribution.md)
-* [Development Guide](contribute/development-guide.md)
+* [Development Guide](contribute/development.md)
 * [Release Process](contribute/release.md)
 

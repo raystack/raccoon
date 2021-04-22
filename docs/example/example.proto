@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package odpf.raccoon;
+
+message SampleEvent {
+  string description = 1;
+}

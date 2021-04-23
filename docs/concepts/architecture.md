@@ -8,6 +8,8 @@ Raccoon written in [GO](https://github.com/golang) is a high throughput, low-lat
 
 ## System Design
 
+![HLD](../assets/raccoon_hld.png)
+
 At a high level, the following sequence details the architecture.
 
 * Clients make websocket connections to Raccoon by performing a http GET API call, with headers to upgrade to websocket.
@@ -37,6 +39,8 @@ The following sequence outlines the connection handling by Raccoon.
 ### Acknowledging events
 
 Event acknowledgements was designed to signify if the events batch is received and sent to Kafka successfully. This will enable the clients to retry on failed event delivery. However Raccoon chooses to send the acknowledgments as soon as it receives and deserializes the events successfully using the proto `EventRequest`. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
+
+![](../assets/raccoon_ack.png)
 
 Pros:
 

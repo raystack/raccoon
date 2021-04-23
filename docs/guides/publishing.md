@@ -4,6 +4,8 @@
 
 Raccoon can be hosted behind a proxy/API GW, a sample of blocks as below
 
+![](../assets/raccoon_ep.png)
+
 The API path which accepts events is:
 
 **/api/v1/events**

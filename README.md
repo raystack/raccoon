@@ -6,7 +6,7 @@
 
 Raccoon is high throughput, low-latency service that provides an API to ingest clickstream data from mobile apps, sites and publish it to Kafka. Raccoon uses the Websocket protocol for peer-to-peer communication and protobuf as the serialization format. It provides an event type agnostic API that accepts a batch (array) of events in protobuf format. Refer [here](https://github.com/odpf/proton/tree/main/odpf/raccoon) for proto definition format that Raccoon accepts.
 
-<p align="center"><img src="./docs/assets/overview.png" /></p>
+<p align="center"><img src="./docs/assets/overview.svg" /></p>
 
 ## Key Features
 
@@ -70,7 +70,7 @@ $ ./out/raccoon
 $ make test
 
 # Running integration tests
-$ cp application.yml.integration-test application.yml
+$ cp application.test.yml application.yml
 $ make docker-run
 $ INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=ws://localhost:8080 INTEGTEST_TOPIC_FORMAT="clickstream-%s-log" go test ./integration -v
 ```
@@ -82,8 +82,6 @@ Development of Raccoon happens in the open on GitHub, and we are grateful to the
 Read our [contributing guide](docs/contribute/contribution.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Raccoon.
 
 To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odpf/raccoon/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
-
-## Credits
 
 This project exists thanks to all the [contributors](https://github.com/odpf/raccoon/graphs/contributors).
 

@@ -20,7 +20,7 @@ update-deps:
 	go mod vendor
 
 copy-config:
-	cp application.yml.sample application.yml
+	cp application.sample.yml application.yml
 
 PROTO_PACKAGE=/websocket/proto
 generate-proto:

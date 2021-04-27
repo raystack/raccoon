@@ -68,6 +68,9 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 	}
 
 	t.Run("Should return success response after successfully push to channel", func(t *testing.T) {
+		ts = httptest.NewServer(Router(hlr))
+		defer ts.Close()
+
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)
 		require.NoError(t, err)
 
@@ -95,6 +98,9 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 	})
 
 	t.Run("Should return unknown request when request fail to deserialize", func(t *testing.T) {
+		ts = httptest.NewServer(Router(hlr))
+		defer ts.Close()
+
 		wss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
 			"x-user-id": []string{"test2-user2"},
 		})
@@ -118,6 +124,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 	t.Run("Should close subsequence connection of the same user", func(t *testing.T) {
 		ts := httptest.NewServer(Router(hlr))
 		defer ts.Close()
+
 		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 		header := http.Header{
 			"x-user-id": []string{"test1-user1"},
@@ -141,6 +148,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 	t.Run("Should close new connection when reach max connection", func(t *testing.T) {
 		ts := httptest.NewServer(Router(hlr))
 		defer ts.Close()
+
 		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 		header := http.Header{
 			"x-user-id": []string{"test1-user1"},
@@ -163,6 +171,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 	t.Run("Should decrement total connection when client close the conn", func(t *testing.T) {
 		ts := httptest.NewServer(Router(hlr))
 		defer ts.Close()
+
 		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 		header := http.Header{
 			"x-user-id": []string{"test1-user1"},

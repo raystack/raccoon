@@ -10,12 +10,28 @@ Raccoon is high throughput, low-latency service that provides an API to ingest c
 
 ## Key Features
 
-* **Event Agnostic:** Raccoon API is event agnostic. This allows you to push any event with any schema.
-* **Metrics:** Built in monitoring includes latency and active connections.
+* **Event Agnostic** - Raccoon API is event agnostic. This allows you to push any event with any schema.
+* **Event Distribution** - Events are distributed to kafka topics based on the event meta-data
+* **High performance** - Long running persistent, peer-to-peer connection reduce connection set up overheads. Websocket provides reduced battery consumption for mobile apps (based on usage statistics)
+* **Guaranteed Event Delivery** - Server acknowledgements based on delivery. Currently it acknowledges failures/successes. Server can be augmented for zero-data loss or at-least-once guarantees.
+* **Reduced payload sizes** - Protobuf based
+* **Metrics:** - Built-in monitoring includes latency and active connections.
 
 To know more, follow the detailed [documentation](docs) 
 
 ## Usage
+
+### Use cases
+Raccoon can be used as an event collector, event distributor and as a forwarder of events generated from mobile/web/IoT front ends as it provides an high volume, high throughput, low latency event-agnostic APIs. Raccoon can serve the needs of data ingestion in near-real-time.
+
+Some domains where Raccoon could be used is listed below
+
+* Adtech streams - Where digital marketing data from external sources can be ingested into the organization backends 
+* Clickstream - Where user behavior data can be streamed in real-time 
+* Edge systems - Where devices (say in the IoT world) need to send data to the cloud. 
+* Event Sourcing systems - Such as Stock updates dashboards, autonomous/self-drive use cases
+
+### Resources
 
 Explore the following resources to get started with Raccoon:
 

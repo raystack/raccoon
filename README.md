@@ -19,19 +19,15 @@ Raccoon is high throughput, low-latency service that provides an API to ingest c
 
 To know more, follow the detailed [documentation](docs) 
 
-## Usage
+## Use cases
+Raccoon can be used as an event collector, event distributor and as a forwarder of events generated from mobile/web/IoT front ends as it provides an high volume, high throughput, low latency event-agnostic APIs. Raccoon can serve the needs of data ingestion in near-real-time. Some domains where Raccoon could be used is listed below
 
-### Use cases
-Raccoon can be used as an event collector, event distributor and as a forwarder of events generated from mobile/web/IoT front ends as it provides an high volume, high throughput, low latency event-agnostic APIs. Raccoon can serve the needs of data ingestion in near-real-time.
+* Adtech streams: Where digital marketing data from external sources can be ingested into the organization backends 
+* Clickstream: Where user behavior data can be streamed in real-time 
+* Edge systems: Where devices (say in the IoT world) need to send data to the cloud. 
+* Event Sourcing: Such as Stock updates dashboards, autonomous/self-drive use cases
 
-Some domains where Raccoon could be used is listed below
-
-* Adtech streams - Where digital marketing data from external sources can be ingested into the organization backends 
-* Clickstream - Where user behavior data can be streamed in real-time 
-* Edge systems - Where devices (say in the IoT world) need to send data to the cloud. 
-* Event Sourcing systems - Such as Stock updates dashboards, autonomous/self-drive use cases
-
-### Resources
+## Resources
 
 Explore the following resources to get started with Raccoon:
 

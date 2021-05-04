@@ -48,7 +48,7 @@ $ docker pull odpf/raccoon
 $ docker run -p 8080:8080 -e SERVER_WEBSOCKET_PORT=8080 -e SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER=x-user-id -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9093 -e EVENT_DISTRIBUTION_PUBLISHER_PATTERN=clickstream-%s-log odpf/raccoon
 ```
 
-You can also use `docker-compose` on this repo. The `docker-compose` provides raccoon along with Kafka setup. Make sure to adjust the `application.yml` config to point to that kafka. To run it you can run the following.
+You can also use `docker-compose` on this repo. The `docker-compose` provides raccoon along with Kafka setup. Make sure to adjust the `.env` config to point to that kafka. To run it you can run the following.
 ```
 # Run raccoon along with kafka setup
 make docker-run
@@ -69,7 +69,7 @@ $ git clone https://github.com/odpf/raccoon.git
 $ make
 
 # Configure env variables
-$ vim application.yaml
+$ vim .env
 
 # Run Raccoon
 $ ./out/raccoon
@@ -82,7 +82,7 @@ $ ./out/raccoon
 $ make test
 
 # Running integration tests
-$ cp application.test.yml application.yml
+$ cp .env.test .env
 $ make docker-run
 $ INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=ws://localhost:8080 INTEGTEST_TOPIC_FORMAT="clickstream-%s-log" go test ./integration -v
 ```

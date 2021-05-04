@@ -13,11 +13,11 @@ func Load() {
 	}
 	loaded = true
 	viper.AutomaticEnv()
-	viper.SetConfigName("application")
+	viper.SetConfigName(".env")
 	viper.AddConfigPath("./")
 	viper.AddConfigPath("../")
 	viper.AddConfigPath("../../")
-	viper.SetConfigType("yaml")
+	viper.SetConfigType("env")
 	viper.ReadInConfig()
 
 	logConfigLoader()

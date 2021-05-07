@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Copy integration config
-        run: cp application.test.yml application.yml
+        run: cp .env.test .env
       - name: Run Raccoon
         run: make docker-run
       - run: make install-protoc && make generate-proto

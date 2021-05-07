@@ -14,5 +14,4 @@ FROM debian:buster-slim
 WORKDIR /app
 COPY --from=0 /app/out/raccoon ./raccoon
 COPY . .
-EXPOSE 8080
 CMD ["./raccoon"]

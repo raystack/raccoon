@@ -37,24 +37,34 @@ Explore the following resources to get started with Raccoon:
 * [Contribute](docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Raccoon.
 
 ## Run with Docker
-You need to have docker installed in your system. You have two options to run Raccoon on Docker. First is to use docker compose, second is to use image from docker hub. 
+**Prerequisite**
+- Docker installed
 
-To use image from the docker hub, download Raccoon [docker image](https://hub.docker.com/r/odpf/raccoon/). Have kafka running on your local and run the following.
-```
+**Run Docker Image**
+
+Raccoon provides Docker [image](https://hub.docker.com/r/odpf/raccoon) as part of the release. Make sure you have Kafka running on your local and run the following.
+```sh
 # Download docker image from docker hub
 $ docker pull odpf/raccoon
 
 # Run the following docker command with minimal config.
-$ docker run -p 8080:8080 -e SERVER_WEBSOCKET_PORT=8080 -e SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER=x-user-id -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9093 -e EVENT_DISTRIBUTION_PUBLISHER_PATTERN=clickstream-%s-log odpf/raccoon
+$ docker run -p 8080:8080 \
+  -e SERVER_WEBSOCKET_PORT=8080 \
+  -e SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER=x-user-id \
+  -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9093 \
+  -e EVENT_DISTRIBUTION_PUBLISHER_PATTERN=clickstream-%s-log \
+  odpf/raccoon
 ```
 
-You can also use `docker-compose` on this repo. The `docker-compose` provides raccoon along with Kafka setup. Make sure to adjust the `.env` config to point to that kafka. To run it you can run the following.
-```
+**Run Docker Compose**
+You can also use `docker-compose` on this repo. The `docker-compose` provides raccoon along with Kafka setup. Make sure to adjust the `.env` config to point to that kafka `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=kafka:9092`. Then, run the following command.
+```sh
 # Run raccoon along with kafka setup
-make docker-run
+$ make docker-run
 # Stop the docker compose
-make docker-stop
+$ make docker-stop
 ```
+You can consume the published events from the host machine by using `localhost:9094` as kafka broker server. Mind the [topic routing](https://odpf.gitbook.io/raccoon/concepts/architecture#event-distribution) when you consume the events.
 
 ## Running locally
 Prerequisite:

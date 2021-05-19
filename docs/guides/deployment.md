@@ -1,74 +1,16 @@
 # Deployment
-This section contains guides and advices related to Raccoon deployment.
-## Standalone
-This section contains standalone deployment options for Raccoon server. You can use this deployment method on your local machine to get started with Raccoon.
-### Local Machine
-**Prerequisite**
-- GO 1.14 or higher installed
-- Unix based machine
-
-**Run The Executable**
-Before you can run the server on your local machine. First, you need to compile it using the following command.
-```sh
-$ git clone https://github.com/odpf/raccoon
-$ cd raccoon
-$ make
-```
-You can find the executable on `./out/raccoon`.
-```sh
-# Run the executable
-$ ./out/raccoon
-```
-
-**Configuration**
-You can have the [configuration](https://odpf.gitbook.io/raccoon/reference/configurations) set either in `.env` file where you run the executable or export it as env variable.
-
-### Docker
-**Prerequisite**
-- Docker installed
-
-**Run Docker Image**
-Raccoon provides Docker [image](https://hub.docker.com/r/odpf/raccoon) as part of the release. To run Raccoon with default port exposed on `localhost` you can run the following.
-```sh
-$ docker pull odpf/raccoon:latest
-$ docker run -p 8080:8080 \
-  -e SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER=x-user-id \
-  -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9092 \
-  -e METRIC_STATSD_ADDRESS=host.docker.internal:8125 \
-  odpf/raccoon:latest
-```
-
-**Configuration**
-- Use `-e KEY=VALUE` flag  when you do `docker run`
-- Configurations related to URL assumes that the services run on `localhost`. When you run Raccoon inside docker, make sure to change the URL accordingly. For example, you can use docker special DNS name `host.docker.internal` to resolve to your host machine network.
-## Docker Compose
-**Prerequisite**
-- Docker installed
-
-**Running The Services**
-This repository contains `docker-compose.yml` file for development and integration test purpose. The docker-compose deploys Kafka and Zookeeper along with the Raccoon service. One usecase for this setup is when you are developing client for Raccoon, and need to test that client.
-You can run the docker compose from the make script.
-```sh
-# Build and up
-$ make docker-run
-# To stop the services without deleting the container
-$ make docker-stop
-# To continue the existing services. If you make changes to the codebase, you need to run `make docker-run` instead
-$ make docker-start
-```
-
-You can consume the published events from the host machine by using `localhost:9094` as kafka broker server. Mind the [topic routing](https://odpf.gitbook.io/raccoon/concepts/architecture#event-distribution) when you consume the events.
-**Configuration**
-Since this setup is using local `Dockerfile`, you can provide the configuration as `.env` file. Before you run the docker compose, you need to set `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=kafka:9092`.
+This section contains guides and suggestions related to Raccoon deployment.
 ## Kubernetes
-Using Raccoon docker image, you can deploy Raccoon on [Kubernetes](https://kubernetes.io/) by specifying the image on the [manifest](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment). We also provides [Helm chart](https://github.com/odpf/charts/tree/main/stable/raccoon) to ease Kubernetes deployment. This section we will cover simple deployment on Kubernetes using manifest and Helm.
+Using [Raccoon docker image](https://hub.docker.com/r/odpf/raccoon), you can deploy Raccoon on [Kubernetes](https://kubernetes.io/) by specifying the image on the [manifest](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment). We also provides [Helm chart](https://github.com/odpf/charts/tree/main/stable/raccoon) to ease Kubernetes deployment. This section we will cover simple deployment on Kubernetes using manifest and Helm.
 ### Manifest
 **Prerequisite**
 - Kubernetes cluster setup
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) installed
 
 **Creating Kubernetes Resources**
-You need at least 2 mainfest for Raccoon. For [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment) and for [configmap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/). Prepare both manifest as yaml file. You can fill the configuration as needed.
+You need at least 2 manifests for Raccoon. For [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment) and for [configmap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/). Prepare both manifest as yaml file. You can fill the configuration as needed.
+
+`configmap.yaml`
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -83,6 +25,7 @@ data:
   SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER: "x-user-id"
   SERVER_WEBSOCKET_PORT: "8080"
 ```
+`deployment.yaml`
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -141,6 +84,82 @@ $ kubectl get configmap raccoon-config
 **Configuration**
 You can add or modify the configurations inside `configmap.yaml` above. When you change the configmap, you also need to restart the deployment.
 
+**Exposing Raccoon**
+To make Raccoon accessible to public, you need to setup Kubernetes [service](https://kubernetes.io/docs/concepts/services-networking/service/) and [ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/). This setup may vary according to your need. There is plenty [ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) you can choose. You need to make sure that Websocket works with your choice of ingress controller.
+
+**Integrating With Telegraf**
+There are 2 options to integrate with Telegraf. One is to have Telegraf as separate service another is to have Telegraf as sidecar. To have telegraf as sidecar, you only need to add another configmap and another Telegraf container on the deployment above. You can add the container under `spec.template.spec.containers`. Then, you can use default `METRIC_STATSD_ADDRESS` which is `:8125`. Following is an example of Telegraf manifests that push to influxdb.
+
+`deployment.yaml`
+```yaml
+...
+      containers:
+      - image: telegraf:1.7.4-alpine
+        imagePullPolicy: IfNotPresent
+        name: telegrafd
+        resources:
+          limits:
+            cpu: 50m
+            memory: 64Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        volumeMounts:
+        - mountPath: /etc/telegraf
+          name: telegraf-conf
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: test-raccoon-telegraf-config
+        name: telegraf-conf  
+...
+```
+`telegraf-conf.yaml`
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-conf
+  namespace: default
+data:
+  telegraf.conf: |
+    [global_tags]
+      app = "test-raccoon"
+    [agent]
+      collection_jitter = "0s"
+      debug = false
+      flush_interval = "10s"
+      flush_jitter = "0s"
+      interval = "10s"
+      logfile = ""
+      metric_batch_size = 1000
+      metric_buffer_limit = 10000
+      omit_hostname = false
+      precision = ""
+      quiet = false
+      round_interval = true
+    [[outputs.influxdb]]
+      urls = ["http://localhost:8086"]
+      database = "test-db"
+      retention_policy = "autogen"
+      write_consistency = "any"
+      timeout = "5s"
+    [[inputs.statsd]]
+      allowed_pending_messages = 10000
+      delete_counters = true
+      delete_gauges = true
+      delete_sets = true
+      delete_timings = true
+      metric_separator = "."
+      parse_data_dog_tags = true
+      percentile_limit = 1000
+      percentiles = [
+        50,
+        95,
+        99
+      ]
+      service_address = ":8125"
+```
 ### Helm
 **Prerequisite**
 - Kubernetes cluster setup
@@ -149,10 +168,17 @@ You can add or modify the configurations inside `configmap.yaml` above. When you
 Raccoon has helm chart maintained on [different repository](https://github.com/odpf/charts/tree/main/stable/raccoon). Refer to the repository for complete deployment guide.
 
 ## Production Checklist
-Before going to production, we recommend following setup tips.
+Before going to production, we recommend the following setup tips.
+### Key Configurations
+Followings are main configurations closely related to deployment that you need to pay attention:
+- [`SERVER_WEBSOCKET_PORT`](https://odpf.gitbook.io/raccoon/reference/configurations#server_websocket_port)
+- [`EVENT_DISTRIBUTION_PUBLISHER_PATTERN`](https://odpf.gitbook.io/raccoon/reference/configurations#event_distribution_publisher_pattern)
+- [`PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`](https://odpf.gitbook.io/raccoon/reference/configurations#publisher_kafka_client_bootstrap_servers)
+- [`METRIC_STATSD_ADDRESS`](https://odpf.gitbook.io/raccoon/reference/configurations#metric_statsd_address)
+- [`SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER`](https://odpf.gitbook.io/raccoon/reference/configurations#server_websocket_conn_uniq_id_header)
 ### TLS/HTTPS
 Raccoon doesn't provide HTTPS on the application level. To enable HTTPS, you can maintain API gateway which terminates SSL connection. From API gateway onward, the connection is considered to be safe. For example, if you are deploying on Kubernetes, you can have an ingress setup and have SSL termination.
 ### Authentication
 Raccoon doesn't provide authentication on it's own. However, you can still enable authentication by having it as separate service. Then, you can use API gateway to validate the authentication using token.
 ### Test The Setup
-To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find guide on how to publish events [here](https://odpf.gitbook.io/raccoon/guides/publishing). If there is something wrong with Raccon, you can check the [troubleshooting](https://odpf.gitbook.io/raccoon/guides/troubleshooting) section.
+To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find guide on how to publish events [here](https://odpf.gitbook.io/raccoon/guides/publishing). You can also check example client [here](https://github.com/odpf/raccoon/tree/main/docs/example). If there is something wrong with Raccon, you can check the [troubleshooting](https://odpf.gitbook.io/raccoon/guides/troubleshooting) section.

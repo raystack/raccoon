@@ -1,4 +1,4 @@
-name: Package
+name: Release
 on:
   push:
     # Sequence of patterns matched against refs/tags
@@ -6,7 +6,7 @@ on:
       - "v*.*.*" # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
-  docker:
+  push-to-docker-hub:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -35,3 +35,13 @@ jobs:
             docker.pkg.github.com/${{ github.repository }}/raccoon:${{ steps.get_version.outputs.version-without-v }}
             odpf/raccoon:latest
             odpf/raccoon:${{ steps.get_version.outputs.version-without-v }}
+  create-gh-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

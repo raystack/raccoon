@@ -1,12 +1,12 @@
 # Architecture
 
-Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon uses the Websocket protocol for peer-to-peer communication, providing long persistent connections, with no overhead of additional headers sizes as in http protocol. Protobuf is used as the serialization format that reduces the payload sizes further. It provides an event type agnostic API that accepts a batch (array) of events in protobuf format. Refer [here](https://github.com/odpf/proton/tree/main/odpf/raccoon) for proto definition format that Raccoon accepts.
+Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon uses the Websocket protocol for peer-to-peer communication, providing long persistent connections, with no overhead of additional headers sizes as in http protocol. Protobuf is used as the serialization format that reduces the payload sizes further. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](https://github.com/odpf/proton/tree/main/odpf/raccoon) for proto definition format that Raccoon accepts.
 
-Raccoon was built with a primary purpose to source or collect user behaviour data in near-real time. User behaviour data is a stream of events that occur when users traverse through a mobile app or website. Raccoon powers analytics systems, big data pipelines and other disparate consumers by providing high volume, high throughput ingestion APIs consuming real time data. Raccoon’s key architecture principle is a realization of an event agnostic backend (accepts events of any type without the type awareness). It is this capability that enables Raccoon to evolve into a strong player in the ingestion/collector ecosystem that has real time streaming/analytical needs.
+Raccoon was built with a primary purpose to source or collect user behaviour data in near-real time. User behaviour data is a stream of events that occur when users traverse through a mobile app or website. Raccoon powers analytics systems, big data pipelines and other disparate consumers by providing high volume, high throughput ingestion APIs consuming real time data. Raccoon’s key architecture principle is a realization of an event agnostic backend \(accepts events of any type without the type awareness\). It is this capability that enables Raccoon to evolve into a strong player in the ingestion/collector ecosystem that has real time streaming/analytical needs.
 
 ## System Design
 
-![HLD](../assets/raccoon_hld.png)
+![HLD](../.gitbook/assets/raccoon_hld.png)
 
 At a high level, the following sequence details the architecture.
 
@@ -34,20 +34,22 @@ The following sequence outlines the connection handling by Raccoon.
 * Handle the message and send it to the events-channel
 * Remove connection/user when the client closes the connection
 
-### Event Delivery gurantee (at-least-once for most time)
- The server for the most times provide at-least-once event delivery gurantee. 
- 
- Event data loss happens in the following scenarios:
- - When the server shutsdown, events in-flight in the kafka buffer or those stored in the internal channels are potentially lost. The server performs, on a best-effort basis, sending all the events to kafka within a configured shutdown time `WORKER_BUFFER_FLUSH_TIMEOUT_MS`. The default time is set to 5000 ms within which it is expected that all the events are sent by then.
- - When the upstream kafka cluster is facing a downtime
+### Event Delivery gurantee \(at-least-once for most time\)
 
- Every event sent from the client is stored in-memory in the buffered channels (explained in the `Acknowledging events` section). The workers pull the events from this channel and publishes to kafka. The server does not maintain any event peristence. This is a conscious decision to enable a simpler, performant ingestion design for the server. The buffer/retries of failed events is relied upon Kafka's internal buffer/retries respectively. In future: Server can be augmented for zero-data loss or at-least-once guarantees through intermediate event persitence.
+The server for the most times provide at-least-once event delivery gurantee.
+
+Event data loss happens in the following scenarios:
+
+* When the server shutsdown, events in-flight in the kafka buffer or those stored in the internal channels are potentially lost. The server performs, on a best-effort basis, sending all the events to kafka within a configured shutdown time `WORKER_BUFFER_FLUSH_TIMEOUT_MS`. The default time is set to 5000 ms within which it is expected that all the events are sent by then.
+* When the upstream kafka cluster is facing a downtime
+
+  Every event sent from the client is stored in-memory in the buffered channels \(explained in the `Acknowledging events` section\). The workers pull the events from this channel and publishes to kafka. The server does not maintain any event peristence. This is a conscious decision to enable a simpler, performant ingestion design for the server. The buffer/retries of failed events is relied upon Kafka's internal buffer/retries respectively. In future: Server can be augmented for zero-data loss or at-least-once guarantees through intermediate event persitence.
 
 ### Acknowledging events
 
 Event acknowledgements was designed to signify if the events batch is received and sent to Kafka successfully. This will enable the clients to retry on failed event delivery. However Raccoon chooses to send the acknowledgments as soon as it receives and deserializes the events successfully using the proto `EventRequest`. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
 
-![](../assets/raccoon_ack.png)
+![](../.gitbook/assets/raccoon_ack.png)
 
 Pros:
 

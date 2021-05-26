@@ -3,6 +3,7 @@
 Raccoon uses Statsd protocol as way to report metrics. You can capture the metrics using any supported statsd collector like [Telegraf](https://github.com/influxdata/telegraf). This page contains reference for all the metrics for Raccoon.
 
 ## Table of Contents
+
 * [Server Connection](metrics.md#server-connection)
 * [Kafka Publisher](metrics.md#kafka-publisher)
 * [Resource Usage](metrics.md#resource-usage)
@@ -156,7 +157,8 @@ Bytes in stack spans
 
 Following metrics are event delivery reports. Each metrics reported at a different point in time. See the diagram below for to understand when each metrics are reported.
 
-![Diagram](../assets/metrics_report_time.svg)
+![Diagram](../.gitbook/assets/metrics_report_time.svg)
+
 ### `events_rx_bytes_total`
 
 Total byte receieved in requests

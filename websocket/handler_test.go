@@ -57,7 +57,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		PongWaitInterval:  time.Duration(60 * time.Second),
 		WriteWaitInterval: time.Duration(5 * time.Second),
 		PingChannel:       make(chan connection, 100),
-		UniqConnIDHeader:      "x-user-id",
+		UniqConnIDHeader:  "x-user-id",
 	}
 	ts := httptest.NewServer(Router(hlr))
 	defer ts.Close()
@@ -129,20 +129,21 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		header := http.Header{
 			"x-user-id": []string{"test1-user1"},
 		}
-		firstWss, _, err := websocket.DefaultDialer.Dial(url, header)
+		w1, _, err := websocket.DefaultDialer.Dial(url, header)
+		defer w1.Close()
 		require.NoError(t, err)
 
-		secondWss, _, err := websocket.DefaultDialer.Dial(url, header)
+		w2, _, err := websocket.DefaultDialer.Dial(url, header)
+		defer w2.Close()
 		require.NoError(t, err)
-		_, message, err := secondWss.ReadMessage()
+		_, message, err := w2.ReadMessage()
 		p := &pb.EventResponse{}
 		proto.Unmarshal(message, p)
 		assert.Equal(t, p.Code, pb.Code_MAX_USER_LIMIT_REACHED)
 		assert.Equal(t, p.Status, pb.Status_ERROR)
-		_, _, err = secondWss.ReadMessage()
+		_, _, err = w2.ReadMessage()
 		assert.True(t, websocket.IsCloseError(err, websocket.ClosePolicyViolation))
 		assert.Equal(t, "Duplicate connection", err.(*websocket.CloseError).Text)
-		firstWss.Close()
 	})
 
 	t.Run("Should close new connection when reach max connection", func(t *testing.T) {
@@ -153,17 +154,20 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		header := http.Header{
 			"x-user-id": []string{"test1-user1"},
 		}
-		websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user2"}})
-		websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user3"}})
+		w1, _, _ := websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user2"}})
+		defer w1.Close()
+		w2, _, _ := websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user3"}})
+		defer w2.Close()
 
-		ws, _, err := websocket.DefaultDialer.Dial(url, header)
+		w3, _, err := websocket.DefaultDialer.Dial(url, header)
+		defer w3.Close()
 		require.NoError(t, err)
-		_, message, err := ws.ReadMessage()
+		_, message, err := w3.ReadMessage()
 		p := &pb.EventResponse{}
 		proto.Unmarshal(message, p)
 		assert.Equal(t, p.Code, pb.Code_MAX_CONNECTION_LIMIT_REACHED)
 		assert.Equal(t, p.Status, pb.Status_ERROR)
-		_, _, err = ws.ReadMessage()
+		_, _, err = w3.ReadMessage()
 		assert.True(t, websocket.IsCloseError(err, websocket.ClosePolicyViolation))
 		assert.Equal(t, "Max connection reached", err.(*websocket.CloseError).Text)
 	})
@@ -173,14 +177,13 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		defer ts.Close()
 
 		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
-		header := http.Header{
-			"x-user-id": []string{"test1-user1"},
-		}
-		firstWs, _, _ := websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user2"}})
-		firstWs.Close()
-		websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user3"}})
+		w1, _, _ := websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user2"}})
+		defer w1.Close()
+		w2, _, _ := websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user3"}})
+		defer w2.Close()
+		w3, _, err := websocket.DefaultDialer.Dial(url, http.Header{"x-user-id": []string{"test1-user1"}})
+		defer w3.Close()
 
-		_, _, err := websocket.DefaultDialer.Dial(url, header)
 		assert.Equal(t, 2, hlr.user.TotalUsers())
 		assert.Empty(t, err)
 	})

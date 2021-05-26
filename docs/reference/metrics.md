@@ -156,7 +156,7 @@ Bytes in stack spans
 
 Following metrics are event delivery reports. Each metrics reported at a different point in time. See the diagram below for to understand when each metrics are reported.
 
-![HLD](../assets/metrics_report_time.svg)
+![Diagram](../assets/metrics_report_time.svg)
 ### `events_rx_bytes_total`
 
 Total byte receieved in requests

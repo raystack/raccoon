@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"raccoon/config"
 	"raccoon/logger"
+	"strings"
 
 	client "gopkg.in/alexcesaro/statsd.v2"
 )
@@ -39,7 +40,10 @@ func (s *Statsd) Close() {
 }
 
 func withTags(bucket, tags string) string {
-	return fmt.Sprintf("%v,%v", bucket, tags)
+	if strings.TrimSpace(tags) != "" {
+		return fmt.Sprintf("%v,%v", bucket, tags)
+	}
+	return bucket
 }
 
 func Setup() error {

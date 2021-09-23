@@ -78,7 +78,7 @@ Number of goroutine spawn to Ping clients.
 
 ### `SERVER_WEBSOCKET_CHECK_ORIGIN`
 
-Toggle CORS check function. Keep this to true, currently false will lead to rejection on every request.
+Toggle CORS check function. Set `true` to check each request origin. Set `false` to disable check origin and allow every request. Check origin function check against `Origin` header.
 
 * Type: `Optional`
 * Default value: `true`

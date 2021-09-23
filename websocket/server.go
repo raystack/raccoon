@@ -71,7 +71,7 @@ func CreateServer() (*Server, chan EventsBatch) {
 	pingChannel := make(chan connection, config.ServerWs.ServerMaxConn)
 	user := NewUserStore(config.ServerWs.ServerMaxConn)
 	wsHandler := &Handler{
-		websocketUpgrader: getWebSocketUpgrader(config.ServerWs.ReadBufferSize, config.ServerWs.WriteBufferSize, config.ServerWs.CheckOrigin),
+		websocketUpgrader: newWebSocketUpgrader(config.ServerWs.ReadBufferSize, config.ServerWs.WriteBufferSize, config.ServerWs.CheckOrigin),
 		bufferChannel:     bufferChannel,
 		user:              user,
 		PongWaitInterval:  config.ServerWs.PongWaitInterval,
@@ -101,13 +101,17 @@ func Router(h *Handler) http.Handler {
 	return router
 }
 
-func getWebSocketUpgrader(readBufferSize int, writeBufferSize int, checkOrigin bool) websocket.Upgrader {
+func newWebSocketUpgrader(readBufferSize int, writeBufferSize int, checkOrigin bool) websocket.Upgrader {
+	var checkOriginFunc func(r *http.Request) bool
+	if checkOrigin == false {
+		checkOriginFunc = func(r *http.Request) bool {
+			return true
+		}
+	}
 	ug := websocket.Upgrader{
 		ReadBufferSize:  readBufferSize,
 		WriteBufferSize: writeBufferSize,
-		CheckOrigin: func(r *http.Request) bool {
-			return checkOrigin
-		},
+		CheckOrigin: checkOriginFunc,
 	}
 	return ug
 }

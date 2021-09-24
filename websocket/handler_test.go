@@ -57,7 +57,8 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		PongWaitInterval:  time.Duration(60 * time.Second),
 		WriteWaitInterval: time.Duration(5 * time.Second),
 		PingChannel:       make(chan connection, 100),
-		UniqConnIDHeader:  "x-user-id",
+		ConnIDHeader:      "x-user-id",
+		ConnTypeHeader:    "",
 	}
 	ts := httptest.NewServer(Router(hlr))
 	defer ts.Close()
@@ -144,6 +145,42 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		_, _, err = w2.ReadMessage()
 		assert.True(t, websocket.IsCloseError(err, websocket.ClosePolicyViolation))
 		assert.Equal(t, "Duplicate connection", err.(*websocket.CloseError).Text)
+	})
+
+	t.Run("Should accept connection with same id and different type", func(t *testing.T) {
+		hlr.ConnTypeHeader = "test-type"
+		ts := httptest.NewServer(Router(hlr))
+		defer func() { hlr.ConnTypeHeader = "" }()
+		defer ts.Close()
+
+		url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
+		header := http.Header{
+			"x-user-id": []string{"test1-user1"},
+		}
+		header["test-type"] = []string{"type-1"}
+		w1, _, err := websocket.DefaultDialer.Dial(url, header)
+		defer w1.Close()
+		require.NoError(t, err)
+
+		header["test-type"] = []string{"type-2"}
+		w2, _, err := websocket.DefaultDialer.Dial(url, header)
+		defer w2.Close()
+
+		request := &pb.EventRequest{
+			ReqGuid:  "1234",
+			SentTime: ptypes.TimestampNow(),
+			Events:   nil,
+		}
+		serializedRequest, _ := proto.Marshal(request)
+
+		err = w2.WriteMessage(websocket.BinaryMessage, serializedRequest)
+
+		require.NoError(t, err)
+		_, message, err := w2.ReadMessage()
+		p := &pb.EventResponse{}
+		proto.Unmarshal(message, p)
+		assert.Equal(t, pb.Code_OK, p.Code)
+		assert.Equal(t, pb.Status_SUCCESS, p.Status)
 	})
 
 	t.Run("Should close new connection when reach max connection", func(t *testing.T) {

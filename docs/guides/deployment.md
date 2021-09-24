@@ -28,7 +28,7 @@ metadata:
 data:
   METRIC_STATSD_ADDRESS: "host.docker.internal:8125"
   PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS: "host.docker.internal:9093"
-  SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER: "x-user-id"
+  SERVER_WEBSOCKET_CONN_ID_HEADER: "x-user-id"
   SERVER_WEBSOCKET_PORT: "8080"
 ```
 
@@ -193,7 +193,7 @@ Followings are main configurations closely related to deployment that you need t
 * [`EVENT_DISTRIBUTION_PUBLISHER_PATTERN`](https://odpf.gitbook.io/raccoon/reference/configurations#event_distribution_publisher_pattern)
 * [`PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`](https://odpf.gitbook.io/raccoon/reference/configurations#publisher_kafka_client_bootstrap_servers)
 * [`METRIC_STATSD_ADDRESS`](https://odpf.gitbook.io/raccoon/reference/configurations#metric_statsd_address)
-* [`SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER`](https://odpf.gitbook.io/raccoon/reference/configurations#server_websocket_conn_uniq_id_header)
+* [`SERVER_WEBSOCKET_CONN_ID_HEADER`](https://odpf.gitbook.io/raccoon/reference/configurations#server_websocket_conn_id_header)
 
   **TLS/HTTPS**
 

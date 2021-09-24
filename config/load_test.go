@@ -27,7 +27,7 @@ func TestServerConfig(t *testing.T) {
 	os.Setenv("SERVER_WEBSOCKET_PING_INTERVAL_MS", "1")
 	os.Setenv("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", "1")
 	os.Setenv("SERVER_WEBSOCKET_SERVER_SHUTDOWN_GRACE_PERIOD_MS", "3")
-	os.Setenv("SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER", "x-user-id")
+	os.Setenv("SERVER_WEBSOCKET_CONN_ID_HEADER", "x-user-id")
 	serverWsConfigLoader()
 	assert.Equal(t, "8080", ServerWs.AppPort)
 	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PingInterval)

@@ -8,7 +8,7 @@ Run the following command. Make sure to set `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SE
 
 ```bash
 $ docker run -p 8080:8080 \
-  -e SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER=x-user-id \
+  -e SERVER_WEBSOCKET_CONN_ID_HEADER=x-user-id \
   -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9092 \
   -e EVENT_DISTRIBUTION_PUBLISHER_PATTERN=clickstream-log \
   odpf/raccoon:latest

@@ -1,38 +1,40 @@
 package websocket
 
-import "sync"
+import (
+	"sync"
+)
 
 type User struct {
 	m       sync.Mutex
-	userMap map[string]string
+	userMap map[ConnIdentifier]ConnIdentifier
 	maxUser int
 }
 
 func NewUserStore(maxUser int) *User {
 	return &User{
 		m:       sync.Mutex{},
-		userMap: make(map[string]string),
+		userMap: make(map[ConnIdentifier]ConnIdentifier),
 		maxUser: maxUser,
 	}
 }
 
-func (u *User) Exists(userID string) bool {
+func (u *User) Exists(c ConnIdentifier) bool {
 	u.m.Lock()
 	defer u.m.Unlock()
-	_, ok := u.userMap[userID]
+	_, ok := u.userMap[c]
 	return ok
 }
 
-func (u *User) Store(userID string) {
+func (u *User) Store(c ConnIdentifier) {
 	u.m.Lock()
 	defer u.m.Unlock()
-	u.userMap[userID] = userID
+	u.userMap[c] = c
 }
 
-func (u *User) Remove(userID string) {
+func (u *User) Remove(c ConnIdentifier) {
 	u.m.Lock()
 	defer u.m.Unlock()
-	delete(u.userMap, userID)
+	delete(u.userMap, c)
 }
 
 func (u *User) HasReachedLimit() bool {

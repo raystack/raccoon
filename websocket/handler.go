@@ -19,9 +19,9 @@ type Handler struct {
 	PongWaitInterval  time.Duration
 	WriteWaitInterval time.Duration
 	PingChannel       chan connection
-	UniqConnIDHeader  string
+	ConnIDHeader      string
+	ConnTypeHeader    string
 }
-
 type EventsBatch struct {
 	UniqConnID   string
 	EventReq     *pb.EventRequest
@@ -36,19 +36,18 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 
 //HandlerWSEvents handles the upgrade and the events sent by the peers
 func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
-	uniqConnID := r.Header.Get(wsHandler.UniqConnIDHeader)
+	identifier := NewConnIdentifier(r.Header, wsHandler.ConnIDHeader, wsHandler.ConnTypeHeader)
 	connectedTime := time.Now()
-	logger.Debug(fmt.Sprintf("UniqConnID %s connected at %v", uniqConnID, connectedTime))
+	logger.Debug(fmt.Sprintf("id: %s, type: %s connected at %v", identifier.cID, identifier.cType, connectedTime))
 	conn, err := wsHandler.websocketUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.Error(fmt.Sprintf("[websocket.Handler] Failed to upgrade connection  UniqConnID: %s : %v", uniqConnID, err))
+		logger.Errorf("[websocket.Handler] Failed to upgrade connection id: %s, type: %s, : %v", identifier.cID, identifier.cType, err)
 		metrics.Increment("user_connection_failure_total", "reason=ugfailure")
 		return
 	}
 	defer conn.Close()
-
-	if wsHandler.user.Exists(uniqConnID) {
-		logger.Errorf("[websocket.Handler] Disconnecting %v, already connected", uniqConnID)
+	if wsHandler.user.Exists(identifier) {
+		logger.Debugf("[websocket.Handler] Disconnecting %v, already connected", identifier.cID)
 		duplicateConnResp := createEmptyErrorResponse(pb.Code_MAX_USER_LIMIT_REACHED)
 
 		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
@@ -57,20 +56,20 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if wsHandler.user.HasReachedLimit() {
-		logger.Errorf("[websocket.Handler] Disconnecting %v, max connection reached", uniqConnID)
+		logger.Errorf("[websocket.Handler] Disconnecting %v, max connection reached", identifier.cID)
 		maxConnResp := createEmptyErrorResponse(pb.Code_MAX_CONNECTION_LIMIT_REACHED)
 		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Max connection reached"))
 		metrics.Increment("user_connection_failure_total", "reason=serverlimit")
 		return
 	}
-	wsHandler.user.Store(uniqConnID)
-	defer wsHandler.user.Remove(uniqConnID)
-	defer calculateSessionTime(uniqConnID, connectedTime)
+	wsHandler.user.Store(identifier)
+	defer wsHandler.user.Remove(identifier)
+	defer calculateSessionTime(identifier.cID, connectedTime)
 
-	setUpControlHandlers(conn, uniqConnID, wsHandler.PongWaitInterval, wsHandler.WriteWaitInterval)
+	setUpControlHandlers(conn, identifier.cID, wsHandler.PongWaitInterval, wsHandler.WriteWaitInterval)
 	wsHandler.PingChannel <- connection{
-		uniqConnID: uniqConnID,
+		uniqConnID: identifier.cID,
 		conn:       conn,
 	}
 	metrics.Increment("user_connection_success_total", "")
@@ -82,13 +81,13 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 				websocket.CloseNormalClosure,
 				websocket.CloseNoStatusReceived,
 				websocket.CloseAbnormalClosure) {
-				logger.Error(fmt.Sprintf("[websocket.Handler] UniqConnID %s Connection Closed Abruptly: %v", uniqConnID, err))
+				logger.Error(fmt.Sprintf("[websocket.Handler] UniqConnID %s Connection Closed Abruptly: %v", identifier.cID, err))
 				metrics.Increment("batches_read_total", "status=failed,reason=closeerror")
 				break
 			}
 
 			metrics.Increment("batches_read_total", "status=failed,reason=unknown")
-			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v  User ID: %s ", err, uniqConnID)) //no connection issue here
+			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. Unknown failure: %v  User ID: %s ", err, identifier.cID)) //no connection issue here
 			break
 		}
 		timeConsumed := time.Now()
@@ -96,7 +95,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		payload := &pb.EventRequest{}
 		err = proto.Unmarshal(message, payload)
 		if err != nil {
-			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v  UniqConnID: %s ", err, uniqConnID))
+			logger.Error(fmt.Sprintf("[websocket.Handler] Reading message failed. %v  UniqConnID: %s ", err, identifier.cID))
 			metrics.Increment("batches_read_total", "status=failed,reason=serde")
 			badrequest := createBadrequestResponse(err)
 			conn.WriteMessage(websocket.BinaryMessage, badrequest)
@@ -106,7 +105,7 @@ func (wsHandler *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request
 		metrics.Count("events_rx_total", len(payload.Events), "")
 
 		wsHandler.bufferChannel <- EventsBatch{
-			UniqConnID:   uniqConnID,
+			UniqConnID:   identifier.cID,
 			EventReq:     payload,
 			TimeConsumed: timeConsumed,
 			TimePushed:   (time.Now()),

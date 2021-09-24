@@ -93,7 +93,7 @@ The above response model is self-explanatory. Clients can choose to retry for er
 
 ## Headers
 
-Raccoon service accepts headers to identify a user connection uniquely. The header name is made configurable as it enables clients to specify a header name that works for them. For, e.g. for a mobile app having a request header as `X-User-id` which identifies the user \(client\) connecting to Raccoon, can configure Raccoon service with the config set as below `SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER=X-User-id`
+Raccoon service accepts headers to identify a user connection uniquely. The header name is made configurable as it enables clients to specify a header name that works for them. For, e.g. for a mobile app having a request header as `X-User-id` which identifies the user \(client\) connecting to Raccoon, can configure Raccoon service with the config set as below `SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-id`
 
 Raccoon uses the config to fetch the header name and uses the value passed in the request header with this name, as the connection id. This header name uniquely identifies a client. A client, in this case, can be the user in the app.
 

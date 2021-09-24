@@ -77,7 +77,8 @@ func CreateServer() (*Server, chan EventsBatch) {
 		PongWaitInterval:  config.ServerWs.PongWaitInterval,
 		WriteWaitInterval: config.ServerWs.WriteWaitInterval,
 		PingChannel:       pingChannel,
-		UniqConnIDHeader:      config.ServerWs.UniqConnIDHeader,
+		ConnIDHeader:      config.ServerWs.ConnIDHeader,
+		ConnTypeHeader:    config.ServerWs.ConnTypeHeader,
 	}
 	server := &Server{
 		HTTPServer: &http.Server{
@@ -111,7 +112,7 @@ func newWebSocketUpgrader(readBufferSize int, writeBufferSize int, checkOrigin b
 	ug := websocket.Upgrader{
 		ReadBufferSize:  readBufferSize,
 		WriteBufferSize: writeBufferSize,
-		CheckOrigin: checkOriginFunc,
+		CheckOrigin:     checkOriginFunc,
 	}
 	return ug
 }

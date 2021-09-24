@@ -31,6 +31,10 @@ func Debug(args ...interface{}) {
 	logger.Debug(args...)
 }
 
+func Debugf(format string, args ...interface{}) {
+	logger.Debugf(format, args...)
+}
+
 func Info(args ...interface{}) {
 	logger.Info(args...)
 }

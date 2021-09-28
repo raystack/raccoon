@@ -59,13 +59,13 @@ func (w *Pool) StartWorkers() {
 				logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch-int64(totalErr)))
 				if lenBatch > 0 {
 					eventTimingMs := time.Since(time.Unix(request.EventReq.SentTime.Seconds, 0)).Milliseconds() / lenBatch
-					metrics.Timing("event_processing_duration_milliseconds", eventTimingMs, "")
+					metrics.Timing("event_processing_duration_milliseconds", eventTimingMs, fmt.Sprintf("conn_type=%s", request.ConnIdentifer.Type))
 					now := time.Now()
 					metrics.Timing("worker_processing_duration_milliseconds", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)
 					metrics.Timing("server_processing_latency_milliseconds", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, "")
 				}
-				metrics.Count("kafka_messages_delivered_total", totalErr, "success=false")
-				metrics.Count("kafka_messages_delivered_total", len(request.EventReq.GetEvents())-totalErr, "success=true")
+				metrics.Count("kafka_messages_delivered_total", totalErr, fmt.Sprintf("success=false,conn_type=%s", request.ConnIdentifer.Type))
+				metrics.Count("kafka_messages_delivered_total", len(request.EventReq.GetEvents())-totalErr, fmt.Sprintf("success=true,conn_type=%s", request.ConnIdentifer.Type))
 			}
 			w.wg.Done()
 		}(fmt.Sprintf("worker-%d", i))

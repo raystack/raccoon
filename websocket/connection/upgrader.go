@@ -59,7 +59,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 
 	conn, err := u.gorillaUg.Upgrade(w, r, nil)
 	if err != nil {
-		metrics.Increment("user_connection_failure_total", "reason=ugfailure")
+		metrics.Increment("user_connection_failure_total", fmt.Sprintf("reason=ugfailure,conn_type=%s", identifier.Type))
 		return Conn{}, fmt.Errorf("failed to upgrade %s: %v", identifier, err)
 	}
 	if u.Table.Exists(identifier) {
@@ -67,7 +67,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 
 		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Duplicate connection"))
-		metrics.Increment("user_connection_failure_total", "reason=exists")
+		metrics.Increment("user_connection_failure_total", fmt.Sprintf("reason=exists,conn_type=%s", identifier.Type))
 		conn.Close()
 		return Conn{}, fmt.Errorf("disconnecting %s: already connected", identifier)
 	}
@@ -76,13 +76,13 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 		maxConnResp := createEmptyErrorResponse(pb.Code_MAX_CONNECTION_LIMIT_REACHED)
 		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Max connection reached"))
-		metrics.Increment("user_connection_failure_total", "reason=serverlimit")
+		metrics.Increment("user_connection_failure_total", fmt.Sprintf("reason=serverlimit,conn_type=%s", identifier.Type))
 		conn.Close()
 		return Conn{}, fmt.Errorf("max connection reached")
 	}
 
 	u.setUpControlHandlers(conn, identifier)
-	metrics.Increment("user_connection_success_total", "")
+	metrics.Increment("user_connection_success_total", fmt.Sprintf("conn_type=%s", identifier.Type))
 
 	u.Table.Store(identifier)
 	return Conn{
@@ -106,7 +106,7 @@ func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier Identif
 	conn.SetPingHandler(func(s string) error {
 		logger.Debug(fmt.Sprintf("Client %s pinged", identifier))
 		if err := conn.WriteControl(websocket.PongMessage, []byte(s), time.Now().Add(u.writeWaitInterval)); err != nil {
-			metrics.Increment("server_pong_failure_total", "")
+			metrics.Increment("server_pong_failure_total", fmt.Sprintf("conn_type=%s", identifier.Type))
 			logger.Debug(fmt.Sprintf("Failed to send pong event %s: %v", identifier, err))
 		}
 		return nil

@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"raccoon/config"
 	"raccoon/logger"
@@ -50,7 +51,9 @@ func (s *Server) ReportServerMetrics() {
 	m := &runtime.MemStats{}
 	for {
 		<-t
-		metrics.Gauge("connections_count_current", s.table.TotalConnection(), "")
+		for k, v := range s.table.ConnectionPerType() {
+			metrics.Gauge("connections_count_current", v, fmt.Sprintf("conn_type=%s", k))
+		}
 		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), "")
 
 		runtime.ReadMemStats(m)

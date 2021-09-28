@@ -48,27 +48,27 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 				websocket.CloseNoStatusReceived,
 				websocket.CloseAbnormalClosure) {
 				logger.Error(fmt.Sprintf("[websocket.Handler] %s closed abruptly: %v", conn.Identifier, err))
-				metrics.Increment("batches_read_total", "status=failed,reason=closeerror")
+				metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=closeerror,conn_type=%s", conn.Identifier.Type))
 				break
 			}
 
-			metrics.Increment("batches_read_total", "status=failed,reason=unknown")
+			metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=unknown,conn_type=%s", conn.Identifier.Type))
 			logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed. Unknown failure for %s: %v", conn.Identifier, err)) //no connection issue here
 			break
 		}
 		timeConsumed := time.Now()
-		metrics.Count("events_rx_bytes_total", len(message), "")
+		metrics.Count("events_rx_bytes_total", len(message), fmt.Sprintf("conn_type=%s", conn.Identifier.Type))
 		payload := &pb.EventRequest{}
 		err = proto.Unmarshal(message, payload)
 		if err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed for %s: %v", conn.Identifier, err))
-			metrics.Increment("batches_read_total", "status=failed,reason=serde")
+			metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_type=%s", conn.Identifier.Type))
 			badrequest := createBadrequestResponse(err)
 			conn.WriteMessage(websocket.BinaryMessage, badrequest)
 			continue
 		}
-		metrics.Increment("batches_read_total", "status=success")
-		metrics.Count("events_rx_total", len(payload.Events), "")
+		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_type=%s", conn.Identifier.Type))
+		metrics.Count("events_rx_total", len(payload.Events), fmt.Sprintf("conn_type=%s", conn.Identifier.Type))
 
 		h.bufferChannel <- EventsBatch{
 			ConnIdentifer: conn.Identifier,

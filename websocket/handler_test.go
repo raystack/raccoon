@@ -53,7 +53,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		PongWaitInterval:  time.Duration(60 * time.Second),
 		WriteWaitInterval: time.Duration(5 * time.Second),
 		ConnIDHeader:      "x-user-id",
-		ConnTypeHeader:    "string",
+		ConnGroupHeader:   "string",
 	})
 	hlr := &Handler{
 		upgrader:      upgrader,

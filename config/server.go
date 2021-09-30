@@ -20,7 +20,7 @@ type serverWs struct {
 	WriteWaitInterval time.Duration
 	PingerSize        int
 	ConnIDHeader      string
-	ConnTypeHeader    string
+	ConnGroupHeader   string
 }
 
 func serverWsConfigLoader() {
@@ -33,7 +33,7 @@ func serverWsConfigLoader() {
 	viper.SetDefault("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", "60000") //should be more than the ping period
 	viper.SetDefault("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS", "5000")
 	viper.SetDefault("SERVER_WEBSOCKET_PINGER_SIZE", 1)
-	viper.SetDefault("SERVER_WEBSOCKET_CONN_TYPE_HEADER", "")
+	viper.SetDefault("SERVER_WEBSOCKET_CONN_GROUP_HEADER", "")
 
 	ServerWs = serverWs{
 		AppPort:           util.MustGetString("SERVER_WEBSOCKET_PORT"),
@@ -46,6 +46,6 @@ func serverWsConfigLoader() {
 		WriteWaitInterval: util.MustGetDuration("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS", time.Millisecond),
 		PingerSize:        util.MustGetInt("SERVER_WEBSOCKET_PINGER_SIZE"),
 		ConnIDHeader:      util.MustGetString("SERVER_WEBSOCKET_CONN_ID_HEADER"),
-		ConnTypeHeader:    util.MustGetString("SERVER_WEBSOCKET_CONN_TYPE_HEADER"),
+		ConnGroupHeader:   util.MustGetString("SERVER_WEBSOCKET_CONN_GROUP_HEADER"),
 	}
 }

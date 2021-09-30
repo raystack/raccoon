@@ -26,7 +26,7 @@ Raccoon has long running persistent connections with the client. Once a client m
 
 The following sequence outlines the connection handling by Raccoon.
 
-* Fetch connection id details from the initial request header based on the configured header name in `SERVER_WEBSOCKET_CONN_ID_HEADER`. The header name uniquely identifies a client. A client in this case can be the user in the app. There can be multiple connections from the same client. The no., of connections allowed per client is determined by `SERVER_WEBSOCKET_MAX_CONN`. Additionally, you can also specify `SERVER_WEBSOCKET_CONN_TYPE_HEADER` to allow same connection id with different type.
+* Fetch connection id details from the initial request header based on the configured header name in `SERVER_WEBSOCKET_CONN_ID_HEADER`. The header name uniquely identifies a client. A client in this case can be the user in the app. There can be multiple connections from the same client. The no., of connections allowed per client is determined by `SERVER_WEBSOCKET_MAX_CONN`. Additionally, you can also specify `SERVER_WEBSOCKET_CONN_GROUP_HEADER` to allow same connection id with different type.
 * Once the connection id is fetched, verify if the user has connection limit reached based on the configured `SERVER_WEBSOCKET_MAX_CONN`. For each client an internal map stores the `SERVER_WEBSOCKET_MAX_CONN` along with the connection objects. On reaching the max connections for the client, the connection is disconnected with an appropriate error message as a response proto.
 * Upgrade the connection
 * Add this user-id -&gt; connection mapping

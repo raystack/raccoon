@@ -51,8 +51,8 @@ func (s *Server) ReportServerMetrics() {
 	m := &runtime.MemStats{}
 	for {
 		<-t
-		for k, v := range s.table.ConnectionPerType() {
-			metrics.Gauge("connections_count_current", v, fmt.Sprintf("conn_type=%s", k))
+		for k, v := range s.table.TotalConnectionPerGroup() {
+			metrics.Gauge("connections_count_current", v, fmt.Sprintf("conn_group=%s", k))
 		}
 		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), "")
 
@@ -81,7 +81,7 @@ func CreateServer() (*Server, chan EventsBatch) {
 		PongWaitInterval:  config.ServerWs.PongWaitInterval,
 		WriteWaitInterval: config.ServerWs.WriteWaitInterval,
 		ConnIDHeader:      config.ServerWs.ConnIDHeader,
-		ConnTypeHeader:    config.ServerWs.ConnTypeHeader,
+		ConnGroupHeader:   config.ServerWs.ConnGroupHeader,
 	}
 	upgrader := connection.NewUpgrader(ugConfig)
 	wsHandler := &Handler{

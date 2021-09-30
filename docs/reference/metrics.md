@@ -16,42 +16,42 @@ Raccoon uses Statsd protocol as way to report metrics. You can capture the metri
 Total ping that server fails to send
 
 * Type: `Counting`
-* Tags: `conn_type=*`
+* Tags: `conn_group=*`
 
 ### `server_pong_failure_total`
 
 Total pong that server fails to send
 
 * Type: `Counting`
-* Tags: `conn_type=*`
+* Tags: `conn_group=*`
 
 ### `connections_count_current`
 
 Number of alive connections
 
 * Type: `Gauge`
-* Tags: `conn_type=*`
+* Tags: `conn_group=*`
 
 ### `user_connection_success_total`
 
 Number of successful connections established to the server
 
 * Type: `Count`
-* Tags: `conn_type=*`
+* Tags: `conn_group=*`
 
 ### `user_connection_failure_total`
 
 Number of fail connections established to the server
 
 * Type: `Count`
-* Tags: `reason=ugfailure` `reason=exists` `reason=serverlimit` `conn_type=*`
+* Tags: `reason=ugfailure` `reason=exists` `reason=serverlimit` `conn_group=*`
 
 ### `user_session_duration_milliseconds`
 
 Duration of alive connection per session per connection
 
 * Type: `Timing`
-* Tags: `conn_type=*`
+* Tags: `conn_group=*`
 
 ## Kafka Publisher
 
@@ -60,7 +60,7 @@ Duration of alive connection per session per connection
 Number of delivered events to Kafka
 
 * Type: `Count`
-* Tags: `success=false` `success=true` `conn_type=*`
+* Tags: `success=false` `success=true` `conn_group=*`
 
 ### `kafka_unknown_topic_failure_total`
 
@@ -169,7 +169,7 @@ Following metrics are event delivery reports. Each metrics reported at a differe
 Total byte receieved in requests
 
 * Type: `Count`
-* Tags: `conn_type=*`
+* Tags: `conn_group=*`
 
 ### `events_rx_total`
 
@@ -182,7 +182,7 @@ Number of events received in requests
 Request count
 
 * Type: `Count`
-* Tags: `status=failed` `status=success` `reason=*` `conn_type=*`
+* Tags: `status=failed` `status=success` `reason=*` `conn_group=*`
 
 ### `batch_idle_in_channel_milliseconds`
 
@@ -196,7 +196,7 @@ Duration from when the request is received to when the request is processed. Hig
 Duration from the time request is sent to the time events are published. This metric is calculated per event by following formula `(PublishedTime - SentTime)/CountEvents`
 
 * Type: `Timing`
-* Tags: `conn_type=*`
+* Tags: `conn_group=*`
 
 ### `server_processing_latency_milliseconds`
 

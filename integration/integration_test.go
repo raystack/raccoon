@@ -230,18 +230,18 @@ func TestIntegration(t *testing.T) {
 		}
 	})
 
-	t.Run("Should accept connections with same user id with different connection type", func(t *testing.T) {
+	t.Run("Should accept connections with same user id with different connection group", func(t *testing.T) {
 		done := make(chan int)
 		_, _, err := websocket.DefaultDialer.Dial(url, http.Header{
 			"x-user-id":   []string{"1234"},
-			"x-user-type": []string{"viewer"},
+			"x-user-group": []string{"viewer"},
 		})
 
 		assert.NoError(t, err)
 
 		secondWss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
 			"x-user-id":   []string{"1234"},
-			"x-user-type": []string{"editor"},
+			"x-user-group": []string{"editor"},
 		})
 
 		assert.NoError(t, err)

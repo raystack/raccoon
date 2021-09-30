@@ -36,7 +36,7 @@ var config = UpgraderConfig{
 	PongWaitInterval:  time.Duration(60 * time.Second),
 	WriteWaitInterval: time.Duration(5 * time.Second),
 	ConnIDHeader:      "x-user-id",
-	ConnTypeHeader:    "",
+	ConnGroupHeader:    "",
 }
 
 func TestConnectionLifecycle(t *testing.T) {
@@ -72,17 +72,17 @@ func TestConnectionLifecycle(t *testing.T) {
 	})
 }
 
-func TestConnectionType(t *testing.T) {
-	t.Run("Should accept connections with same userid and different type", func(t *testing.T) {
-		config.ConnTypeHeader = "x-user-type"
-		defer func() { config.ConnTypeHeader = "" }()
+func TestConnectionGroup(t *testing.T) {
+	t.Run("Should accept connections with same userid and different group", func(t *testing.T) {
+		config.ConnGroupHeader = "x-user-group"
+		defer func() { config.ConnGroupHeader = "" }()
 		upgrader := NewUpgrader(config)
 		headers := []http.Header{{
 			"x-user-id":   []string{"user1"},
-			"x-user-type": []string{"viewer"},
+			"x-user-group": []string{"viewer"},
 		}, {
 			"x-user-id":   []string{"user1"},
-			"x-user-type": []string{"editor"},
+			"x-user-group": []string{"editor"},
 		}}
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {
@@ -93,7 +93,7 @@ func TestConnectionType(t *testing.T) {
 		})
 	})
 
-	t.Run("Should treat user id as identifier when type is not provided", func(t *testing.T) {
+	t.Run("Should treat user id as identifier when group is not provided", func(t *testing.T) {
 		upgrader := NewUpgrader(config)
 		headers := []http.Header{{
 			"x-user-id": []string{"user1"},
@@ -110,16 +110,16 @@ func TestConnectionType(t *testing.T) {
 		})
 	})
 
-	t.Run("Should reject connections with same userid and same type", func(t *testing.T) {
-		config.ConnTypeHeader = "x-user-type"
-		defer func() { config.ConnTypeHeader = "" }()
+	t.Run("Should reject connections with same userid and same group", func(t *testing.T) {
+		config.ConnGroupHeader = "x-user-group"
+		defer func() { config.ConnGroupHeader = "" }()
 		upgrader := NewUpgrader(config)
 		headers := []http.Header{{
 			"x-user-id":   []string{"user1"},
-			"x-user-type": []string{"viewer"},
+			"x-user-group": []string{"viewer"},
 		}, {
 			"x-user-id":   []string{"user1"},
-			"x-user-type": []string{"viewer"},
+			"x-user-group": []string{"viewer"},
 		}}
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {

@@ -31,14 +31,14 @@ func (t *Table) Store(c Identifer) {
 	t.m.Lock()
 	defer t.m.Unlock()
 	t.connMap[c] = c
-	t.counter[c.Type] = t.counter[c.Type] + 1
+	t.counter[c.Group] = t.counter[c.Group] + 1
 }
 
 func (t *Table) Remove(c Identifer) {
 	t.m.Lock()
 	defer t.m.Unlock()
 	delete(t.connMap, c)
-	t.counter[c.Type] = t.counter[c.Type] - 1
+	t.counter[c.Group] = t.counter[c.Group] - 1
 }
 
 func (t *Table) HasReachedLimit() bool {
@@ -51,6 +51,6 @@ func (t *Table) TotalConnection() int {
 	return len(t.connMap)
 }
 
-func (t *Table) ConnectionPerType() map[string]int {
+func (t *Table) TotalConnectionPerGroup() map[string]int {
 	return t.counter
 }

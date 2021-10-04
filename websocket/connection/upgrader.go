@@ -55,7 +55,11 @@ func NewUpgrader(conf UpgraderConfig) *Upgrader {
 }
 
 func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error) {
-	identifier := NewConnIdentifier(r.Header, u.connIDHeader, u.connGroupHeader)
+	identifier := Identifer{
+		ID: r.Header.Get(u.connIDHeader),
+		// If connGroupHeader is empty string. By default, it will always have an empty string as Group. This means uniqueness only depends on ID.
+		Group: r.Header.Get(u.connGroupHeader),
+	}
 	logger.Debug(fmt.Sprintf("%s connected at %v", identifier, time.Now()))
 
 	conn, err := u.gorillaUg.Upgrade(w, r, nil)

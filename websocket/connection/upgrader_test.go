@@ -104,7 +104,7 @@ func TestConnectionGroup(t *testing.T) {
 		}}
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {
-				assert.EqualError(t, u.err, "disconnecting connection user1 (): already connected")
+				assert.EqualError(t, u.err, "disconnecting connection [] user1: already connected")
 			},
 			onIteration: 3,
 		})
@@ -124,7 +124,7 @@ func TestConnectionGroup(t *testing.T) {
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {
 				assert.Equal(t, 1, upgrader.Table.TotalConnection())
-				assert.EqualError(t, u.err, "disconnecting connection user1 (viewer): already connected")
+				assert.EqualError(t, u.err, "disconnecting connection [viewer] user1: already connected")
 			},
 			onIteration: 2,
 		})

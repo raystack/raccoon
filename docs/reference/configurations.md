@@ -45,14 +45,14 @@ Specify I/O buffer sizes in bytes: [Refer gorilla websocket API](https://pkg.go.
 
 Unique identifier for the server to maintain the connection. A single uniq id can only connect once in a session. If, there is a subsequence connection with the same uniq id the connection will be rejected.
 
-* Example value: `x-user-id`
+* Example value: `X-User-ID`
 * Type: `Required`
 
 ### `SERVER_WEBSOCKET_CONN_GROUP_HEADER`
 
 Additional identifier for the server to maintain the connection. Value of the conn group header combined with user id will act as unique identifier instead of only user id. You can use this if you want to differentiate between user groups or clients e.g(mobile, web)
 
-* Example value: `x-user-group`
+* Example value: `X-User-Group`
 * Type: `Optional`
 
 ### `SERVER_WEBSOCKET_PING_INTERVAL_MS`

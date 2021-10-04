@@ -35,15 +35,15 @@ var config = UpgraderConfig{
 	MaxUser:           2,
 	PongWaitInterval:  time.Duration(60 * time.Second),
 	WriteWaitInterval: time.Duration(5 * time.Second),
-	ConnIDHeader:      "x-user-id",
-	ConnGroupHeader:    "",
+	ConnIDHeader:      "X-User-ID",
+	ConnGroupHeader:   "",
 }
 
 func TestConnectionLifecycle(t *testing.T) {
 	t.Run("Should increment total connection when upgraded", func(t *testing.T) {
 		upgrader := NewUpgrader(config)
 		headers := []http.Header{{
-			"x-user-id": []string{"user1"},
+			"X-User-ID": []string{"user1"},
 		}}
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {
@@ -57,9 +57,9 @@ func TestConnectionLifecycle(t *testing.T) {
 	t.Run("Should decrement total connection when client close the conn", func(t *testing.T) {
 		upgrader := NewUpgrader(config)
 		headers := []http.Header{{
-			"x-user-id": []string{"user1"},
+			"X-User-ID": []string{"user1"},
 		}, {
-			"x-user-id": []string{"user1"},
+			"X-User-ID": []string{"user1"},
 		}}
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {
@@ -74,15 +74,15 @@ func TestConnectionLifecycle(t *testing.T) {
 
 func TestConnectionGroup(t *testing.T) {
 	t.Run("Should accept connections with same userid and different group", func(t *testing.T) {
-		config.ConnGroupHeader = "x-user-group"
+		config.ConnGroupHeader = "X-User-Group"
 		defer func() { config.ConnGroupHeader = "" }()
 		upgrader := NewUpgrader(config)
 		headers := []http.Header{{
-			"x-user-id":   []string{"user1"},
-			"x-user-group": []string{"viewer"},
+			"X-User-ID":    []string{"user1"},
+			"X-User-Group": []string{"viewer"},
 		}, {
-			"x-user-id":   []string{"user1"},
-			"x-user-group": []string{"editor"},
+			"X-User-ID":    []string{"user1"},
+			"X-User-Group": []string{"editor"},
 		}}
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {
@@ -96,11 +96,11 @@ func TestConnectionGroup(t *testing.T) {
 	t.Run("Should treat user id as identifier when group is not provided", func(t *testing.T) {
 		upgrader := NewUpgrader(config)
 		headers := []http.Header{{
-			"x-user-id": []string{"user1"},
+			"X-User-ID": []string{"user1"},
 		}, {
-			"x-user-id": []string{"user1"},
+			"X-User-ID": []string{"user1"},
 		}, {
-			"x-user-id": []string{"user1"},
+			"X-User-ID": []string{"user1"},
 		}}
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {
@@ -111,15 +111,15 @@ func TestConnectionGroup(t *testing.T) {
 	})
 
 	t.Run("Should reject connections with same userid and same group", func(t *testing.T) {
-		config.ConnGroupHeader = "x-user-group"
+		config.ConnGroupHeader = "X-User-Group"
 		defer func() { config.ConnGroupHeader = "" }()
 		upgrader := NewUpgrader(config)
 		headers := []http.Header{{
-			"x-user-id":   []string{"user1"},
-			"x-user-group": []string{"viewer"},
+			"X-User-ID":    []string{"user1"},
+			"X-User-Group": []string{"viewer"},
 		}, {
-			"x-user-id":   []string{"user1"},
-			"x-user-group": []string{"viewer"},
+			"X-User-ID":    []string{"user1"},
+			"X-User-Group": []string{"viewer"},
 		}}
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {
@@ -137,7 +137,7 @@ func TestConnectionRejection(t *testing.T) {
 		headers := make([]http.Header, 0)
 		for _, i := range []string{"1", "2", "3"} {
 			headers = append(headers, http.Header{
-				"x-user-id": []string{"user-" + i},
+				"X-User-ID": []string{"user-" + i},
 			})
 		}
 

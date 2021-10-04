@@ -52,7 +52,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		MaxUser:           2,
 		PongWaitInterval:  time.Duration(60 * time.Second),
 		WriteWaitInterval: time.Duration(5 * time.Second),
-		ConnIDHeader:      "x-user-id",
+		ConnIDHeader:      "X-User-ID",
 		ConnGroupHeader:   "string",
 	})
 	hlr := &Handler{
@@ -65,7 +65,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 
 	url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
 	header := http.Header{
-		"x-user-id": []string{"test1-user1"},
+		"X-User-ID": []string{"test1-user1"},
 	}
 
 	t.Run("Should return success response after successfully push to channel", func(t *testing.T) {
@@ -103,7 +103,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		defer ts.Close()
 
 		wss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
-			"x-user-id": []string{"test2-user2"},
+			"X-User-ID": []string{"test2-user2"},
 		})
 		defer wss.Close()
 		require.NoError(t, err)

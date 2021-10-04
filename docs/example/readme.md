@@ -14,7 +14,7 @@ You are free to use any websocket client as long as it supports passing header. 
 var (
 	url    = "ws://localhost:8080/api/v1/events"
 	header = http.Header{
-		"x-user-id": []string{"1234"},
+		"X-User-ID": []string{"1234"},
 	}
 )
 

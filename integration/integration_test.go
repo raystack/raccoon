@@ -8,12 +8,13 @@ import (
 	"testing"
 	"time"
 
+	pb "raccoon/websocket/proto"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
-	pb "raccoon/websocket/proto"
 )
 
 var uuid string
@@ -35,7 +36,7 @@ func TestIntegration(t *testing.T) {
 	var err error
 	assert.NoError(t, err)
 	header := http.Header{
-		"x-user-id": []string{"1234"},
+		"X-User-ID": []string{"1234"},
 	}
 	t.Run("Should response with BadRequest when sending invalid request", func(t *testing.T) {
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)
@@ -233,15 +234,15 @@ func TestIntegration(t *testing.T) {
 	t.Run("Should accept connections with same user id with different connection group", func(t *testing.T) {
 		done := make(chan int)
 		_, _, err := websocket.DefaultDialer.Dial(url, http.Header{
-			"x-user-id":   []string{"1234"},
-			"x-user-group": []string{"viewer"},
+			"X-User-ID":    []string{"1234"},
+			"X-User-Group": []string{"viewer"},
 		})
 
 		assert.NoError(t, err)
 
 		secondWss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
-			"x-user-id":   []string{"1234"},
-			"x-user-group": []string{"editor"},
+			"X-User-ID":    []string{"1234"},
+			"X-User-Group": []string{"editor"},
 		})
 
 		assert.NoError(t, err)

@@ -13,12 +13,12 @@ func Pinger(c chan connection.Conn, size int, PingInterval time.Duration, WriteW
 	for i := 0; i < size; i++ {
 		go func() {
 			cSet := make(map[connection.Identifer]connection.Conn)
-			timer := time.NewTicker(PingInterval)
+			ticker := time.NewTicker(PingInterval)
 			for {
 				select {
 				case conn := <-c:
 					cSet[conn.Identifier] = conn
-				case <-timer.C:
+				case <-ticker.C:
 					for identifier, conn := range cSet {
 						logger.Debug(fmt.Sprintf("Pinging %s ", identifier))
 						if err := conn.Ping(WriteWaitInterval); err != nil {

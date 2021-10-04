@@ -21,8 +21,23 @@ func TestConnectionPerGroup(t *testing.T) {
 func TestStore(t *testing.T) {
 	t.Run("Should store new connection", func(t *testing.T) {
 		table := NewTable(10)
-		table.Store(Identifer{ID: "user1", Group: ""})
+		err := table.Store(Identifer{ID: "user1", Group: ""})
+		assert.NoError(t, err)
 		assert.True(t, table.Exists(Identifer{ID: "user1"}))
+	})
+
+	t.Run("Should return max connection reached error when connection is maxed", func(t *testing.T) {
+		table := NewTable(0)
+		err := table.Store(Identifer{ID: "user1", Group: ""})
+		assert.Error(t, err, errMaxConnectionReached)
+	})
+
+	t.Run("Should return duplicated error when connection already exists", func(t *testing.T) {
+		table := NewTable(2)
+		err := table.Store(Identifer{ID: "user1", Group: ""})
+		assert.NoError(t, err)
+		err = table.Store(Identifer{ID: "user1", Group: ""})
+		assert.Error(t, err, errConnDuplicated)
 	})
 
 	t.Run("Should remove connection when identifier match", func(t *testing.T) {

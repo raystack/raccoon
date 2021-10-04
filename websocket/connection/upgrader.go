@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"raccoon/logger"
@@ -62,7 +63,8 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 		metrics.Increment("user_connection_failure_total", fmt.Sprintf("reason=ugfailure,conn_group=%s", identifier.Group))
 		return Conn{}, fmt.Errorf("failed to upgrade %s: %v", identifier, err)
 	}
-	if u.Table.Exists(identifier) {
+	err = u.Table.Store(identifier)
+	if errors.Is(err, errConnDuplicated) {
 		duplicateConnResp := createEmptyErrorResponse(pb.Code_MAX_USER_LIMIT_REACHED)
 
 		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
@@ -71,7 +73,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 		conn.Close()
 		return Conn{}, fmt.Errorf("disconnecting %s: already connected", identifier)
 	}
-	if u.Table.HasReachedLimit() {
+	if errors.Is(err, errMaxConnectionReached) {
 		logger.Errorf("[websocket.Handler] Disconnecting %v, max connection reached", identifier)
 		maxConnResp := createEmptyErrorResponse(pb.Code_MAX_CONNECTION_LIMIT_REACHED)
 		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
@@ -84,7 +86,6 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 	u.setUpControlHandlers(conn, identifier)
 	metrics.Increment("user_connection_success_total", fmt.Sprintf("conn_group=%s", identifier.Group))
 
-	u.Table.Store(identifier)
 	return Conn{
 		Identifier:  identifier,
 		conn:        conn,

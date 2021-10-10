@@ -37,6 +37,7 @@ var config = UpgraderConfig{
 	WriteWaitInterval: time.Duration(5 * time.Second),
 	ConnIDHeader:      "X-User-ID",
 	ConnGroupHeader:   "",
+	ConnGroupDefault:  "--default--",
 }
 
 func TestConnectionLifecycle(t *testing.T) {
@@ -93,7 +94,7 @@ func TestConnectionGroup(t *testing.T) {
 		})
 	})
 
-	t.Run("Should treat user id as identifier when group is not provided", func(t *testing.T) {
+	t.Run("Should use default when ConnGroupHeader is not provided", func(t *testing.T) {
 		upgrader := NewUpgrader(config)
 		headers := []http.Header{{
 			"X-User-ID": []string{"user1"},
@@ -104,7 +105,7 @@ func TestConnectionGroup(t *testing.T) {
 		}}
 		upgradeConnectionTestHelper(t, upgrader, headers, assertUpgrade{
 			callback: func(u upgradeRes) {
-				assert.EqualError(t, u.err, "disconnecting connection [] user1: already connected")
+				assert.EqualError(t, u.err, "disconnecting connection [--default--] user1: already connected")
 			},
 			onIteration: 3,
 		})

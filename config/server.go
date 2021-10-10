@@ -21,6 +21,7 @@ type serverWs struct {
 	PingerSize        int
 	ConnIDHeader      string
 	ConnGroupHeader   string
+	ConnGroupDefault  string
 }
 
 func serverWsConfigLoader() {
@@ -34,6 +35,7 @@ func serverWsConfigLoader() {
 	viper.SetDefault("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS", "5000")
 	viper.SetDefault("SERVER_WEBSOCKET_PINGER_SIZE", 1)
 	viper.SetDefault("SERVER_WEBSOCKET_CONN_GROUP_HEADER", "")
+	viper.SetDefault("SERVER_WEBSOCKET_CONN_GROUP_DEFAULT", "--default--")
 
 	ServerWs = serverWs{
 		AppPort:           util.MustGetString("SERVER_WEBSOCKET_PORT"),
@@ -47,5 +49,6 @@ func serverWsConfigLoader() {
 		PingerSize:        util.MustGetInt("SERVER_WEBSOCKET_PINGER_SIZE"),
 		ConnIDHeader:      util.MustGetString("SERVER_WEBSOCKET_CONN_ID_HEADER"),
 		ConnGroupHeader:   util.MustGetString("SERVER_WEBSOCKET_CONN_GROUP_HEADER"),
+		ConnGroupDefault:  util.MustGetString("SERVER_WEBSOCKET_CONN_GROUP_DEFAULT"),
 	}
 }

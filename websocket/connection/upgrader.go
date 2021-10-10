@@ -20,6 +20,7 @@ type Upgrader struct {
 	writeWaitInterval time.Duration
 	connIDHeader      string
 	connGroupHeader   string
+	connGroupDefault  string
 }
 
 type UpgraderConfig struct {
@@ -31,6 +32,7 @@ type UpgraderConfig struct {
 	WriteWaitInterval time.Duration
 	ConnIDHeader      string
 	ConnGroupHeader   string
+	ConnGroupDefault  string
 }
 
 func NewUpgrader(conf UpgraderConfig) *Upgrader {
@@ -51,15 +53,12 @@ func NewUpgrader(conf UpgraderConfig) *Upgrader {
 		writeWaitInterval: conf.WriteWaitInterval,
 		connIDHeader:      conf.ConnIDHeader,
 		connGroupHeader:   conf.ConnGroupHeader,
+		connGroupDefault:  conf.ConnGroupDefault,
 	}
 }
 
 func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error) {
-	identifier := Identifer{
-		ID: r.Header.Get(u.connIDHeader),
-		// If connGroupHeader is empty string. By default, it will always have an empty string as Group. This means uniqueness only depends on ID.
-		Group: r.Header.Get(u.connGroupHeader),
-	}
+	identifier := u.newIdentifier(r.Header)
 	logger.Debug(fmt.Sprintf("%s connected at %v", identifier, time.Now()))
 
 	conn, err := u.gorillaUg.Upgrade(w, r, nil)
@@ -116,6 +115,18 @@ func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier Identif
 		}
 		return nil
 	})
+}
+
+func (u *Upgrader) newIdentifier(h http.Header) Identifer {
+	var group = h.Get(u.connGroupHeader)
+	if group == "" {
+		group = u.connGroupDefault
+	}
+	return Identifer{
+		ID: h.Get(u.connIDHeader),
+		// If connGroupHeader is empty string. By default, it will always have an empty string as Group. This means uniqueness only depends on ID.
+		Group: group,
+	}
 }
 
 func createEmptyErrorResponse(errCode pb.Code) []byte {

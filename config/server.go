@@ -8,6 +8,7 @@ import (
 )
 
 var ServerWs serverWs
+var ServerGRPC serverGRPC
 
 type serverWs struct {
 	AppPort           string
@@ -21,6 +22,10 @@ type serverWs struct {
 	PingerSize        int
 	ConnIDHeader      string
 	ConnGroupHeader   string
+}
+
+type serverGRPC struct {
+	Port string
 }
 
 func serverWsConfigLoader() {
@@ -47,5 +52,13 @@ func serverWsConfigLoader() {
 		PingerSize:        util.MustGetInt("SERVER_WEBSOCKET_PINGER_SIZE"),
 		ConnIDHeader:      util.MustGetString("SERVER_WEBSOCKET_CONN_ID_HEADER"),
 		ConnGroupHeader:   util.MustGetString("SERVER_WEBSOCKET_CONN_GROUP_HEADER"),
+	}
+}
+
+func serverGRPCConfigLoader() {
+
+	viper.SetDefault("SERVER_GRPC_PORT", "8081")
+	ServerGRPC = serverGRPC{
+		Port: util.MustGetString("SERVER_GRPC_PORT"),
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"raccoon/logger"
-	pb "raccoon/websocket/proto"
+	pb "raccoon/pkg/proto"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

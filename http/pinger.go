@@ -1,10 +1,11 @@
-package websocket
+package http
 
 import (
 	"fmt"
+	"raccoon/http/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
-	"raccoon/websocket/connection"
+	"raccoon/pkg/identification"
 	"time"
 )
 
@@ -12,7 +13,7 @@ import (
 func Pinger(c chan connection.Conn, size int, PingInterval time.Duration, WriteWaitInterval time.Duration) {
 	for i := 0; i < size; i++ {
 		go func() {
-			cSet := make(map[connection.Identifer]connection.Conn)
+			cSet := make(map[identification.Identifier]connection.Conn)
 			ticker := time.NewTicker(PingInterval)
 			for {
 				select {

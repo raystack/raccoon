@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	pb "raccoon/websocket/proto"
+	pb "raccoon/pkg/proto"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"

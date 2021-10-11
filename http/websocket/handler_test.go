@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"raccoon/websocket/connection"
-	pb "raccoon/websocket/proto"
+	"raccoon/http/websocket/connection"
+	pb "raccoon/pkg/proto"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"

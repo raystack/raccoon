@@ -9,8 +9,8 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/viper v1.7.0
-	github.com/stretchr/testify v1.6.0
-	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
+	github.com/stretchr/testify v1.7.0
+	google.golang.org/grpc v1.41.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0
 	gopkg.in/confluentinc/confluent-kafka-go.v1 v1.4.2

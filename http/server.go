@@ -1,36 +1,52 @@
-package websocket
+package http
 
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"raccoon/config"
+	raccoongrpc "raccoon/http/grpc"
+	"raccoon/http/rest"
+	"raccoon/http/websocket"
+	"raccoon/http/websocket/connection"
 	"raccoon/logger"
-	"raccoon/websocket/connection"
+	"raccoon/metrics"
+	"raccoon/pkg/collection"
+	pb "raccoon/pkg/proto"
 	"runtime"
 	"time"
 
-	"raccoon/metrics"
-
 	"github.com/gorilla/mux"
-
-	// https://golang.org/pkg/net/http/pprof/
-	_ "net/http/pprof"
+	"google.golang.org/grpc"
 )
 
-type Server struct {
-	HTTPServer    *http.Server
-	bufferChannel chan EventsBatch
-	table         *connection.Table
-	pingChannel   chan connection.Conn
+type Servers struct {
+	HTTPServer  *http.Server
+	table       *connection.Table
+	pingChannel chan connection.Conn
+	GRPCServer  *grpc.Server
 }
 
-func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
+func (s *Servers) StartServers(ctx context.Context, cancel context.CancelFunc) {
 	go func() {
-		logger.Info("WebSocket Server --> startHttpServer")
+		logger.Info("HTTP Server --> startServers")
 		err := s.HTTPServer.ListenAndServe()
 		if err != http.ErrServerClosed {
-			logger.Errorf("WebSocket Server --> HTTP Server could not be started = %s", err.Error())
+			logger.Errorf("HTTP Server --> HTTP Server could not be started = %s", err.Error())
+			cancel()
+		}
+	}()
+	go func() {
+		lis, err := net.Listen("tcp", config.ServerGRPC.Port)
+		if err != nil {
+			logger.Errorf("GRPC Server --> GRPC Server could not be started = %s", err.Error())
+			cancel()
+		}
+		logger.Info("GRPC Server -> startServers")
+		if err := s.GRPCServer.Serve(lis); err != nil {
+			logger.Errorf("GRPC Server --> GRPC Server could not be started = %s", err.Error())
 			cancel()
 		}
 	}()
@@ -46,7 +62,7 @@ func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc)
 	}()
 }
 
-func (s *Server) ReportServerMetrics() {
+func (s *Servers) ReportServerMetrics() {
 	t := time.Tick(config.MetricStatsd.FlushPeriodMs)
 	m := &runtime.MemStats{}
 	for {
@@ -69,44 +85,40 @@ func (s *Server) ReportServerMetrics() {
 }
 
 //CreateServer - instantiates the http server
-func CreateServer() (*Server, chan EventsBatch) {
+func CreateServer(bufferChannel chan *collection.EventsBatch) *Servers {
 	//create the websocket handler that upgrades the http request
-	bufferChannel := make(chan EventsBatch, config.Worker.ChannelSize)
+	collector := collection.NewChannelCollector(bufferChannel)
 	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)
-	ugConfig := connection.UpgraderConfig{
-		ReadBufferSize:    config.ServerWs.ReadBufferSize,
-		WriteBufferSize:   config.ServerWs.WriteBufferSize,
-		CheckOrigin:       config.ServerWs.CheckOrigin,
-		MaxUser:           config.ServerWs.ServerMaxConn,
-		PongWaitInterval:  config.ServerWs.PongWaitInterval,
-		WriteWaitInterval: config.ServerWs.WriteWaitInterval,
-		ConnIDHeader:      config.ServerWs.ConnIDHeader,
-		ConnGroupHeader:   config.ServerWs.ConnGroupHeader,
-	}
-	upgrader := connection.NewUpgrader(ugConfig)
-	wsHandler := &Handler{
-		upgrader:      upgrader,
-		bufferChannel: bufferChannel,
-		PingChannel:   pingChannel,
-	}
-	server := &Server{
+	wsHandler := websocket.NewHandler(pingChannel)
+	restHandler := &rest.Handler{}
+	grpcHandler := &raccoongrpc.Handler{}
+	handler := &Handler{wsHandler, restHandler, grpcHandler}
+	grpcServer := grpc.NewServer(grpc.WithInsecure())
+	server := &Servers{
 		HTTPServer: &http.Server{
-			Handler: Router(wsHandler),
+			Handler: Router(handler, collector),
 			Addr:    ":" + config.ServerWs.AppPort,
 		},
-		table:         upgrader.Table,
-		bufferChannel: bufferChannel,
-		pingChannel:   pingChannel,
+		table:       wsHandler.Table(),
+		pingChannel: pingChannel,
+		GRPCServer:  grpcServer,
 	}
+	pb.RegisterEventServiceServer(grpcServer, handler.gh)
 	//Wrap the handler with a Server instance and return it
-	return server, bufferChannel
+	return server
+}
+
+func PingHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("pong"))
 }
 
 // Router sets up the routes
-func Router(h *Handler) http.Handler {
+func Router(h *Handler, collector collection.Collector) http.Handler {
 	router := mux.NewRouter()
 	router.Path("/ping").HandlerFunc(PingHandler).Methods(http.MethodGet)
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
-	subRouter.HandleFunc("/events", h.HandlerWSEvents).Methods(http.MethodGet).Name("events")
+	subRouter.HandleFunc("/events", h.wh.GetHandlerWSEvents(collector)).Methods(http.MethodGet).Name("events")
+	subRouter.HandleFunc("/events", h.rh.GetRESTAPIHandler(collector)).Methods(http.MethodPost).Name("events")
 	return router
 }

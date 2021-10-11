@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"raccoon/logger"
 	"raccoon/metrics"
-	ws "raccoon/websocket"
+	"raccoon/pkg/collection"
 	"sync"
 	"time"
 
@@ -17,13 +17,13 @@ import (
 type Pool struct {
 	Size                int
 	deliveryChannelSize int
-	EventsChannel       <-chan ws.EventsBatch
+	EventsChannel       <-chan *collection.EventsBatch
 	kafkaProducer       publisher.KafkaProducer
 	wg                  sync.WaitGroup
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan ws.EventsBatch, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan *collection.EventsBatch, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
 	return &Pool{
 		Size:                size,
 		deliveryChannelSize: deliveryChannelSize,
@@ -45,7 +45,7 @@ func (w *Pool) StartWorkers() {
 				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 
-				err := w.kafkaProducer.ProduceBulk(request.EventReq.GetEvents(), deliveryChan)
+				err := w.kafkaProducer.ProduceBulk(request.EventRequest.GetEvents(), deliveryChan)
 				totalErr := 0
 				if err != nil {
 					for _, err := range err.(publisher.BulkError).Errors {
@@ -55,17 +55,17 @@ func (w *Pool) StartWorkers() {
 						}
 					}
 				}
-				lenBatch := int64(len(request.EventReq.GetEvents()))
+				lenBatch := int64(len(request.EventRequest.GetEvents()))
 				logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch-int64(totalErr)))
 				if lenBatch > 0 {
-					eventTimingMs := time.Since(time.Unix(request.EventReq.SentTime.Seconds, 0)).Milliseconds() / lenBatch
-					metrics.Timing("event_processing_duration_milliseconds", eventTimingMs, fmt.Sprintf("conn_group=%s", request.ConnIdentifer.Group))
+					eventTimingMs := time.Since(time.Unix(request.EventRequest.SentTime.Seconds, 0)).Milliseconds() / lenBatch
+					metrics.Timing("event_processing_duration_milliseconds", eventTimingMs, fmt.Sprintf("conn_group=%s", request.ConnectionIdentifier.Group))
 					now := time.Now()
 					metrics.Timing("worker_processing_duration_milliseconds", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)
 					metrics.Timing("server_processing_latency_milliseconds", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, "")
 				}
-				metrics.Count("kafka_messages_delivered_total", totalErr, fmt.Sprintf("success=false,conn_group=%s", request.ConnIdentifer.Group))
-				metrics.Count("kafka_messages_delivered_total", len(request.EventReq.GetEvents())-totalErr, fmt.Sprintf("success=true,conn_group=%s", request.ConnIdentifer.Group))
+				metrics.Count("kafka_messages_delivered_total", totalErr, fmt.Sprintf("success=false,conn_group=%s", request.ConnectionIdentifier.Group))
+				metrics.Count("kafka_messages_delivered_total", len(request.EventRequest.GetEvents())-totalErr, fmt.Sprintf("success=true,conn_group=%s", request.ConnectionIdentifier.Group))
 			}
 			w.wg.Done()
 		}(fmt.Sprintf("worker-%d", i))

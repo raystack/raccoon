@@ -7,19 +7,21 @@ import (
 	"os"
 	"os/signal"
 	"raccoon/config"
+	raccoonhttp "raccoon/http"
 	"raccoon/logger"
 	"raccoon/metrics"
+	"raccoon/pkg/collection"
 	"raccoon/publisher"
-	ws "raccoon/websocket"
 	"raccoon/worker"
 	"syscall"
 )
 
 // StartServer starts the server
 func StartServer(ctx context.Context, cancel context.CancelFunc) {
-	wssServer, bufferChannel := ws.CreateServer()
+	bufferChannel := make(chan *collection.EventsBatch)
+	httpserver := raccoonhttp.CreateServer(bufferChannel)
 	logger.Info("Start Server -->")
-	wssServer.StartHTTPServer(ctx, cancel)
+	httpserver.StartHTTPServer(ctx, cancel)
 	logger.Info("Start publisher -->")
 	kPublisher, err := publisher.NewKafka()
 	if err != nil {
@@ -35,7 +37,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	go shutDownServer(ctx, cancel, wssServer.HTTPServer, bufferChannel, workerPool, kPublisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *http.Server, bufferChannel chan ws.EventsBatch, workerPool *worker.Pool, kp *publisher.Kafka) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *http.Server, bufferChannel chan *collection.EventsBatch, workerPool *worker.Pool, kp *publisher.Kafka) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {

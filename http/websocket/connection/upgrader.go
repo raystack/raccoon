@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"raccoon/logger"
 	"raccoon/metrics"
-	pb "raccoon/websocket/proto"
+	"raccoon/pkg/identification"
+	pb "raccoon/pkg/proto"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/proto"
 )
 
 type Upgrader struct {
@@ -35,7 +36,7 @@ type UpgraderConfig struct {
 
 func NewUpgrader(conf UpgraderConfig) *Upgrader {
 	var checkOriginFunc func(r *http.Request) bool
-	if conf.CheckOrigin == false {
+	if !conf.CheckOrigin {
 		checkOriginFunc = func(r *http.Request) bool {
 			return true
 		}
@@ -55,7 +56,7 @@ func NewUpgrader(conf UpgraderConfig) *Upgrader {
 }
 
 func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error) {
-	identifier := Identifer{
+	identifier := identification.Identifier{
 		ID: r.Header.Get(u.connIDHeader),
 		// If connGroupHeader is empty string. By default, it will always have an empty string as Group. This means uniqueness only depends on ID.
 		Group: r.Header.Get(u.connGroupHeader),
@@ -99,7 +100,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 		}}, nil
 }
 
-func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier Identifer) {
+func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier identification.Identifier) {
 	//expects the client to send a ping, mark this channel as idle timed out post the deadline
 	conn.SetReadDeadline(time.Now().Add(u.pongWaitInterval))
 	conn.SetPongHandler(func(string) error {

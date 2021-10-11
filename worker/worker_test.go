@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 
-	pb "raccoon/websocket/proto"
+	pb "raccoon/pkg/proto"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

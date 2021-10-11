@@ -20,7 +20,7 @@ type Handler struct {
 	PingChannel   chan connection.Conn
 }
 type EventsBatch struct {
-	ConnIdentifer connection.Identifer
+	ConnIdentifier connection.Identifier
 	EventReq      *pb.EventRequest
 	TimeConsumed  time.Time
 	TimePushed    time.Time
@@ -72,7 +72,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		metrics.Count("events_rx_total", len(payload.Events), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
 
 		h.bufferChannel <- EventsBatch{
-			ConnIdentifer: conn.Identifier,
+			ConnIdentifier: conn.Identifier,
 			EventReq:      payload,
 			TimeConsumed:  timeConsumed,
 			TimePushed:    (time.Now()),

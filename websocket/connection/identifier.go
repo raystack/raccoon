@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-type Identifer struct {
+type Identifier struct {
 	ID    string
 	Group string
 }
 
-func (i Identifer) String() string {
+func (i Identifier) String() string {
 	return fmt.Sprintf("connection [%s] %s", i.Group, i.ID)
 }

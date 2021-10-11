@@ -7,7 +7,7 @@ import (
 
 type Table struct {
 	m       *sync.RWMutex
-	connMap map[Identifer]struct{}
+	connMap map[Identifier]struct{}
 	counter map[string]int
 	maxUser int
 }
@@ -15,20 +15,20 @@ type Table struct {
 func NewTable(maxUser int) *Table {
 	return &Table{
 		m:       &sync.RWMutex{},
-		connMap: make(map[Identifer]struct{}),
+		connMap: make(map[Identifier]struct{}),
 		maxUser: maxUser,
 		counter: make(map[string]int),
 	}
 }
 
-func (t *Table) Exists(c Identifer) bool {
+func (t *Table) Exists(c Identifier) bool {
 	t.m.Lock()
 	defer t.m.Unlock()
 	_, ok := t.connMap[c]
 	return ok
 }
 
-func (t *Table) Store(c Identifer) error {
+func (t *Table) Store(c Identifier) error {
 	t.m.Lock()
 	defer t.m.Unlock()
 	if len(t.connMap) >= t.maxUser {
@@ -42,7 +42,7 @@ func (t *Table) Store(c Identifer) error {
 	return nil
 }
 
-func (t *Table) Remove(c Identifer) {
+func (t *Table) Remove(c Identifier) {
 	t.m.Lock()
 	defer t.m.Unlock()
 	delete(t.connMap, c)

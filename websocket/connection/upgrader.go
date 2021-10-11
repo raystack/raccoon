@@ -98,7 +98,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 		}}, nil
 }
 
-func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier Identifer) {
+func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier Identifier) {
 	//expects the client to send a ping, mark this channel as idle timed out post the deadline
 	conn.SetReadDeadline(time.Now().Add(u.pongWaitInterval))
 	conn.SetPongHandler(func(string) error {
@@ -117,14 +117,14 @@ func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier Identif
 	})
 }
 
-func (u *Upgrader) newIdentifier(h http.Header) Identifer {
+func (u *Upgrader) newIdentifier(h http.Header) Identifier {
+	// If connGroupHeader is empty string. By default, it will always return an empty string as Group. This means the group is fallback to default value.
 	var group = h.Get(u.connGroupHeader)
 	if group == "" {
 		group = u.connGroupDefault
 	}
-	return Identifer{
+	return Identifier{
 		ID: h.Get(u.connIDHeader),
-		// If connGroupHeader is empty string. By default, it will always have an empty string as Group. This means uniqueness only depends on ID.
 		Group: group,
 	}
 }

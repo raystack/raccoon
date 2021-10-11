@@ -12,7 +12,7 @@ import (
 func Pinger(c chan connection.Conn, size int, PingInterval time.Duration, WriteWaitInterval time.Duration) {
 	for i := 0; i < size; i++ {
 		go func() {
-			cSet := make(map[connection.Identifer]connection.Conn)
+			cSet := make(map[connection.Identifier]connection.Conn)
 			ticker := time.NewTicker(PingInterval)
 			for {
 				select {

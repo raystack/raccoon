@@ -10,7 +10,7 @@ import (
 )
 
 type Conn struct {
-	Identifier   Identifer
+	Identifier   Identifier
 	conn        *websocket.Conn
 	connectedAt time.Time
 	closeHook   func(c Conn)

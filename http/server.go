@@ -91,10 +91,10 @@ func CreateServer(bufferChannel chan *collection.EventsBatch) *Servers {
 	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)
 	wsHandler := websocket.NewHandler(pingChannel)
 	restHandler := &rest.Handler{}
-	grpcHandler := &raccoongrpc.Handler{}
+	grpcHandler := &raccoongrpc.Handler{C: collector}
 	handler := &Handler{wsHandler, restHandler, grpcHandler}
-	grpcServer := grpc.NewServer(grpc.WithInsecure())
-	server := &Servers{
+	grpcServer := grpc.NewServer()
+	servers := &Servers{
 		HTTPServer: &http.Server{
 			Handler: Router(handler, collector),
 			Addr:    ":" + config.ServerWs.AppPort,
@@ -105,7 +105,7 @@ func CreateServer(bufferChannel chan *collection.EventsBatch) *Servers {
 	}
 	pb.RegisterEventServiceServer(grpcServer, handler.gh)
 	//Wrap the handler with a Server instance and return it
-	return server
+	return servers
 }
 
 func PingHandler(w http.ResponseWriter, r *http.Request) {

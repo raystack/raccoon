@@ -15,10 +15,10 @@ type CollectRequest struct {
 }
 
 type EventsBatch struct {
-	ConnectionIdentifier *identification.Identifier
-	EventRequest         *pb.EventRequest
-	TimeConsumed         time.Time
-	TimePushed           time.Time
+	ConnIdentifier *identification.Identifier
+	EventReq       *pb.EventRequest
+	TimeConsumed   time.Time
+	TimePushed     time.Time
 }
 
 type Collector interface {

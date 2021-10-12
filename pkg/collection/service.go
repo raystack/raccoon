@@ -14,10 +14,10 @@ func (c CollectFunction) Collect(ctx context.Context, req *CollectRequest) error
 func NewChannelCollector(c chan *EventsBatch) Collector {
 	return CollectFunction(func(ctx context.Context, req *CollectRequest) error {
 		e := &EventsBatch{
-			ConnectionIdentifier: req.ConnectionIdentifier,
-			EventRequest:         req.EventRequest,
-			TimeConsumed:         req.TimeConsumed,
-			TimePushed:           time.Now(),
+			ConnIdentifier: req.ConnectionIdentifier,
+			EventReq:       req.EventRequest,
+			TimeConsumed:   req.TimeConsumed,
+			TimePushed:     time.Now(),
 		}
 		c <- e
 		return nil

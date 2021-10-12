@@ -50,9 +50,16 @@ Unique identifier for the server to maintain the connection. A single uniq id ca
 
 ### `SERVER_WEBSOCKET_CONN_GROUP_HEADER`
 
-Additional identifier for the server to maintain the connection. Value of the conn group header combined with user id will act as unique identifier instead of only user id. You can use this if you want to differentiate between user groups or clients e.g(mobile, web)
+Additional identifier for the server to maintain the connection. Value of the conn group header combined with user id will act as unique identifier instead of only user id. You can use this if you want to differentiate between user groups or clients e.g(mobile, web). The group names is used as conn_group tag in some of the metrics.
 
 * Example value: `X-User-Group`
+* Type: `Optional`
+
+### `SERVER_WEBSOCKET_CONN_GROUP_DEFAULT`
+
+Default connection group name. The default is fallback when `SERVER_WEBSOCKET_CONN_GROUP_HEADER` is not set or when the value of group header is empty. In case the connection group default is clashing with your actual group name, override this config.
+
+* Default value: `--default--`
 * Type: `Optional`
 
 ### `SERVER_WEBSOCKET_PING_INTERVAL_MS`

@@ -50,7 +50,7 @@ $ docker pull odpf/raccoon
 # Run the following docker command with minimal config.
 $ docker run -p 8080:8080 \
   -e SERVER_WEBSOCKET_PORT=8080 \
-  -e SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER=x-user-id \
+  -e SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID \
   -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9093 \
   -e EVENT_DISTRIBUTION_PUBLISHER_PATTERN=clickstream-%s-log \
   odpf/raccoon

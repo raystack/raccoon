@@ -32,15 +32,3 @@ func createBadrequestResponse(err error) []byte {
 	badrequestResp, _ := proto.Marshal(&response)
 	return badrequestResp
 }
-
-func createEmptyErrorResponse(errCode pb.Code) []byte {
-	resp := pb.EventResponse{
-		Status:   pb.Status_ERROR,
-		Code:     errCode,
-		SentTime: time.Now().Unix(),
-		Reason:   "",
-		Data:     nil,
-	}
-	duplicateConnResp, _ := proto.Marshal(&resp)
-	return duplicateConnResp
-}

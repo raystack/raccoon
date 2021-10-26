@@ -22,19 +22,19 @@ Note: The internals of each of the components like channel size, buffer sizes, p
 
 ### Connections
 
-Raccoon has long running persistent connections with the client. Once a client makes a http request with a websocket upgrade header, raccoon upgrades the http request to a websocket connection end of which a persistent connection is established with the client.
+Raccoon has long-running persistent connections with the client. Once a client makes an HTTP request with a WebSocket upgrade header, raccoon upgrades the HTTP request to a WebSocket connection end of which a persistent connection is established with the client.
 
-The following sequence outlines the connection handling by Raccoon.
+The following sequence outlines the connection handling by Raccoon:
 
-* Fetch connection id details from the initial request header based on the configured header name in `SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER`. The header name uniquely identifies a client. A client in this case can be the user in the app. There can be multiple connections from the same client. The no., of connections allowed per client is determined by `SERVER_WEBSOCKET_MAX_CONN`.
-* Once the connection id is fetched, verify if the user has connection limit reached based on the configured `SERVER_WEBSOCKET_MAX_CONN`. For each client an internal map stores the `SERVER_WEBSOCKET_MAX_CONN` along with the connection objects. On reaching the max connections for the client, the connection is disconnected with an appropriate error message as a response proto.
-* Upgrade the connection
-* Add this user-id -&gt; connection mapping
-* Add ping/pong handlers on this connection, readtimeout deadline. More about these handlers in the following sections
-* Handle the message and send it to the events-channel
-* Remove connection/user when the client closes the connection
+* Construct connection identifier from the request header. The identifier is constructed from the value of `SERVER_WEBSOCKET_CONN_ID_HEADER` header. For example, Raccoon is configured with `SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID`. Raccoon will check the value of X-User-ID header and make it an identifier. Raccoon then uses this identifier to check if there is already an existing connection with the same identifier. If the same connection already exists, Raccoon will disconnect the connection with an appropriate error message as a response proto.
+  * Optionally, you can also configure `SERVER_WEBSOCKET_CONN_GROUP_HEADER` to support multi-tenancy. For example, you want to use an instance of Raccoon with multiple mobile clients. You can configure raccoon with `SERVER_WEBSOCKET_CONN_GROUP_HEADER=X-Mobile-Client`. Then, Raccoon will use the value of X-Mobile-Client along with X-User-ID as identifier. The uniqueness becomes the combination of X-User-ID value with X-Mobile-Client value. This way, Raccoon can maintain the same X-User-ID within different X-Mobile-Client.
+* Verify if the total connections have reached the configured limit based on `SERVER_WEBSOCKET_MAX_CONN` configuration. On reaching the max connections, Raccoon disconnects the connection with an appropriate error message as a response proto.
+* Upgrade the connection and persist the identifier.
+* Add ping/pong handlers on this connection, read timeout deadline. More about these handlers in the following sections
+* At this point, the connection is completely upgraded and Raccoon is ready to accept EventRequest. The handler handles each EventRequest by sending it to the events-channel to be asynchronously published by the publisher.
+* When the connection is closed. Raccoon clean up the connection along with the identifier. The same identifier then can be reused on the upcoming connection.
 
-### Event Delivery gurantee \(at-least-once for most time\)
+### Event Delivery Gurantee \(at-least-once for most time\)
 
 The server for the most times provide at-least-once event delivery gurantee.
 

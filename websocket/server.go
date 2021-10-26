@@ -2,16 +2,18 @@ package websocket
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"raccoon/config"
 	"raccoon/logger"
+	"raccoon/websocket/connection"
 	"runtime"
 	"time"
 
 	"raccoon/metrics"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
+
 	// https://golang.org/pkg/net/http/pprof/
 	_ "net/http/pprof"
 )
@@ -19,8 +21,8 @@ import (
 type Server struct {
 	HTTPServer    *http.Server
 	bufferChannel chan EventsBatch
-	user          *User
-	pingChannel   chan connection
+	table         *connection.Table
+	pingChannel   chan connection.Conn
 }
 
 func (s *Server) StartHTTPServer(ctx context.Context, cancel context.CancelFunc) {
@@ -49,7 +51,9 @@ func (s *Server) ReportServerMetrics() {
 	m := &runtime.MemStats{}
 	for {
 		<-t
-		metrics.Gauge("connections_count_current", s.user.TotalUsers(), "")
+		for k, v := range s.table.TotalConnectionPerGroup() {
+			metrics.Gauge("connections_count_current", v, fmt.Sprintf("conn_group=%s", k))
+		}
 		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), "")
 
 		runtime.ReadMemStats(m)
@@ -68,24 +72,31 @@ func (s *Server) ReportServerMetrics() {
 func CreateServer() (*Server, chan EventsBatch) {
 	//create the websocket handler that upgrades the http request
 	bufferChannel := make(chan EventsBatch, config.Worker.ChannelSize)
-	pingChannel := make(chan connection, config.ServerWs.ServerMaxConn)
-	user := NewUserStore(config.ServerWs.ServerMaxConn)
-	wsHandler := &Handler{
-		websocketUpgrader: newWebSocketUpgrader(config.ServerWs.ReadBufferSize, config.ServerWs.WriteBufferSize, config.ServerWs.CheckOrigin),
-		bufferChannel:     bufferChannel,
-		user:              user,
+	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)
+	ugConfig := connection.UpgraderConfig{
+		ReadBufferSize:    config.ServerWs.ReadBufferSize,
+		WriteBufferSize:   config.ServerWs.WriteBufferSize,
+		CheckOrigin:       config.ServerWs.CheckOrigin,
+		MaxUser:           config.ServerWs.ServerMaxConn,
 		PongWaitInterval:  config.ServerWs.PongWaitInterval,
 		WriteWaitInterval: config.ServerWs.WriteWaitInterval,
-		PingChannel:       pingChannel,
-		UniqConnIDHeader:      config.ServerWs.UniqConnIDHeader,
+		ConnIDHeader:      config.ServerWs.ConnIDHeader,
+		ConnGroupHeader:   config.ServerWs.ConnGroupHeader,
+		ConnGroupDefault:  config.ServerWs.ConnGroupDefault,
+	}
+	upgrader := connection.NewUpgrader(ugConfig)
+	wsHandler := &Handler{
+		upgrader:      upgrader,
+		bufferChannel: bufferChannel,
+		PingChannel:   pingChannel,
 	}
 	server := &Server{
 		HTTPServer: &http.Server{
 			Handler: Router(wsHandler),
 			Addr:    ":" + config.ServerWs.AppPort,
 		},
+		table:         upgrader.Table,
 		bufferChannel: bufferChannel,
-		user:          user,
 		pingChannel:   pingChannel,
 	}
 	//Wrap the handler with a Server instance and return it
@@ -99,19 +110,4 @@ func Router(h *Handler) http.Handler {
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 	subRouter.HandleFunc("/events", h.HandlerWSEvents).Methods(http.MethodGet).Name("events")
 	return router
-}
-
-func newWebSocketUpgrader(readBufferSize int, writeBufferSize int, checkOrigin bool) websocket.Upgrader {
-	var checkOriginFunc func(r *http.Request) bool
-	if checkOrigin == false {
-		checkOriginFunc = func(r *http.Request) bool {
-			return true
-		}
-	}
-	ug := websocket.Upgrader{
-		ReadBufferSize:  readBufferSize,
-		WriteBufferSize: writeBufferSize,
-		CheckOrigin: checkOriginFunc,
-	}
-	return ug
 }

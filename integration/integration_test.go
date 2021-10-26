@@ -8,12 +8,13 @@ import (
 	"testing"
 	"time"
 
+	pb "raccoon/websocket/proto"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
-	pb "raccoon/websocket/proto"
 )
 
 var uuid string
@@ -24,7 +25,7 @@ var bootstrapServers string
 
 func TestMain(m *testing.M) {
 	uuid = fmt.Sprintf("%d-test", rand.Int())
-	timeout = 120 * time.Second
+	timeout = 20 * time.Second
 	topicFormat = os.Getenv("INTEGTEST_TOPIC_FORMAT")
 	url = fmt.Sprintf("%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
 	bootstrapServers = os.Getenv("INTEGTEST_BOOTSTRAP_SERVER")
@@ -35,7 +36,7 @@ func TestIntegration(t *testing.T) {
 	var err error
 	assert.NoError(t, err)
 	header := http.Header{
-		"x-user-id":    []string{"1234"},
+		"X-User-ID": []string{"1234"},
 	}
 	t.Run("Should response with BadRequest when sending invalid request", func(t *testing.T) {
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)
@@ -126,7 +127,7 @@ func TestIntegration(t *testing.T) {
 						t.Log("error", err)
 						continue
 					}
-					if (string(msg.Value) == "event_1") {
+					if string(msg.Value) == "event_1" {
 						return
 					}
 				}
@@ -160,7 +161,7 @@ func TestIntegration(t *testing.T) {
 						t.Log("error", err)
 						continue
 					}
-					if (string(msg.Value) == "event_2") {
+					if string(msg.Value) == "event_2" {
 						return
 					}
 				}
@@ -224,6 +225,44 @@ func TestIntegration(t *testing.T) {
 		select {
 		case <-time.After(timeout):
 			assert.Fail(t, "Timeout. Expecting second connection to close")
+			break
+		case <-done:
+			break
+		}
+	})
+
+	t.Run("Should accept connections with same user id with different connection group", func(t *testing.T) {
+		done := make(chan int)
+		_, _, err := websocket.DefaultDialer.Dial(url, http.Header{
+			"X-User-ID":    []string{"1234"},
+			"X-User-Group": []string{"viewer"},
+		})
+
+		assert.NoError(t, err)
+
+		secondWss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
+			"X-User-ID":    []string{"1234"},
+			"X-User-Group": []string{"editor"},
+		})
+
+		assert.NoError(t, err)
+
+		go func() {
+			for {
+				_, _, err := secondWss.ReadMessage()
+				assert.NoError(t, err)
+				if err != nil {
+					close(done)
+					break
+				}
+			}
+		}()
+		select {
+		case <-time.After(timeout):
+			assert.Fail(t, "Timeout. Expecting second connection to close")
+			break
+		case <-time.After(3 * time.Second):
+			// Second connection is established and there is no error
 			break
 		case <-done:
 			break

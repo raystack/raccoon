@@ -203,6 +203,7 @@ Duration from the time request is sent to the time events are published. This me
 Duration from the time request is receieved to the time events are published. This metric is calculated per event by following formula`(PublishedTime - ReceievedTime)/CountEvents`
 
 * Type: `Timing`
+* Tags: `conn_group=*`
 
 ### `worker_processing_duration_milliseconds`
 

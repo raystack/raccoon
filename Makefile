@@ -27,9 +27,9 @@ PROTO_PACKAGE=/pkg/proto
 generate-proto:
 	rm -rf .temp
 	mkdir -p .temp
-	curl -o .temp/proton.tar.gz -L http://api.github.com/repos/odpf/proton/tarball/feat-raccoon-grpc; tar xvf .temp/proton.tar.gz -C .temp/ --strip-components 1
+	curl -o .temp/proton.tar.gz -L http://api.github.com/repos/odpf/proton/tarball/main; tar xvf .temp/proton.tar.gz -C .temp/ --strip-components 1
 	protoc --proto_path=.temp/ .temp/odpf/raccoon/*.proto --go_out=./ --go_opt=paths=import --go_opt=Modpf/raccoon/Event.proto=$(PROTO_PACKAGE) --go_opt=Modpf/raccoon/EventRequest.proto=$(PROTO_PACKAGE) --go_opt=Modpf/raccoon/EventResponse.proto=$(PROTO_PACKAGE) && \
-	 protoc --proto_path=.temp/ .temp/odpf/raccoon/*.proto  --go-grpc_opt=paths=import --go-grpc_opt=Modpf/raccoon/Event.proto=$(PROTO_PACKAGE) --go-grpc_opt=Modpf/raccoon/EventRequest.proto=$(PROTO_PACKAGE) --go-grpc_opt=Modpf/raccoon/EventResponse.proto=$(PROTO_PACKAGE) --go-grpc_opt=Modpf/raccoon/EventService.proto=$(PROTO_PACKAGE) --go-grpc_out=./
+	protoc --proto_path=.temp/ .temp/odpf/raccoon/*.proto  --go-grpc_opt=paths=import --go-grpc_opt=Modpf/raccoon/Event.proto=$(PROTO_PACKAGE) --go-grpc_opt=Modpf/raccoon/EventRequest.proto=$(PROTO_PACKAGE) --go-grpc_opt=Modpf/raccoon/EventResponse.proto=$(PROTO_PACKAGE) --go-grpc_opt=Modpf/raccoon/EventService.proto=$(PROTO_PACKAGE) --go-grpc_out=./
 
 # Build Lifecycle
 compile:

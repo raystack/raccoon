@@ -1,13 +1,14 @@
 package worker
 
 import (
-	ws "raccoon/websocket"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 
+	"raccoon/pkg/collection"
+	"raccoon/pkg/identification"
 	pb "raccoon/pkg/proto"
 
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,11 @@ import (
 )
 
 func TestWorker(t *testing.T) {
-	request := ws.EventsBatch{
+	request := &collection.EventsBatch{
+		ConnIdentifier: &identification.Identifier{
+			ID:    "12345",
+			Group: "viewer",
+		},
 		EventReq: &pb.EventRequest{
 			SentTime: &timestamp.Timestamp{Seconds: 1593574343},
 		},
@@ -28,7 +33,7 @@ func TestWorker(t *testing.T) {
 			m.On("Timing", "processing.latency", mock.Anything, "")
 			m.On("Count", "kafka_messages_delivered_total", 0, "success=true")
 			m.On("Count", "kafka_messages_delivered_total", 0, "success=false")
-			bc := make(chan ws.EventsBatch, 2)
+			bc := make(chan *collection.EventsBatch, 2)
 			worker := Pool{
 				Size:                1,
 				deliveryChannelSize: 0,
@@ -50,7 +55,7 @@ func TestWorker(t *testing.T) {
 	t.Run("Flush", func(t *testing.T) {
 		t.Run("Should block until all messages is processed", func(t *testing.T) {
 			kp := mockKafkaPublisher{}
-			bc := make(chan ws.EventsBatch, 2)
+			bc := make(chan *collection.EventsBatch, 2)
 			m := &mockMetric{}
 			m.On("Timing", "processing.latency", mock.Anything, "")
 			m.On("Count", "kafka_messages_delivered_total", 0, "success=false")

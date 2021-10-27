@@ -2,7 +2,6 @@ package connection
 
 import (
 	"fmt"
-	"io"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"raccoon/pkg/identification"
@@ -24,10 +23,6 @@ func (c *Conn) ReadMessage() (messageType int, p []byte, err error) {
 
 func (c *Conn) WriteMessage(messageType int, data []byte) error {
 	return c.conn.WriteMessage(messageType, data)
-}
-
-func (c *Conn) GetWriter(messageType int) (io.Writer, error) {
-	return c.conn.NextWriter(messageType)
 }
 
 func (c *Conn) Ping(writeWaitInterval time.Duration) error {

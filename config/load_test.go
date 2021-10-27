@@ -34,6 +34,12 @@ func TestServerConfig(t *testing.T) {
 	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PongWaitInterval)
 }
 
+func TestGRPCServerConfig(t *testing.T) {
+	os.Setenv("SERVER_GRPC_PORT", "8081")
+	serverGRPCConfigLoader()
+	assert.Equal(t, "8081", ServerGRPC.Port)
+}
+
 func TestDynamicConfigLoad(t *testing.T) {
 	os.Setenv("PUBLISHER_KAFKA_CLIENT_RANDOM", "anything")
 	os.Setenv("PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS", "localhost:9092")

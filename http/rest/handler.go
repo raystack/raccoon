@@ -64,8 +64,8 @@ func (h *Handler) GetRESTAPIHandler(c collection.Collector) http.HandlerFunc {
 		if err := d.Deserialize(b, req); err != nil {
 			logger.Errorf("[rest.GetRESTAPIHandler] error while calling d.Deserialize() for %s, error: %s", identifier, err)
 			metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=deserr,conn_group=%s", identifier.Group))
-			rw.WriteHeader(http.StatusInternalServerError)
-			_, err := res.SetCode(pb.Code_INTERNAL_ERROR).SetStatus(pb.Status_ERROR).SetReason("deserialization failure").
+			rw.WriteHeader(http.StatusBadRequest)
+			_, err := res.SetCode(pb.Code_BAD_REQUEST).SetStatus(pb.Status_ERROR).SetReason("deserialization failure").
 				SetSentTime(time.Now().Unix()).Write(rw, s)
 			if err != nil {
 				logger.Errorf("[restGetRESTAPIHandler] %s error sending error response: %v", identifier, err)

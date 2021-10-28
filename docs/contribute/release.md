@@ -10,7 +10,7 @@ Please follow these steps to create a new release:
 * Generate changelog from commits by using [conventional-changelog-cli](https://www.npmjs.com/package/conventional-changelog-cli#quick-start)
 
   ```bash
-  $ conventional-changelog -s -p conventionalcommits -i CHANGELOG.md
+  $ conventional-changelog -p conventionalcommits -o CHANGELOG.md
   ```
 
 * Commit `version.txt` and `CHANGELOG.md` together and mark the commit with the release tag. Make sure the release tag and `version.txt` are the same.

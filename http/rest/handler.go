@@ -22,9 +22,14 @@ func (h *Handler) GetRESTAPIHandler(c collection.Collector) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		contentType := r.Header.Get("Content-Type")
 		rw.Header().Set("Content-Type", contentType)
+		var group string
+		group = r.Header.Get(config.ServerWs.ConnGroupHeader)
+		if group == "" {
+			group = config.ServerWs.ConnGroupDefault
+		}
 		identifier := identification.Identifier{
 			ID:    r.Header.Get(config.ServerWs.ConnIDHeader),
-			Group: r.Header.Get(config.ServerWs.ConnGroupHeader),
+			Group: group,
 		}
 
 		d, s := h.getDeserializerSerializer(contentType)

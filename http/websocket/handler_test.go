@@ -1,15 +1,27 @@
 package websocket
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"raccoon/http/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
+	"raccoon/pkg/collection"
 	"raccoon/pkg/deserialization"
+	pb "raccoon/pkg/proto"
 	"raccoon/pkg/serialization"
 	"reflect"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type void struct{}
@@ -164,4 +176,92 @@ func TestHandler_getDeserializerSerializer(t *testing.T) {
 			}
 		})
 	}
+}
+func TestHandler_GETHandlerWSEvents(t *testing.T) {
+	// ---- Setup ----
+	upgrader := connection.NewUpgrader(connection.UpgraderConfig{
+		ReadBufferSize:    10240,
+		WriteBufferSize:   10240,
+		CheckOrigin:       false,
+		MaxUser:           2,
+		PongWaitInterval:  time.Duration(60 * time.Second),
+		WriteWaitInterval: time.Duration(5 * time.Second),
+		ConnIDHeader:      "X-User-ID",
+		ConnGroupHeader:   "string",
+	})
+	hlr := &Handler{
+		upgrader: upgrader,
+
+		PingChannel: make(chan connection.Conn, 100),
+	}
+	ts := httptest.NewServer(getRouter(hlr))
+	defer ts.Close()
+
+	url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
+	header := http.Header{
+		"X-User-ID": []string{"test1-user1"},
+	}
+
+	t.Run("Should return success response after successfully push to channel", func(t *testing.T) {
+		ts = httptest.NewServer(getRouter(hlr))
+		defer ts.Close()
+
+		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+		require.NoError(t, err)
+
+		request := &pb.EventRequest{
+			ReqGuid:  "1234",
+			SentTime: timestamppb.Now(),
+			Events:   nil,
+		}
+		serializedRequest, _ := proto.Marshal(request)
+
+		err = wss.WriteMessage(websocket.BinaryMessage, serializedRequest)
+		defer wss.Close()
+		require.NoError(t, err)
+
+		responseMsgType, response, err := wss.ReadMessage()
+		require.NoError(t, err)
+
+		resp := &pb.EventResponse{}
+		proto.Unmarshal(response, resp)
+		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
+		assert.Equal(t, request.ReqGuid, resp.GetData()["req_guid"])
+		assert.Equal(t, pb.Status_SUCCESS, resp.GetStatus())
+		assert.Equal(t, pb.Code_OK, resp.GetCode())
+		assert.Equal(t, "", resp.GetReason())
+	})
+
+	t.Run("Should return unknown request when request fail to deserialize", func(t *testing.T) {
+		ts = httptest.NewServer(getRouter(hlr))
+		defer ts.Close()
+
+		wss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
+			"X-User-ID": []string{"test2-user2"},
+		})
+		defer wss.Close()
+		require.NoError(t, err)
+
+		err = wss.WriteMessage(websocket.BinaryMessage, []byte{1, 2, 3, 4, 1, 2})
+		require.NoError(t, err)
+
+		responseMsgType, response, err := wss.ReadMessage()
+		require.NoError(t, err)
+
+		resp := &pb.EventResponse{}
+		proto.Unmarshal(response, resp)
+		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
+		assert.Equal(t, pb.Status_ERROR, resp.GetStatus())
+		assert.Equal(t, pb.Code_BAD_REQUEST, resp.GetCode())
+		assert.Empty(t, resp.GetData())
+	})
+}
+
+func getRouter(hlr *Handler) http.Handler {
+	collector := new(collection.MockCollector)
+	collector.On("Collect", mock.Anything, mock.Anything).Return(nil)
+	router := mux.NewRouter()
+	subRouter := router.PathPrefix("/api/v1").Subrouter()
+	subRouter.HandleFunc("/events", hlr.GetHandlerWSEvents(collector)).Methods(http.MethodGet).Name("events")
+	return router
 }

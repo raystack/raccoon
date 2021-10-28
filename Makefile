@@ -14,7 +14,7 @@ install-protoc:
 	@echo "> installing dependencies"
 	go get -u github.com/golang/protobuf/proto@v1.4.3
 	go get -u github.com/golang/protobuf/protoc-gen-go@v1.4.3
-	go grt -u google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
 
 update-deps:
 	go mod tidy -v

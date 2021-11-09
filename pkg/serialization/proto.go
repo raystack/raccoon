@@ -10,7 +10,7 @@ var (
 	ErrInvalidProtoMessage = errors.New("invalld proto message")
 )
 
-func ProtoDeserilizer() Serializer {
+func ProtoSerilizer() Serializer {
 	return SerializeFunc(func(m interface{}) ([]byte, error) {
 		msg, ok := m.(proto.Message)
 		if !ok {

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"raccoon/config"
 	"raccoon/metrics"
@@ -27,8 +28,18 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.EventRequest) (*pb.Even
 	} else {
 		group = config.ServerWs.ConnGroupDefault
 	}
+
+	var id string
+	ids := metadata.Get(config.ServerWs.ConnIDHeader)
+
+	if len(ids) > 0 {
+		id = ids[0]
+	} else {
+		return nil, errors.New("connection id header missing")
+	}
+
 	identifier := identification.Identifier{
-		ID:    metadata.Get(config.ServerWs.ConnIDHeader)[0],
+		ID:    id,
 		Group: group,
 	}
 

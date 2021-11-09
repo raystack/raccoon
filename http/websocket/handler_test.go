@@ -7,9 +7,7 @@ import (
 	"raccoon/logger"
 	"raccoon/metrics"
 	"raccoon/pkg/collection"
-	"raccoon/pkg/deserialization"
 	pb "raccoon/pkg/proto"
-	"raccoon/pkg/serialization"
 	"reflect"
 	"strings"
 	"testing"
@@ -109,74 +107,6 @@ func TestHandler_Table(t *testing.T) {
 	}
 }
 
-func TestHandler_getDeserializerSerializer(t *testing.T) {
-	type fields struct {
-		upgrader    *connection.Upgrader
-		PingChannel chan connection.Conn
-	}
-	type args struct {
-		messageType int
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   deserialization.Deserializer
-		want1  serialization.Serializer
-	}{
-		{
-			name:   "get ProtoDeserializer",
-			fields: fields{},
-			args: args{
-				messageType: websocket.BinaryMessage,
-			},
-			want:  deserialization.ProtoDeserilizer(),
-			want1: serialization.ProtoDeserilizer(),
-		},
-		{
-			name:   "get ProtoDeserializer",
-			fields: fields{},
-			args: args{
-				messageType: websocket.BinaryMessage,
-			},
-			want:  deserialization.ProtoDeserilizer(),
-			want1: serialization.ProtoDeserilizer(),
-		},
-		{
-			name:   "get JSONDeserializer",
-			fields: fields{},
-			args: args{
-				messageType: websocket.TextMessage,
-			},
-			want:  deserialization.JSONDeserializer(),
-			want1: serialization.JSONSerializer(),
-		},
-		{
-			name:   "get Default Deserializer",
-			fields: fields{},
-			args: args{
-				messageType: websocket.TextMessage,
-			},
-			want:  deserialization.ProtoDeserilizer(),
-			want1: serialization.ProtoDeserilizer(),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			h := &Handler{
-				upgrader:    tt.fields.upgrader,
-				PingChannel: tt.fields.PingChannel,
-			}
-			got, got1 := h.getDeserializerSerializer(tt.args.messageType)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Handler.getDeserializerSerializer() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("Handler.getDeserializerSerializer() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
 func TestHandler_GETHandlerWSEvents(t *testing.T) {
 	// ---- Setup ----
 	upgrader := connection.NewUpgrader(connection.UpgraderConfig{

@@ -51,7 +51,7 @@ func (s *Servers) StartServers(ctx context.Context, cancel context.CancelFunc) {
 		}
 	}()
 	go s.ReportServerMetrics()
-	go Pinger(s.pingChannel, config.ServerWs.PingerSize, config.ServerWs.PingInterval, config.ServerWs.WriteWaitInterval)
+	go websocket.Pinger(s.pingChannel, config.ServerWs.PingerSize, config.ServerWs.PingInterval, config.ServerWs.WriteWaitInterval)
 	go func() {
 		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
 			logger.Errorf("WebSocket Server --> pprof could not be enabled: %s", err.Error())

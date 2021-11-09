@@ -17,9 +17,28 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type serDe struct {
+	serializer   serialization.Serializer
+	deserializer deserialization.Deserializer
+}
 type Handler struct {
 	upgrader    *connection.Upgrader
+	serdeMap    map[int]*serDe
 	PingChannel chan connection.Conn
+}
+
+func getSerDeMap() map[int]*serDe {
+	serDeMap := make(map[int]*serDe)
+	serDeMap[websocket.BinaryMessage] = &serDe{
+		serializer:   serialization.ProtoSerilizer(),
+		deserializer: deserialization.ProtoDeserilizer(),
+	}
+
+	serDeMap[websocket.TextMessage] = &serDe{
+		serializer:   serialization.JSONSerializer(),
+		deserializer: deserialization.JSONDeserializer(),
+	}
+	return serDeMap
 }
 
 func NewHandler(pingC chan connection.Conn) *Handler {
@@ -37,6 +56,7 @@ func NewHandler(pingC chan connection.Conn) *Handler {
 	upgrader := connection.NewUpgrader(ugConfig)
 	return &Handler{
 		upgrader: upgrader,
+		serdeMap: getSerDeMap(),
 	}
 }
 
@@ -73,8 +93,9 @@ func (h *Handler) GetHandlerWSEvents(collector collection.Collector) http.Handle
 			timeConsumed := time.Now()
 			metrics.Count("events_rx_bytes_total", len(message), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
 			payload := &pb.EventRequest{}
+			serde := h.serdeMap[messageType]
 
-			d, s := h.getDeserializerSerializer(messageType)
+			d, s := serde.deserializer, serde.serializer
 			if err := d.Deserialize(message, payload); err != nil {
 				logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed for %s: %v", conn.Identifier, err))
 				metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_group=%s", conn.Identifier.Group))
@@ -119,15 +140,4 @@ func writeBadRequestResponse(conn connection.Conn, serializer serialization.Seri
 
 	failure, _ := serializer.Serialize(response)
 	conn.WriteMessage(messageType, failure)
-}
-
-func (h *Handler) getDeserializerSerializer(messageType int) (deserialization.Deserializer, serialization.Serializer) {
-	switch messageType {
-	case websocket.BinaryMessage:
-		return deserialization.ProtoDeserilizer(), serialization.ProtoDeserilizer()
-	case websocket.TextMessage:
-		return deserialization.JSONDeserializer(), serialization.JSONSerializer()
-	default:
-		return deserialization.ProtoDeserilizer(), serialization.ProtoDeserilizer()
-	}
 }

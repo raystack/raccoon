@@ -19,7 +19,7 @@ func TestProtoDeserilizer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ProtoDeserilizer(); reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
+			if got := ProtoSerilizer(); reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
 				t.Errorf("ProtoDeserilizer() = %v, want %v", got, tt.want)
 			}
 		})

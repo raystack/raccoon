@@ -245,8 +245,8 @@ func TestResponse_Write(t *testing.T) {
 			args: args{
 				s: s,
 			},
-			want:    4,
-			wantW:   "[49]",
+			want:    1,
+			wantW:   "1",
 			wantErr: false,
 		},
 		{

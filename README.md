@@ -94,7 +94,7 @@ $ make test
 # Running integration tests
 $ cp .env.test .env
 $ make docker-run
-$ INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=ws://localhost:8080 INTEGTEST_TOPIC_FORMAT="clickstream-%s-log" go test ./integration -v
+$ INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=ws://localhost:8080 INTEGTEST_TOPIC_FORMAT="clickstream-%s-log" GRPC_SERVER_ADDR="localhost:8081" go test ./integration -v
 ```
 
 ## Contribute

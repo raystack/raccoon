@@ -55,8 +55,9 @@ func NewHandler(pingC chan connection.Conn) *Handler {
 
 	upgrader := connection.NewUpgrader(ugConfig)
 	return &Handler{
-		upgrader: upgrader,
-		serdeMap: getSerDeMap(),
+		upgrader:    upgrader,
+		serdeMap:    getSerDeMap(),
+		PingChannel: pingC,
 	}
 }
 
@@ -94,7 +95,6 @@ func (h *Handler) GetHandlerWSEvents(collector collection.Collector) http.Handle
 			metrics.Count("events_rx_bytes_total", len(message), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
 			payload := &pb.EventRequest{}
 			serde := h.serdeMap[messageType]
-
 			d, s := serde.deserializer, serde.serializer
 			if err := d.Deserialize(message, payload); err != nil {
 				logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed for %s: %v", conn.Identifier, err))

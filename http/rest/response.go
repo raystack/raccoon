@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"io"
 	pb "raccoon/pkg/proto"
 	"raccoon/pkg/serialization"
@@ -41,5 +40,5 @@ func (r *Response) Write(w io.Writer, s serialization.Serializer) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return fmt.Fprint(w, b)
+	return w.Write(b)
 }

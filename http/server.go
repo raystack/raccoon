@@ -39,7 +39,7 @@ func (s *Servers) StartServers(ctx context.Context, cancel context.CancelFunc) {
 		}
 	}()
 	go func() {
-		lis, err := net.Listen("tcp", config.ServerGRPC.Port)
+		lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.ServerGRPC.Port))
 		if err != nil {
 			logger.Errorf("GRPC Server --> GRPC Server could not be started = %s", err.Error())
 			cancel()
@@ -90,7 +90,7 @@ func CreateServer(bufferChannel chan *collection.EventsBatch) *Servers {
 	collector := collection.NewChannelCollector(bufferChannel)
 	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)
 	wsHandler := websocket.NewHandler(pingChannel)
-	restHandler := &rest.Handler{}
+	restHandler := rest.NewHandler()
 	grpcHandler := &raccoongrpc.Handler{C: collector}
 	handler := &Handler{wsHandler, restHandler, grpcHandler}
 	grpcServer := grpc.NewServer()

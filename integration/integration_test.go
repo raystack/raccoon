@@ -18,6 +18,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
@@ -26,7 +27,7 @@ import (
 var uuid string
 var timeout time.Duration
 var topicFormat string
-var url string
+var url, wsurl string
 var bootstrapServers string
 var grpcServerAddr string
 
@@ -34,7 +35,8 @@ func TestMain(m *testing.M) {
 	uuid = fmt.Sprintf("%d-test", rand.Int())
 	timeout = 20 * time.Second
 	topicFormat = os.Getenv("INTEGTEST_TOPIC_FORMAT")
-	url = fmt.Sprintf("%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
+	wsurl = fmt.Sprintf("ws://%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
+	url = fmt.Sprintf("http://%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
 	grpcServerAddr = os.Getenv("GRPC_SERVER_ADDR")
 	bootstrapServers = os.Getenv("INTEGTEST_BOOTSTRAP_SERVER")
 	os.Exit(m.Run())
@@ -47,14 +49,15 @@ func TestIntegration(t *testing.T) {
 		"X-User-ID": []string{"1234"},
 	}
 	t.Run("Should response with BadRequest when sending invalid request", func(t *testing.T) {
-		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+
+		wss, _, err := websocket.DefaultDialer.Dial(wsurl, header)
 
 		if err != nil {
 			assert.Fail(t, fmt.Sprintf("fail to connect. %v", err))
 		}
 
+		defer wss.Close()
 		wss.WriteMessage(websocket.BinaryMessage, []byte{1})
-
 		mType, resp, err := wss.ReadMessage()
 		r := &pb.EventResponse{}
 		_ = proto.Unmarshal(resp, r)
@@ -78,29 +81,27 @@ func TestIntegration(t *testing.T) {
 		defer conn.Close()
 
 		client := pb.NewEventServiceClient(conn)
-		r, err := client.SendEvent(context.Background(), nil)
+		r, err := client.SendEvent(context.Background(), &pb.EventRequest{})
 
-		assert.Empty(t, err)
-		assert.Equal(t, pb.Status_ERROR, r.Status)
-		assert.Equal(t, pb.Code_BAD_REQUEST, r.Code)
-		assert.NotEmpty(t, r.Reason)
-		assert.Empty(t, r.Data)
+		assert.NotEmpty(t, err)
+		assert.Empty(t, r)
 
 	})
 
 	t.Run("Should response with BadRequest when sending invalid json request", func(t *testing.T) {
-		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+		wss, _, err := websocket.DefaultDialer.Dial(wsurl, header)
 
 		if err != nil {
 			assert.Fail(t, fmt.Sprintf("fail to connect. %v", err))
 		}
+		defer wss.Close()
 
-		wss.WriteMessage(websocket.TextMessage, []byte{1})
+		wss.WriteMessage(websocket.TextMessage, []byte(""))
 
 		mType, resp, err := wss.ReadMessage()
 		r := &pb.EventResponse{}
 		_ = json.Unmarshal(resp, r)
-		assert.Equal(t, mType, websocket.TextMessage)
+		assert.Equal(t, websocket.TextMessage, mType)
 		assert.Empty(t, err)
 		assert.Equal(t, pb.Status_ERROR, r.Status)
 		assert.Equal(t, pb.Code_BAD_REQUEST, r.Code)
@@ -180,11 +181,13 @@ func TestIntegration(t *testing.T) {
 		}
 		buf := &bytes.Buffer{}
 		json.NewEncoder(buf).Encode(req)
+
 		request, err := http.NewRequest(http.MethodPost, url, buf)
 		if err != nil {
 			assert.Fail(t, fmt.Sprintf("failed to create http request. %v", err))
 			os.Exit(1)
 		}
+		request.Header.Add("Content-Type", "application/json")
 		res, err := client.Do(request)
 		if err != nil {
 			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
@@ -195,19 +198,20 @@ func TestIntegration(t *testing.T) {
 		r := &pb.EventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
 		assert.Empty(t, err)
-		assert.Equal(t, r.Code.String(), pb.Code_OK.String())
-		assert.Equal(t, r.Status.String(), pb.Status_SUCCESS.String())
+		assert.Equal(t, pb.Code_OK, r.Code)
+		assert.Equal(t, pb.Status_SUCCESS, r.Status)
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
 
 	})
 
 	t.Run("Should response with success when JSON request is processed", func(t *testing.T) {
-		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+		wss, _, err := websocket.DefaultDialer.Dial(wsurl, header)
 
 		if err != nil {
 			panic(err)
 		}
+		defer wss.Close()
 		var events []*pb.Event
 
 		eEvent1 := &pb.Event{
@@ -270,7 +274,9 @@ func TestIntegration(t *testing.T) {
 			Events:   events,
 		}
 
-		r, err := client.SendEvent(context.Background(), req)
+		md := metadata.New(map[string]string{"X-User-ID": "1234"})
+		ctx := metadata.NewOutgoingContext(context.Background(), md)
+		r, err := client.SendEvent(ctx, req)
 		assert.Empty(t, err)
 		assert.Equal(t, r.Code.String(), pb.Code_OK.String())
 		assert.Equal(t, r.Status.String(), pb.Status_SUCCESS.String())
@@ -280,11 +286,13 @@ func TestIntegration(t *testing.T) {
 	})
 
 	t.Run("Should response with success when request is processed", func(t *testing.T) {
-		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+		wss, _, err := websocket.DefaultDialer.Dial(wsurl, header)
 
 		if err != nil {
 			panic(err)
 		}
+
+		defer wss.Close()
 		var events []*pb.Event
 
 		eEvent1 := &pb.Event{
@@ -390,12 +398,13 @@ func TestIntegration(t *testing.T) {
 	})
 
 	t.Run("Should close connection when client is unresponsive", func(t *testing.T) {
-		wss, _, err := websocket.DefaultDialer.Dial(url, header)
+		wss, _, err := websocket.DefaultDialer.Dial(wsurl, header)
 
 		if err != nil {
 			assert.Fail(t, err.Error())
 		}
 
+		defer wss.Close()
 		wss.SetPingHandler(func(appData string) error {
 			return nil
 		})
@@ -419,12 +428,11 @@ func TestIntegration(t *testing.T) {
 
 	t.Run("Should disconnect subsequence connection from same user when already connected", func(t *testing.T) {
 		done := make(chan int)
-		_, _, err := websocket.DefaultDialer.Dial(url, header)
+		_, _, err := websocket.DefaultDialer.Dial(wsurl, header)
 
 		assert.NoError(t, err)
 
-		secondWss, _, err := websocket.DefaultDialer.Dial(url, header)
-
+		secondWss, _, err := websocket.DefaultDialer.Dial(wsurl, header)
 		assert.NoError(t, err)
 
 		secondWss.SetCloseHandler(func(code int, text string) error {
@@ -452,14 +460,14 @@ func TestIntegration(t *testing.T) {
 
 	t.Run("Should accept connections with same user id with different connection group", func(t *testing.T) {
 		done := make(chan int)
-		_, _, err := websocket.DefaultDialer.Dial(url, http.Header{
+		_, _, err := websocket.DefaultDialer.Dial(wsurl, http.Header{
 			"X-User-ID":    []string{"1234"},
 			"X-User-Group": []string{"viewer"},
 		})
 
 		assert.NoError(t, err)
 
-		secondWss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
+		secondWss, _, err := websocket.DefaultDialer.Dial(wsurl, http.Header{
 			"X-User-ID":    []string{"1234"},
 			"X-User-Group": []string{"editor"},
 		})

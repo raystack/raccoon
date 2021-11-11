@@ -50,14 +50,17 @@ func (h *Handler) GetRESTAPIHandler(c collection.Collector) http.HandlerFunc {
 		contentType := r.Header.Get("Content-Type")
 		rw.Header().Set("Content-Type", contentType)
 
-		res := &Response{}
+		res := &Response{
+			EventResponse: &pb.EventResponse{},
+		}
+
 		serde, ok := h.serDeMap[contentType]
 
 		if !ok {
 			metrics.Increment("batches_read_total", "status=failed,reason=unknowncontentype")
 			logger.Errorf("[rest.GetRESTAPIHandler] invalid content type %s", contentType)
 			rw.WriteHeader(http.StatusBadRequest)
-			_, err := res.SetCode(pb.Code_BAD_REQUEST).SetStatus(pb.Status_ERROR).SetReason("no body present").
+			_, err := res.SetCode(pb.Code_BAD_REQUEST).SetStatus(pb.Status_ERROR).SetReason("invalid content type").
 				SetSentTime(time.Now().Unix()).Write(rw, serialization.JSONSerializer())
 			if err != nil {
 				logger.Errorf("[rest.GetRESTAPIHandler] error sending response: %v", err)

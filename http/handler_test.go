@@ -17,7 +17,7 @@ import (
 func TestPingHandler(t *testing.T) {
 	hlr := &Handler{
 		wh: &websocket.Handler{},
-		rh: &rest.Handler{},
+		rh: rest.NewHandler(),
 		gh: &grpc.Handler{},
 	}
 	collector := new(collection.MockCollector)

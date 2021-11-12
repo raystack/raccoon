@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"raccoon/collection"
 	"raccoon/config"
 	raccoongrpc "raccoon/http/grpc"
 	"raccoon/http/rest"
@@ -13,8 +14,7 @@ import (
 	"raccoon/http/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
-	"raccoon/pkg/collection"
-	pb "raccoon/pkg/proto"
+	pb "raccoon/proto"
 	"runtime"
 	"time"
 
@@ -85,7 +85,7 @@ func (s *Servers) ReportServerMetrics() {
 }
 
 //CreateServer - instantiates the http server
-func CreateServer(bufferChannel chan *collection.EventsBatch) *Servers {
+func CreateServer(bufferChannel chan *collection.CollectRequest) *Servers {
 	//create the websocket handler that upgrades the http request
 	collector := collection.NewChannelCollector(bufferChannel)
 	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)

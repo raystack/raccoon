@@ -3,7 +3,7 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
-	pb "raccoon/pkg/proto"
+	pb "raccoon/proto"
 
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	// Importing librd to make it work on vendor mode

@@ -3,16 +3,16 @@ package websocket
 import (
 	"fmt"
 	"net/http"
+	"raccoon/collection"
 	"raccoon/config"
+	"raccoon/deserialization"
 	"raccoon/http/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
-	"raccoon/pkg/collection"
-	"raccoon/pkg/deserialization"
-	"raccoon/pkg/serialization"
+	"raccoon/serialization"
 	"time"
 
-	pb "raccoon/pkg/proto"
+	pb "raccoon/proto"
 
 	"github.com/gorilla/websocket"
 )

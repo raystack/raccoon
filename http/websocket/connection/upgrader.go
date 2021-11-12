@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"raccoon/identification"
 	"raccoon/logger"
 	"raccoon/metrics"
-	"raccoon/pkg/identification"
-	pb "raccoon/pkg/proto"
+	pb "raccoon/proto"
 	"time"
 
 	"github.com/gorilla/websocket"

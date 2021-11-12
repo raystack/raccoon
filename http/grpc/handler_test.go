@@ -2,11 +2,11 @@ package grpc
 
 import (
 	"context"
+	"raccoon/collection"
 	"raccoon/config"
 	"raccoon/logger"
 	"raccoon/metrics"
-	"raccoon/pkg/collection"
-	pb "raccoon/pkg/proto"
+	pb "raccoon/proto"
 	"reflect"
 	"testing"
 

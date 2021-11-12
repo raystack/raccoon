@@ -3,8 +3,8 @@ package rest
 import (
 	"bytes"
 	"errors"
-	pb "raccoon/pkg/proto"
-	"raccoon/pkg/serialization"
+	pb "raccoon/proto"
+	"raccoon/serialization"
 	"reflect"
 	"testing"
 	"time"

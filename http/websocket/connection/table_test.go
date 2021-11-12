@@ -1,7 +1,7 @@
 package connection
 
 import (
-	"raccoon/pkg/identification"
+	"raccoon/identification"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

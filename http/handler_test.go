@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"raccoon/collection"
 	"raccoon/http/grpc"
 	"raccoon/http/rest"
 	"raccoon/http/websocket"
-	"raccoon/pkg/collection"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

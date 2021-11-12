@@ -2,7 +2,7 @@ package rest
 
 import (
 	"net/http"
-	"raccoon/pkg/collection"
+	"raccoon/collection"
 	"reflect"
 	"testing"
 )

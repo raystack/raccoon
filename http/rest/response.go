@@ -2,8 +2,8 @@ package rest
 
 import (
 	"io"
-	pb "raccoon/pkg/proto"
-	"raccoon/pkg/serialization"
+	pb "raccoon/proto"
+	"raccoon/serialization"
 )
 
 type Response struct {

@@ -16,4 +16,5 @@ coverage
 clickstream-service
 raccoon
 pkg/proto/*.pb.go
+proto/*.pb.go
 .temp

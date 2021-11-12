@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	pb "raccoon/pkg/proto"
+	pb "raccoon/proto"
 	"time"
 
 	"github.com/gorilla/websocket"

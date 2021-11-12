@@ -3,11 +3,11 @@ package websocket
 import (
 	"net/http"
 	"net/http/httptest"
+	"raccoon/collection"
 	"raccoon/http/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
-	"raccoon/pkg/collection"
-	pb "raccoon/pkg/proto"
+	pb "raccoon/proto"
 	"reflect"
 	"strings"
 	"testing"

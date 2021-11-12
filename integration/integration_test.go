@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	pb "raccoon/pkg/proto"
+	pb "raccoon/proto"
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"

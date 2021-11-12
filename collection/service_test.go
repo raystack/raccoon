@@ -8,9 +8,9 @@ import (
 
 func TestNewChannelCollector(t *testing.T) {
 	type args struct {
-		c chan *EventsBatch
+		c chan *CollectRequest
 	}
-	c := make(chan *EventsBatch)
+	c := make(chan *CollectRequest)
 	tests := []struct {
 		name string
 		args args

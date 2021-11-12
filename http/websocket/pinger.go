@@ -3,9 +3,9 @@ package websocket
 import (
 	"fmt"
 	"raccoon/http/websocket/connection"
+	"raccoon/identification"
 	"raccoon/logger"
 	"raccoon/metrics"
-	"raccoon/pkg/identification"
 	"time"
 )
 

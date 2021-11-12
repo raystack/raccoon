@@ -4,21 +4,15 @@ import (
 	"context"
 	"time"
 
-	"raccoon/pkg/identification"
-	pb "raccoon/pkg/proto"
+	"raccoon/identification"
+	pb "raccoon/proto"
 )
 
 type CollectRequest struct {
 	ConnectionIdentifier *identification.Identifier
 	TimeConsumed         time.Time
+	TimePushed           time.Time
 	*pb.EventRequest
-}
-
-type EventsBatch struct {
-	ConnIdentifier *identification.Identifier
-	EventReq       *pb.EventRequest
-	TimeConsumed   time.Time
-	TimePushed     time.Time
 }
 
 type Collector interface {

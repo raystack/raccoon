@@ -2,9 +2,9 @@ package connection
 
 import (
 	"fmt"
+	"raccoon/identification"
 	"raccoon/logger"
 	"raccoon/metrics"
-	"raccoon/pkg/identification"
 	"time"
 
 	"github.com/gorilla/websocket"

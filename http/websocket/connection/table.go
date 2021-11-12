@@ -2,7 +2,7 @@ package connection
 
 import (
 	"errors"
-	"raccoon/pkg/identification"
+	"raccoon/identification"
 	"sync"
 )
 

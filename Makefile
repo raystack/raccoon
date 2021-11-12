@@ -23,7 +23,7 @@ update-deps:
 copy-config:
 	cp .env.sample .env
 
-PROTO_PACKAGE=/pkg/proto
+PROTO_PACKAGE=/proto
 generate-proto:
 	rm -rf .temp
 	mkdir -p .temp

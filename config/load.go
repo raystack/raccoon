@@ -23,6 +23,7 @@ func Load() {
 	logConfigLoader()
 	publisherKafkaConfigLoader()
 	serverWsConfigLoader()
+	serverGRPCConfigLoader()
 	workerConfigLoader()
 	metricStatsdConfigLoader()
 	eventDistributionConfigLoader()

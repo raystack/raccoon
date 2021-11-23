@@ -4,13 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"raccoon/identification"
 	"raccoon/logger"
 	"raccoon/metrics"
-	pb "raccoon/websocket/proto"
+	pb "raccoon/proto"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/proto"
 )
 
 type Upgrader struct {
@@ -37,7 +38,7 @@ type UpgraderConfig struct {
 
 func NewUpgrader(conf UpgraderConfig) *Upgrader {
 	var checkOriginFunc func(r *http.Request) bool
-	if conf.CheckOrigin == false {
+	if !conf.CheckOrigin {
 		checkOriginFunc = func(r *http.Request) bool {
 			return true
 		}
@@ -98,7 +99,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 		}}, nil
 }
 
-func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier Identifier) {
+func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier identification.Identifier) {
 	//expects the client to send a ping, mark this channel as idle timed out post the deadline
 	conn.SetReadDeadline(time.Now().Add(u.pongWaitInterval))
 	conn.SetPongHandler(func(string) error {
@@ -117,14 +118,14 @@ func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier Identif
 	})
 }
 
-func (u *Upgrader) newIdentifier(h http.Header) Identifier {
+func (u *Upgrader) newIdentifier(h http.Header) identification.Identifier {
 	// If connGroupHeader is empty string. By default, it will always return an empty string as Group. This means the group is fallback to default value.
 	var group = h.Get(u.connGroupHeader)
 	if group == "" {
 		group = u.connGroupDefault
 	}
-	return Identifier{
-		ID: h.Get(u.connIDHeader),
+	return identification.Identifier{
+		ID:    h.Get(u.connIDHeader),
 		Group: group,
 	}
 }

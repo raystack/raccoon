@@ -15,5 +15,6 @@ coverage
 *.idea/
 clickstream-service
 raccoon
-websocket/proto/*.pb.go
+pkg/proto/*.pb.go
+proto/*.pb.go
 .temp

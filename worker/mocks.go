@@ -1,9 +1,10 @@
 package worker
 
 import (
+	pb "raccoon/proto"
+
 	"github.com/stretchr/testify/mock"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
-	pb "raccoon/websocket/proto"
 )
 
 type mockKafkaPublisher struct {

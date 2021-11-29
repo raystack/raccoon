@@ -1,6 +1,6 @@
 # Architecture
 
-Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon uses the Websocket protocol for peer-to-peer communication, providing long persistent connections, with no overhead of additional headers sizes as in http protocol. Protobuf is used as the serialization format that reduces the payload sizes further. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](https://github.com/odpf/proton/tree/main/odpf/raccoon) for proto definition format that Raccoon accepts.
+Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon supports websockets, REST and gRPC protocols for clients to send events. With wesockets it provides long persistent connections, with no overhead of additional headers sizes as in http protocol. Racoon supports protocol buffers and JSON as serialization formats. Websockets and REST API support both whereas with gRPC only protocol buffers are supported. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](https://odpf.gitbook.io/raccoon/guides/publishing#data-formatters) for data definitions format that Raccoon accepts.
 
 Raccoon was built with a primary purpose to source or collect user behaviour data in near-real time. User behaviour data is a stream of events that occur when users traverse through a mobile app or website. Raccoon powers analytics systems, big data pipelines and other disparate consumers by providing high volume, high throughput ingestion APIs consuming real time data. Raccoon’s key architecture principle is a realization of an event agnostic backend \(accepts events of any type without the type awareness\). It is this capability that enables Raccoon to evolve into a strong player in the ingestion/collector ecosystem that has real time streaming/analytical needs.
 
@@ -10,18 +10,21 @@ Raccoon was built with a primary purpose to source or collect user behaviour dat
 
 At a high level, the following sequence details the architecture.
 
-* Clients make websocket connections to Raccoon by performing a http GET API call, with headers to upgrade to websocket.
-* Raccoon uses [gorilla websocket](https://github.com/gorilla/websocket) handlers and for each connection the handlers spawn a goroutine to handle incoming requests.
-* After the connection has been established, clients can send the events. 
-* Clients can send the request anytime as long as the websocket connection is alive.
-* When the events are available to be consumed, the handler will deserialize the proto events and forward them to the buffered channel.
+* Clients make wiebsocket connections to Raccoon by performing a http GET API call, with headers to upgrade to websocket.
+* Clients connecting via REST endpoint connect to Racccon by requesting the same websocket HTTP server but with POST method.
+* Clients using gRPC need to generate the grpc client for the [EventService](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventService.proto)
+* Raccoon uses [gorilla websocket](https://github.com/gorilla/websocket) handlers and for each websocket connection the handlers spawn a goroutine to handle incoming requests.
+* After the websocket connection has been established, clients can send the events. 
+* Clients can send the request anytime as long as the websocket connection is alive whereas with REST and gRPC requests can be sent only once.
+* When the events are available to be consumed, the handler will deserialize events using the correct deserializer and forward them to the buffered channel.
 * A pool of worker go routines works off the buffered channel
 * Each worker iterates over the events' batch, determines the topic based on the type and serializes the bytes to the Kafka producer synchronously.
 
 Note: The internals of each of the components like channel size, buffer sizes, publisher properties etc., are configurable enabling Raccoon to be provisioned according to the system/event characteristics and load.
 
-### Connections
+## Connections
 
+### Websockets
 Raccoon has long-running persistent connections with the client. Once a client makes an HTTP request with a WebSocket upgrade header, raccoon upgrades the HTTP request to a WebSocket connection end of which a persistent connection is established with the client.
 
 The following sequence outlines the connection handling by Raccoon:
@@ -34,6 +37,13 @@ The following sequence outlines the connection handling by Raccoon:
 * At this point, the connection is completely upgraded and Raccoon is ready to accept EventRequest. The handler handles each EventRequest by sending it to the events-channel to be asynchronously published by the publisher.
 * When the connection is closed. Raccoon clean up the connection along with the identifier. The same identifier then can be reused on the upcoming connection.
 
+### REST
+Client connects to the server with the same endpoint but with POST HTTP method. As it is a rest endpoint each request is uniquely handled.
+* Connection identifier is constructed from the values of `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` header here too.
+### gRPC
+It is recommended to generate the gRPC client for Raccoon's `EventService` and use that client to do gRPC request. Currently only unary requests are supported.
+* Connection identifier is constructed from the values of `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` in gRPC metadata.
+
 ### Event Delivery Gurantee \(at-least-once for most time\)
 
 The server for the most times provide at-least-once event delivery gurantee.
@@ -45,7 +55,7 @@ Event data loss happens in the following scenarios:
 
   Every event sent from the client is stored in-memory in the buffered channels \(explained in the `Acknowledging events` section\). The workers pull the events from this channel and publishes to kafka. The server does not maintain any event peristence. This is a conscious decision to enable a simpler, performant ingestion design for the server. The buffer/retries of failed events is relied upon Kafka's internal buffer/retries respectively. In future: Server can be augmented for zero-data loss or at-least-once guarantees through intermediate event persitence.
 
-### Acknowledging events
+## Acknowledging events
 
 Event acknowledgements was designed to signify if the events batch is received and sent to Kafka successfully. This will enable the clients to retry on failed event delivery. However Raccoon chooses to send the acknowledgments as soon as it receives and deserializes the events successfully using the proto `EventRequest`. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
 
@@ -61,6 +71,9 @@ Cons:
 
 Considering that kafka is set up in a clustered, cross-region, cross-zone environment, the chances of it going down are mostly unlikely. In case if it does, the amount of events lost is negligible considering it is a streaming system and is expected to forward millions of events/sec.
 
+When an EventRequest is sent to Raccoon over any connection be it Websocket/HTTP/gRPC a corresponding response is sent by the server inidcating whether the event was consumed successfully or not.
+
+### Protobufs
 When an [EventRequest](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventRequest.proto) proto below containing events are sent over the wire
 
 ```text
@@ -74,7 +87,7 @@ message EventRequest {
 }
 ```
 
-a corresponding [EventResponse](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventResponse.proto) is sent by the server on the same connection that the events were consumed.
+a corresponding [EventResponse](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventResponse.proto) is sent by the server.
 
 ```text
 message EventResponse {
@@ -88,6 +101,42 @@ message EventResponse {
   map<string, string> data = 5;
 }
 ```
+
+### JSON
+
+When a JSON event like the one metoined below is sent a corresponding JSON response is sent by the server.
+
+**Request**
+```json
+{
+    "req_guid": "1234abcd",
+    "sent_time": {
+        "seconds": 1638154927,
+        "nanos": 376499000
+    },
+    "events": [
+        {
+            "eventBytes": "Cg4KCHNlcnZpY2UxEgJBMRACIAEyiQEKJDczZTU3ZDlhLTAzMjQtNDI3Yy1hYTc5LWE4MzJjMWZkY2U5ZiISCcix9QzhsChAEekGEi1cMlNAKgwKAmlkEgJpZBjazUsyFwoDaU9zEgQxMi4zGgVBcHBsZSIDaTEwOiYKJDczZTU3ZDlhLTAzMjQtNDI3Yy1hYTc5LWE4MzJjMWZkY2U5Zg==",
+            "type": "booking"
+        }
+    ]
+}
+```
+
+
+**Response**
+```json
+{
+    "status": 1,
+    "code": 1,
+    "sent_time": 1638155915,
+    "data": {
+        "req_guid": "1234abcd"
+    }
+}
+```
+
+
 
 ### Event Distribution
 

@@ -1,24 +1,25 @@
 package websocket
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
+	"raccoon/collection"
+	"raccoon/http/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
+	pb "raccoon/proto"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
-	"raccoon/websocket/connection"
-	pb "raccoon/websocket/proto"
-
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type void struct{}
@@ -29,21 +30,84 @@ func (v void) Write(_ []byte) (int, error) {
 func TestMain(t *testing.M) {
 	logger.SetOutput(void{})
 	metrics.SetVoid()
-	os.Exit(t.Run())
 }
 
-func TestPingHandler(t *testing.T) {
-	ts := httptest.NewServer(Router(nil))
-	defer ts.Close()
-	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/ping", ts.URL), nil)
+func TestNewHandler(t *testing.T) {
+	type args struct {
+		pingC chan connection.Conn
+	}
 
-	httpClient := http.Client{}
-	res, _ := httpClient.Do(req)
-
-	assert.Equal(t, http.StatusOK, res.StatusCode)
+	ugConfig := connection.UpgraderConfig{
+		ReadBufferSize:    1024,
+		WriteBufferSize:   1024,
+		CheckOrigin:       false,
+		MaxUser:           100,
+		PongWaitInterval:  60,
+		WriteWaitInterval: 60,
+		ConnIDHeader:      "x-conn-id",
+		ConnGroupHeader:   "x-group",
+	}
+	pingC := make(chan connection.Conn)
+	tests := []struct {
+		name string
+		args args
+		want *Handler
+	}{
+		{
+			name: "creating a new handler",
+			args: args{
+				pingC: pingC,
+			},
+			want: &Handler{
+				upgrader:    connection.NewUpgrader(ugConfig),
+				PingChannel: pingC,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewHandler(tt.args.pingC); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewHandler() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
 
-func TestHandler_HandlerWSEvents(t *testing.T) {
+func TestHandler_Table(t *testing.T) {
+	table := &connection.Table{}
+	type fields struct {
+		upgrader    *connection.Upgrader
+		PingChannel chan connection.Conn
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   *connection.Table
+	}{
+		{
+			name: "return table",
+			fields: fields{
+				upgrader: &connection.Upgrader{
+					Table: table,
+				},
+			},
+			want: table,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &Handler{
+				upgrader:    tt.fields.upgrader,
+				PingChannel: tt.fields.PingChannel,
+			}
+			if got := h.Table(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Handler.Table() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHandler_GETHandlerWSEvents(t *testing.T) {
 	// ---- Setup ----
 	upgrader := connection.NewUpgrader(connection.UpgraderConfig{
 		ReadBufferSize:    10240,
@@ -56,11 +120,11 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		ConnGroupHeader:   "string",
 	})
 	hlr := &Handler{
-		upgrader:      upgrader,
-		bufferChannel: make(chan EventsBatch, 10),
-		PingChannel:   make(chan connection.Conn, 100),
+		upgrader: upgrader,
+
+		PingChannel: make(chan connection.Conn, 100),
 	}
-	ts := httptest.NewServer(Router(hlr))
+	ts := httptest.NewServer(getRouter(hlr))
 	defer ts.Close()
 
 	url := "ws" + strings.TrimPrefix(ts.URL+"/api/v1/events", "http")
@@ -69,7 +133,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 	}
 
 	t.Run("Should return success response after successfully push to channel", func(t *testing.T) {
-		ts = httptest.NewServer(Router(hlr))
+		ts = httptest.NewServer(getRouter(hlr))
 		defer ts.Close()
 
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)
@@ -77,7 +141,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 
 		request := &pb.EventRequest{
 			ReqGuid:  "1234",
-			SentTime: ptypes.TimestampNow(),
+			SentTime: timestamppb.Now(),
 			Events:   nil,
 		}
 		serializedRequest, _ := proto.Marshal(request)
@@ -99,7 +163,7 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 	})
 
 	t.Run("Should return unknown request when request fail to deserialize", func(t *testing.T) {
-		ts = httptest.NewServer(Router(hlr))
+		ts = httptest.NewServer(getRouter(hlr))
 		defer ts.Close()
 
 		wss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
@@ -121,4 +185,13 @@ func TestHandler_HandlerWSEvents(t *testing.T) {
 		assert.Equal(t, pb.Code_BAD_REQUEST, resp.GetCode())
 		assert.Empty(t, resp.GetData())
 	})
+}
+
+func getRouter(hlr *Handler) http.Handler {
+	collector := new(collection.MockCollector)
+	collector.On("Collect", mock.Anything, mock.Anything).Return(nil)
+	router := mux.NewRouter()
+	subRouter := router.PathPrefix("/api/v1").Subrouter()
+	subRouter.HandleFunc("/events", hlr.GetHandlerWSEvents(collector)).Methods(http.MethodGet).Name("events")
+	return router
 }

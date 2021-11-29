@@ -3,15 +3,16 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
-	pb "raccoon/websocket/proto"
+	pb "raccoon/proto"
 
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	// Importing librd to make it work on vendor mode
-	_ "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka/librdkafka"
 	"raccoon/config"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"strings"
+
+	_ "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka/librdkafka"
 )
 
 // KafkaProducer Produce data to kafka synchronously

@@ -3,23 +3,24 @@ package app
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
+	"raccoon/collection"
 	"raccoon/config"
+	raccoonhttp "raccoon/http"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"raccoon/publisher"
-	ws "raccoon/websocket"
 	"raccoon/worker"
 	"syscall"
 )
 
 // StartServer starts the server
 func StartServer(ctx context.Context, cancel context.CancelFunc) {
-	wssServer, bufferChannel := ws.CreateServer()
+	bufferChannel := make(chan *collection.CollectRequest)
+	httpserver := raccoonhttp.CreateServer(bufferChannel)
 	logger.Info("Start Server -->")
-	wssServer.StartHTTPServer(ctx, cancel)
+	httpserver.StartServers(ctx, cancel)
 	logger.Info("Start publisher -->")
 	kPublisher, err := publisher.NewKafka()
 	if err != nil {
@@ -32,10 +33,10 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	workerPool := worker.CreateWorkerPool(config.Worker.WorkersPoolSize, bufferChannel, config.Worker.DeliveryChannelSize, kPublisher)
 	workerPool.StartWorkers()
 	go kPublisher.ReportStats()
-	go shutDownServer(ctx, cancel, wssServer.HTTPServer, bufferChannel, workerPool, kPublisher)
+	go shutDownServer(ctx, cancel, httpserver, bufferChannel, workerPool, kPublisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *http.Server, bufferChannel chan ws.EventsBatch, workerPool *worker.Pool, kp *publisher.Kafka) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServer *raccoonhttp.Servers, bufferChannel chan *collection.CollectRequest, workerPool *worker.Pool, kp *publisher.Kafka) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
@@ -43,7 +44,8 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, wssServer *h
 		switch sig {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 			logger.Info(fmt.Sprintf("[App.Server] Received a signal %s", sig))
-			wssServer.Shutdown(ctx)
+			httpServer.HTTPServer.Shutdown(ctx)
+			httpServer.GRPCServer.GracefulStop()
 			logger.Info("Server shutdown all the listeners")
 			timedOut := workerPool.FlushWithTimeOut(config.Worker.WorkerFlushTimeout)
 			if timedOut {

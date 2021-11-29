@@ -1,15 +1,22 @@
 # Publishing Events
 
-## EndPoint
+## EndPoints
 
 Raccoon can be hosted behind a proxy/API GW, a sample of blocks as below.
 
 ![](../.gitbook/assets/raccoon_ep.png)
 
-The API path which accepts events is:
+The HTTP API path which accepts events is:
 
 **/api/v1/events**
 
+This path can be used for sending events by either connecting via websocket connection or as a normal REST API Request.
+
+HTTP methods used for Endpoints are:
+
+**Websocket** - GET
+
+**REST** - POST
 ### Authorization/Authentication
 
 Raccoon does not provide features to perform any authorization or authentication of the user/client initiating the connection. It accepts connections as trusted \(and assumes any such auth is already performed\)
@@ -18,7 +25,13 @@ Raccoon does not provide features to perform any authorization or authentication
 
 SSL termination is outside the scope of Raccoon, and the service API accepts HTTP connections assuming that the SSL is terminated at a proxy or ELB before reaching Raccoon.
 
-## Protos
+### gRPC backend
+
+Similar to HTTP SSL termination is outside the scope of Raccoon, and the service API accepts connections assuming SSL is terminated at a proxy or ELB before reaching Raccoon.
+## Data Formatters
+
+Raccoon supports Protos and JSON as the primary data formatters. Protobufs can be used to send event via websockets, REST or gRPC whereas JSON is supported only for websocket and REST endpoint.
+### Protos
 
 Raccoon accepts an EventRequest proto that wraps multiple Event proto. This enables clients to send an event in real-time or multiple events in batches.
 
@@ -91,6 +104,18 @@ enum Code {
 
 The above response model is self-explanatory. Clients can choose to retry for error codes such as Code=\[3\|4\]
 
+### JSON
+
+Sample JSON EventRequest
+
+```json
+
+```
+
+| Parameter   | Data Type   | Required | Description|
+| ----------- | ----------- | -------- | ---------- |
+|       |        | ||
+|    |         | | |
 ## Headers
 
 Raccoon service accepts headers to identify a user connection uniquely. The header name is made configurable as it enables clients to specify a header name that works for them. For, e.g. for a mobile app having a request header as `X-User-ID` which identifies the user \(client\) connecting to Raccoon, can configure Raccoon service with the config set as below `SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID`. Optionally, `SERVER_WEBSOCKET_CONN_GROUP_HEADER` can also be configured to [support multitenancy](https://odpf.gitbook.io/raccoon/concepts/architecture#connections) such as multiple apps connecting to a single Raccoon instance.

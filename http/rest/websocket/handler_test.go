@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"raccoon/collection"
-	"raccoon/http/websocket/connection"
+	"raccoon/http/rest/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
 	pb "raccoon/proto"

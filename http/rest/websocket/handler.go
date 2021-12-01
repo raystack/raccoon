@@ -6,7 +6,7 @@ import (
 	"raccoon/collection"
 	"raccoon/config"
 	"raccoon/deserialization"
-	"raccoon/http/websocket/connection"
+	"raccoon/http/rest/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"raccoon/serialization"
@@ -65,7 +65,7 @@ func (h *Handler) Table() *connection.Table {
 	return h.upgrader.Table
 }
 
-//HandlerWSEvents handles the upgrade and the events sent by the peers
+// GetHandlerWSEvents handles the upgrade and the events sent by the peers
 func (h *Handler) GetHandlerWSEvents(collector collection.Collector) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := h.upgrader.Upgrade(w, r)

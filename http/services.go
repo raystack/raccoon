@@ -17,11 +17,11 @@ type bootstrapper interface {
 	Name() string
 }
 
-type Servers struct {
+type Services struct {
 	b []bootstrapper
 }
 
-func (s *Servers) StartServers(ctx context.Context, cancel context.CancelFunc) {
+func (s *Services) Start(ctx context.Context, cancel context.CancelFunc) {
 	for _, init := range s.b {
 		i := init
 		go func() {
@@ -35,15 +35,15 @@ func (s *Servers) StartServers(ctx context.Context, cancel context.CancelFunc) {
 	}
 }
 
-func (s *Servers) Shutdown(ctx context.Context) {
+func (s *Services) Shutdown(ctx context.Context) {
 	for _, b := range s.b {
 		logger.Infof("%s Server --> shutting down", b.Name())
 		b.Shutdown(ctx)
 	}
 }
 
-func CreateServer(b chan *collection.CollectRequest) Servers {
-	return Servers{
+func Create(b chan *collection.CollectRequest) Services {
+	return Services{
 		b: []bootstrapper{
 			grpc.Service{Buffer: b},
 			pprof.Service{},

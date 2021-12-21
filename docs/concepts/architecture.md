@@ -9,14 +9,8 @@ Raccoon was built with a primary purpose to source or collect user behaviour dat
 ![HLD](../.gitbook/assets/raccoon_hld.png)
 
 At a high level, the following sequence details the architecture.
-
-* Clients make wiebsocket connections to Raccoon by performing a http GET API call, with headers to upgrade to websocket.
-* Clients connecting via REST endpoint connect to Racccon by requesting the same websocket HTTP server but with POST method.
-* Clients using gRPC need to generate the grpc client for the [EventService](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventService.proto)
-* Raccoon uses [gorilla websocket](https://github.com/gorilla/websocket) handlers and for each websocket connection the handlers spawn a goroutine to handle incoming requests.
-* After the websocket connection has been established, clients can send the events. 
-* Clients can send the request anytime as long as the websocket connection is alive whereas with REST and gRPC requests can be sent only once.
-* When the events are available to be consumed, the handler will deserialize events using the correct deserializer and forward them to the buffered channel.
+* Raccoon accepts events through one of the supported protocols.
+* The events are deserialized using the correct deserializer and then forwarded to the buffered channel.
 * A pool of worker go routines works off the buffered channel
 * Each worker iterates over the events' batch, determines the topic based on the type and serializes the bytes to the Kafka producer synchronously.
 
@@ -25,10 +19,12 @@ Note: The internals of each of the components like channel size, buffer sizes, p
 ## Connections
 
 ### Websockets
-Raccoon has long-running persistent connections with the client. Once a client makes an HTTP request with a WebSocket upgrade header, raccoon upgrades the HTTP request to a WebSocket connection end of which a persistent connection is established with the client.
+Raccoon supports long-running persistent WebSocket connections with the client. Once a client makes an HTTP request with a WebSocket upgrade header, raccoon upgrades the HTTP request to a WebSocket connection end of which a persistent connection is established with the client.
 
 The following sequence outlines the connection handling by Raccoon:
-
+* Clients make websocket connections to Raccoon by performing a http GET API call, with headers to upgrade to websocket.
+* Raccoon uses [gorilla websocket](https://github.com/gorilla/websocket) handlers and for each websocket connection the handlers spawn a goroutine to handle incoming requests.
+* After the websocket connection has been established, clients can send the events. 
 * Construct connection identifier from the request header. The identifier is constructed from the value of `SERVER_WEBSOCKET_CONN_ID_HEADER` header. For example, Raccoon is configured with `SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID`. Raccoon will check the value of X-User-ID header and make it an identifier. Raccoon then uses this identifier to check if there is already an existing connection with the same identifier. If the same connection already exists, Raccoon will disconnect the connection with an appropriate error message as a response proto.
   * Optionally, you can also configure `SERVER_WEBSOCKET_CONN_GROUP_HEADER` to support multi-tenancy. For example, you want to use an instance of Raccoon with multiple mobile clients. You can configure raccoon with `SERVER_WEBSOCKET_CONN_GROUP_HEADER=X-Mobile-Client`. Then, Raccoon will use the value of X-Mobile-Client along with X-User-ID as identifier. The uniqueness becomes the combination of X-User-ID value with X-Mobile-Client value. This way, Raccoon can maintain the same X-User-ID within different X-Mobile-Client.
 * Verify if the total connections have reached the configured limit based on `SERVER_WEBSOCKET_MAX_CONN` configuration. On reaching the max connections, Raccoon disconnects the connection with an appropriate error message as a response proto.
@@ -41,8 +37,11 @@ The following sequence outlines the connection handling by Raccoon:
 Client connects to the server with the same endpoint but with POST HTTP method. As it is a rest endpoint each request is uniquely handled.
 * Connection identifier is constructed from the values of `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` header here too.
 ### gRPC
-It is recommended to generate the gRPC client for Raccoon's `EventService` and use that client to do gRPC request. Currently only unary requests are supported.
+It is recommended to generate the gRPC client for Raccoon's [EventService](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventService.proto) and use that client to do gRPC request. Currently only unary requests are supported.
+* Client's `SendEvent` method is called to send the event. 
 * Connection identifier is constructed from the values of `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` in gRPC metadata.
+
+Clients can send the request anytime as long as the websocket connection is alive whereas with REST and gRPC requests can be sent only once.
 
 ### Event Delivery Gurantee \(at-least-once for most time\)
 

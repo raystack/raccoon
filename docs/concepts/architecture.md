@@ -72,6 +72,17 @@ Considering that kafka is set up in a clustered, cross-region, cross-zone enviro
 
 When an EventRequest is sent to Raccoon over any connection be it Websocket/HTTP/gRPC a corresponding response is sent by the server inidcating whether the event was consumed successfully or not.
 
+## Supported Protocols and Data formats
+
+| Protocol  | Data Format | Version |
+|:---------:|:-----------:|:-------:|
+| WebSocket | Protobufs   | v0.1.0  |
+| WebSocket | JSON        | v0.1.2  |
+| REST API  | JSON        | v0.1.2  |
+| REST API  | Protobufs   | v0.1.2  |
+| gRPC      | Protobufs   | v0.1.2  |
+
+## Request and Response Models
 ### Protobufs
 When an [EventRequest](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventRequest.proto) proto below containing events are sent over the wire
 

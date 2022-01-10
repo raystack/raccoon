@@ -5,16 +5,18 @@ import (
 	"time"
 )
 
-type CollectFunction func(ctx context.Context, req *CollectRequest) error
-
-func (c CollectFunction) Collect(ctx context.Context, req *CollectRequest) error {
-	return c(ctx, req)
+type ChannelCollector struct {
+	ch chan CollectRequest
 }
 
 func NewChannelCollector(c chan CollectRequest) Collector {
-	return CollectFunction(func(ctx context.Context, req *CollectRequest) error {
-		req.TimePushed = time.Now()
-		c <- *req
-		return nil
-	})
+	return &ChannelCollector{
+		ch: c,
+	}
+}
+
+func (c *ChannelCollector) Collect(ctx context.Context, req *CollectRequest) error {
+	req.TimePushed = time.Now()
+	c.ch <- *req
+	return nil
 }

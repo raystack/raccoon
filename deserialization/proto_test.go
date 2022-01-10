@@ -1,26 +1,36 @@
 package deserialization
 
 import (
-	"reflect"
+	pb "raccoon/proto"
 	"testing"
 )
 
-func TestProtoDeserilizer(t *testing.T) {
+func TestProtoDeserilizer_Deserialize(t *testing.T) {
+	type args struct {
+		b []byte
+		i interface{}
+	}
 	tests := []struct {
-		name string
-		want Deserializer
+		name    string
+		d       *ProtoDeserilizer
+		args    args
+		wantErr bool
 	}{
 		{
-			name: "Create new proto Deserializer",
-			want: DeserializeFunc(func(b []byte, i interface{}) error {
-				return nil
-			}),
+			name: "Deserialize a proto message",
+			d:    &ProtoDeserilizer{},
+			args: args{
+				b: []byte{},
+				i: &pb.EventRequest{},
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ProtoDeserilizer(); reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
-				t.Errorf("ProtoDeserilizer() = %v, want %v", got, tt.want)
+			d := &ProtoDeserilizer{}
+			if err := d.Deserialize(tt.args.b, tt.args.i); (err != nil) != tt.wantErr {
+				t.Errorf("ProtoDeserilizer.Deserialize() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

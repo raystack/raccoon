@@ -17,13 +17,13 @@ import (
 type Pool struct {
 	Size                int
 	deliveryChannelSize int
-	EventsChannel       <-chan *collection.CollectRequest
+	EventsChannel       <-chan collection.CollectRequest
 	kafkaProducer       publisher.KafkaProducer
 	wg                  sync.WaitGroup
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan *collection.CollectRequest, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan collection.CollectRequest, deliveryChannelSize int, kafkaProducer publisher.KafkaProducer) *Pool {
 	return &Pool{
 		Size:                size,
 		deliveryChannelSize: deliveryChannelSize,

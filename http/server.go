@@ -85,7 +85,7 @@ func (s *Servers) ReportServerMetrics() {
 }
 
 //CreateServer - instantiates the http server
-func CreateServer(bufferChannel chan *collection.CollectRequest) *Servers {
+func CreateServer(bufferChannel chan collection.CollectRequest) *Servers {
 	//create the websocket handler that upgrades the http request
 	collector := collection.NewChannelCollector(bufferChannel)
 	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)

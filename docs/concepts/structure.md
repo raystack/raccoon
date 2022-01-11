@@ -10,9 +10,19 @@ The core structure of Raccoon is the server itself. After the server is started,
 
 This section talks briefly about the content of various important packages. You can use this to guess the code location when you need to make changes.
 
-### `websocket`
+### `http`
+
+Contains all the http related code including code related to `websocket`, `rest` and `grpc`. It also has code pertaining to the http server that serves both WebSocket and REST APIs.
+#### `http/websocket`
 
 Contains server-related code along with request/response handlers and [connection management](architecture.md#connections).
+
+#### `http/rest`
+
+Contains server-side code along with resquest/response handler for the REST endpoint.
+
+#### `http/gRPC`
+Contains server-side handlers for gRPC server.
 
 ### `worker`
 
@@ -29,6 +39,18 @@ The starting point of Raccoon. It initializes server, worker, publisher, and oth
 ### `config`
 
 Load and store application configurations. Contains mapping of environment configuration with configuration on the code.
+
+### `serialization`
+
+Contains the common serialization code for both JSON and Protobufs along with common interface.
+
+### `deserialization`
+
+Contains the common deserialization code along with common interface.
+
+
+### `identification`
+Contains the code for connection identification.
 
 ## Code Generation
 

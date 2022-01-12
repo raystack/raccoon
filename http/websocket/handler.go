@@ -106,7 +106,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
 		metrics.Count("events_rx_total", len(payload.Events), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
 		h.collector.Collect(r.Context(), &collection.CollectRequest{
-			ConnectionIdentifier: &conn.Identifier,
+			ConnectionIdentifier: conn.Identifier,
 			TimeConsumed:         timeConsumed,
 			EventRequest:         payload,
 		})

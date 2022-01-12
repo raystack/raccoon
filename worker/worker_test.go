@@ -17,7 +17,7 @@ import (
 
 func TestWorker(t *testing.T) {
 	request := &collection.CollectRequest{
-		ConnectionIdentifier: &identification.Identifier{
+		ConnectionIdentifier: identification.Identifier{
 			ID:    "12345",
 			Group: "viewer",
 		},

@@ -9,7 +9,7 @@ import (
 )
 
 type CollectRequest struct {
-	ConnectionIdentifier *identification.Identifier
+	ConnectionIdentifier identification.Identifier
 	TimeConsumed         time.Time
 	TimePushed           time.Time
 	*pb.EventRequest

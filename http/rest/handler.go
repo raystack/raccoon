@@ -128,7 +128,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	metrics.Count("events_rx_total", len(req.Events), fmt.Sprintf("conn_group=%s", identifier.Group))
 
 	h.collector.Collect(r.Context(), &collection.CollectRequest{
-		ConnectionIdentifier: &identifier,
+		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
 		EventRequest:         req,
 	})

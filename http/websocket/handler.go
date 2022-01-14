@@ -24,24 +24,25 @@ type serDe struct {
 type Handler struct {
 	upgrader    *connection.Upgrader
 	serdeMap    map[int]*serDe
+	collector   collection.Collector
 	PingChannel chan connection.Conn
 }
 
 func getSerDeMap() map[int]*serDe {
 	serDeMap := make(map[int]*serDe)
 	serDeMap[websocket.BinaryMessage] = &serDe{
-		serializer:   serialization.ProtoSerilizer(),
-		deserializer: deserialization.ProtoDeserilizer(),
+		serializer:   &serialization.ProtoSerilizer{},
+		deserializer: &deserialization.ProtoDeserilizer{},
 	}
 
 	serDeMap[websocket.TextMessage] = &serDe{
-		serializer:   serialization.JSONSerializer(),
-		deserializer: deserialization.JSONDeserializer(),
+		serializer:   &serialization.JSONSerializer{},
+		deserializer: &deserialization.JSONDeserializer{},
 	}
 	return serDeMap
 }
 
-func NewHandler(pingC chan connection.Conn) *Handler {
+func NewHandler(pingC chan connection.Conn, collector collection.Collector) *Handler {
 	ugConfig := connection.UpgraderConfig{
 		ReadBufferSize:    config.ServerWs.ReadBufferSize,
 		WriteBufferSize:   config.ServerWs.WriteBufferSize,
@@ -58,6 +59,7 @@ func NewHandler(pingC chan connection.Conn) *Handler {
 		upgrader:    upgrader,
 		serdeMap:    getSerDeMap(),
 		PingChannel: pingC,
+		collector:   collector,
 	}
 }
 
@@ -66,53 +68,50 @@ func (h *Handler) Table() *connection.Table {
 }
 
 //HandlerWSEvents handles the upgrade and the events sent by the peers
-func (h *Handler) GetHandlerWSEvents(collector collection.Collector) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		conn, err := h.upgrader.Upgrade(w, r)
+func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
+	conn, err := h.upgrader.Upgrade(w, r)
+	if err != nil {
+		logger.Debugf("[websocket.Handler] %v", err)
+		return
+	}
+	defer conn.Close()
+	h.PingChannel <- conn
+	for {
+		messageType, message, err := conn.ReadMessage()
 		if err != nil {
-			logger.Debugf("[websocket.Handler] %v", err)
-			return
-		}
-		defer conn.Close()
-		h.PingChannel <- conn
-		for {
-			messageType, message, err := conn.ReadMessage()
-			if err != nil {
-				if websocket.IsCloseError(err, websocket.CloseGoingAway,
-					websocket.CloseNormalClosure,
-					websocket.CloseNoStatusReceived,
-					websocket.CloseAbnormalClosure) {
-					logger.Error(fmt.Sprintf("[websocket.Handler] %s closed abruptly: %v", conn.Identifier, err))
-					metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=closeerror,conn_group=%s", conn.Identifier.Group))
-					break
-				}
-				metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=unknown,conn_group=%s", conn.Identifier.Group))
-				logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed. Unknown failure for %s: %v", conn.Identifier, err)) //no connection issue here
+			if websocket.IsCloseError(err, websocket.CloseGoingAway,
+				websocket.CloseNormalClosure,
+				websocket.CloseNoStatusReceived,
+				websocket.CloseAbnormalClosure) {
+				logger.Error(fmt.Sprintf("[websocket.Handler] %s closed abruptly: %v", conn.Identifier, err))
+				metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=closeerror,conn_group=%s", conn.Identifier.Group))
 				break
 			}
-
-			timeConsumed := time.Now()
-			metrics.Count("events_rx_bytes_total", len(message), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
-			payload := &pb.EventRequest{}
-			serde := h.serdeMap[messageType]
-			d, s := serde.deserializer, serde.serializer
-			if err := d.Deserialize(message, payload); err != nil {
-				logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed for %s: %v", conn.Identifier, err))
-				metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_group=%s", conn.Identifier.Group))
-				writeBadRequestResponse(conn, s, messageType, err)
-				continue
-			}
-			metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
-			metrics.Count("events_rx_total", len(payload.Events), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
-			collector.Collect(r.Context(), &collection.CollectRequest{
-				ConnectionIdentifier: &conn.Identifier,
-				TimeConsumed:         timeConsumed,
-				EventRequest:         payload,
-			})
-			writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
+			metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=unknown,conn_group=%s", conn.Identifier.Group))
+			logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed. Unknown failure for %s: %v", conn.Identifier, err)) //no connection issue here
+			break
 		}
-	}
 
+		timeConsumed := time.Now()
+		metrics.Count("events_rx_bytes_total", len(message), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
+		payload := &pb.EventRequest{}
+		serde := h.serdeMap[messageType]
+		d, s := serde.deserializer, serde.serializer
+		if err := d.Deserialize(message, payload); err != nil {
+			logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed for %s: %v", conn.Identifier, err))
+			metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_group=%s", conn.Identifier.Group))
+			writeBadRequestResponse(conn, s, messageType, err)
+			continue
+		}
+		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
+		metrics.Count("events_rx_total", len(payload.Events), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
+		h.collector.Collect(r.Context(), &collection.CollectRequest{
+			ConnectionIdentifier: conn.Identifier,
+			TimeConsumed:         timeConsumed,
+			EventRequest:         payload,
+		})
+		writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
+	}
 }
 
 func writeSuccessResponse(conn connection.Conn, serializer serialization.Serializer, messageType int, requestGUID string) {

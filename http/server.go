@@ -85,12 +85,12 @@ func (s *Servers) ReportServerMetrics() {
 }
 
 //CreateServer - instantiates the http server
-func CreateServer(bufferChannel chan *collection.CollectRequest) *Servers {
+func CreateServer(bufferChannel chan collection.CollectRequest) *Servers {
 	//create the websocket handler that upgrades the http request
 	collector := collection.NewChannelCollector(bufferChannel)
 	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)
-	wsHandler := websocket.NewHandler(pingChannel)
-	restHandler := rest.NewHandler()
+	wsHandler := websocket.NewHandler(pingChannel, collector)
+	restHandler := rest.NewHandler(collector)
 	grpcHandler := &raccoongrpc.Handler{C: collector}
 	handler := &Handler{wsHandler, restHandler, grpcHandler}
 	grpcServer := grpc.NewServer()
@@ -118,7 +118,7 @@ func Router(h *Handler, collector collection.Collector) http.Handler {
 	router := mux.NewRouter()
 	router.Path("/ping").HandlerFunc(PingHandler).Methods(http.MethodGet)
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
-	subRouter.HandleFunc("/events", h.wh.GetHandlerWSEvents(collector)).Methods(http.MethodGet).Name("events")
-	subRouter.HandleFunc("/events", h.rh.GetRESTAPIHandler(collector)).Methods(http.MethodPost).Name("events")
+	subRouter.HandleFunc("/events", h.wh.HandlerWSEvents).Methods(http.MethodGet).Name("events")
+	subRouter.HandleFunc("/events", h.rh.RESTAPIHandler).Methods(http.MethodPost).Name("events")
 	return router
 }

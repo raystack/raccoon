@@ -17,7 +17,7 @@ import (
 
 // StartServer starts the server
 func StartServer(ctx context.Context, cancel context.CancelFunc) {
-	bufferChannel := make(chan *collection.CollectRequest)
+	bufferChannel := make(chan collection.CollectRequest, config.Worker.ChannelSize)
 	httpserver := raccoonhttp.CreateServer(bufferChannel)
 	logger.Info("Start Server -->")
 	httpserver.StartServers(ctx, cancel)
@@ -36,7 +36,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	go shutDownServer(ctx, cancel, httpserver, bufferChannel, workerPool, kPublisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServer *raccoonhttp.Servers, bufferChannel chan *collection.CollectRequest, workerPool *worker.Pool, kp *publisher.Kafka) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServer *raccoonhttp.Servers, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, kp *publisher.Kafka) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {

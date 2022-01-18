@@ -86,21 +86,21 @@ Total number of message bytes \(including framing, such as per-Message framing a
 Total number of requests sent to Kafka brokers
 
 * Type: `Gauge`
-* Tags: `host=broker_nodes` `broker=true`
+* Tags: `broker=broker_nodes`
 
 ### `kafka_brokers_tx_bytes_total`
 
 Total number of bytes transmitted to Kafka brokers
 
 * Type: `Gauge`
-* Tags: `host=broker_nodes` `broker=true`
+* Tags: `broker=broker_nodes`
 
 ### `kafka_brokers_rtt_average_milliseconds`
 
 Broker latency / round-trip time in microseconds
 
 * Type: `Gauge`
-* Tags: `host=broker_nodes` `broker=true`
+* Tags: `broker=broker_nodes`
 
 ## Resource Usage
 

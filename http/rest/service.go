@@ -15,8 +15,8 @@ import (
 )
 
 type Service struct {
-	Buffer chan collection.CollectRequest
-	s      *http.Server
+	Collector collection.Collector
+	s         *http.Server
 }
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,16 +34,14 @@ func reportConnectionMetrics(conn connection.Table) {
 	}
 }
 
-func (s Service) Init() error {
-	collector := collection.NewChannelCollector(s.Buffer)
-
+func (s Service) Init(ctx context.Context) error {
 	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)
-	wh := websocket.NewHandler(pingChannel, collector)
+	wh := websocket.NewHandler(pingChannel, s.Collector)
 	go websocket.Pinger(pingChannel, config.ServerWs.PingerSize, config.ServerWs.PingInterval, config.ServerWs.WriteWaitInterval)
 
 	go reportConnectionMetrics(*wh.Table())
 
-	restHandler := NewHandler(collector)
+	restHandler := NewHandler(s.Collector)
 	router := mux.NewRouter()
 	router.Path("/ping").HandlerFunc(pingHandler).Methods(http.MethodGet)
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
@@ -62,6 +60,6 @@ func (s Service) Name() string {
 	return "REST"
 }
 
-func (s Service) Shutdown(ctx context.Context) {
-	s.s.Shutdown(ctx)
+func (s Service) Shutdown(ctx context.Context) error {
+	return s.s.Shutdown(ctx)
 }

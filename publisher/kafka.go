@@ -103,9 +103,9 @@ func (pr *Kafka) ReportStats() {
 				rttValue := brokerStats["rtt"].(map[string]interface{})
 				nodeName := strings.Split(brokerStats["nodename"].(string), ":")[0]
 
-				metrics.Gauge("kafka_brokers_tx_total", brokerStats["tx"], fmt.Sprintf("host=%s,broker=true", nodeName))
-				metrics.Gauge("kafka_brokers_tx_bytes_total", brokerStats["txbytes"], fmt.Sprintf("host=%s,broker=true", nodeName))
-				metrics.Gauge("kafka_brokers_rtt_average_milliseconds", rttValue["avg"], fmt.Sprintf("host=%s,broker=true", nodeName))
+				metrics.Gauge("kafka_brokers_tx_total", brokerStats["tx"], fmt.Sprintf("broker=%s", nodeName))
+				metrics.Gauge("kafka_brokers_tx_bytes_total", brokerStats["txbytes"], fmt.Sprintf("broker=%s", nodeName))
+				metrics.Gauge("kafka_brokers_rtt_average_milliseconds", rttValue["avg"], fmt.Sprintf("broker=%s", nodeName))
 			}
 
 		default:

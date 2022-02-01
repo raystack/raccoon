@@ -42,7 +42,7 @@ func (s *Services) Shutdown(ctx context.Context) {
 	}
 }
 
-func Create(b chan *collection.CollectRequest) Services {
+func Create(b chan collection.CollectRequest) Services {
 	return Services{
 		b: []bootstrapper{
 			grpc.Service{Buffer: b},

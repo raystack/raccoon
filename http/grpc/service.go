@@ -12,7 +12,7 @@ import (
 )
 
 type Service struct {
-	Buffer chan *collection.CollectRequest
+	Buffer chan collection.CollectRequest
 	s      *grpc.Server
 }
 

@@ -66,7 +66,7 @@ func TestNewHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewHandler(tt.args.pingC); !reflect.DeepEqual(got, tt.want) {
+			if got := NewHandler(tt.args.pingC, &collection.MockCollector{}); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewHandler() = %v, want %v", got, tt.want)
 			}
 		})
@@ -192,6 +192,6 @@ func getRouter(hlr *Handler) http.Handler {
 	collector.On("Collect", mock.Anything, mock.Anything).Return(nil)
 	router := mux.NewRouter()
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
-	subRouter.HandleFunc("/events", hlr.GetHandlerWSEvents(collector)).Methods(http.MethodGet).Name("events")
+	subRouter.HandleFunc("/events", hlr.HandlerWSEvents).Methods(http.MethodGet).Name("events")
 	return router
 }

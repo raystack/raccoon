@@ -1,26 +1,44 @@
 package serialization
 
 import (
+	"fmt"
+	pb "raccoon/proto"
 	"reflect"
 	"testing"
 )
 
-func TestJSONSerializer(t *testing.T) {
+func TestJSONSerializer_Serialize(t *testing.T) {
+	type args struct {
+		m interface{}
+	}
 	tests := []struct {
-		name string
-		want Serializer
+		name    string
+		s       *JSONSerializer
+		args    args
+		want    []byte
+		wantErr bool
 	}{
 		{
-			name: "Initilizing JSON serializer",
-			want: SerializeFunc(func(m interface{}) ([]byte, error) {
-				return nil, nil
-			}),
+			name: "Serialize JSON",
+			s:    &JSONSerializer{},
+			args: args{
+				m: &pb.EventRequest{},
+			},
+			want:    []byte{123, 125},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := JSONSerializer(); reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
-				t.Errorf("JSONSerializer() = %v, want %v", got, tt.want)
+			s := &JSONSerializer{}
+			got, err := s.Serialize(tt.args.m)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("JSONSerializer.Serialize() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			fmt.Println(string(got))
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("JSONSerializer.Serialize() = %v, want %v", got, tt.want)
 			}
 		})
 	}

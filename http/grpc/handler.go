@@ -49,7 +49,7 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.EventRequest) (*pb.Even
 	metrics.Count("events_rx_total", len(req.Events), fmt.Sprintf("conn_group=%s", identifier.Group))
 
 	h.C.Collect(ctx, &collection.CollectRequest{
-		ConnectionIdentifier: &identifier,
+		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
 		EventRequest:         req,
 	})

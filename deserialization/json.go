@@ -2,8 +2,8 @@ package deserialization
 
 import "encoding/json"
 
-func JSONDeserializer() Deserializer {
-	return DeserializeFunc(func(b []byte, i interface{}) error {
-		return json.Unmarshal(b, i)
-	})
+type JSONDeserializer struct{}
+
+func (j *JSONDeserializer) Deserialize(b []byte, i interface{}) error {
+	return json.Unmarshal(b, i)
 }

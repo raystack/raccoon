@@ -15,7 +15,7 @@ import (
 )
 
 type Service struct {
-	Buffer chan *collection.CollectRequest
+	Buffer chan collection.CollectRequest
 	s      *http.Server
 }
 
@@ -38,17 +38,17 @@ func (s Service) Init() error {
 	collector := collection.NewChannelCollector(s.Buffer)
 
 	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)
-	wh := websocket.NewHandler(pingChannel)
+	wh := websocket.NewHandler(pingChannel, collector)
 	go websocket.Pinger(pingChannel, config.ServerWs.PingerSize, config.ServerWs.PingInterval, config.ServerWs.WriteWaitInterval)
 
 	go reportConnectionMetrics(*wh.Table())
 
-	restHandler := NewHandler()
+	restHandler := NewHandler(collector)
 	router := mux.NewRouter()
 	router.Path("/ping").HandlerFunc(pingHandler).Methods(http.MethodGet)
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
-	subRouter.HandleFunc("/events", wh.GetHandlerWSEvents(collector)).Methods(http.MethodGet).Name("events")
-	subRouter.HandleFunc("/events", restHandler.GetRESTAPIHandler(collector)).Methods(http.MethodPost).Name("events")
+	subRouter.HandleFunc("/events", wh.HandlerWSEvents).Methods(http.MethodGet).Name("events")
+	subRouter.HandleFunc("/events", restHandler.RESTAPIHandler).Methods(http.MethodPost).Name("events")
 
 	server := &http.Server{
 		Handler: router,

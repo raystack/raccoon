@@ -17,14 +17,14 @@ Raccoon is high throughput, low-latency service that provides an API to ingest c
 * **Reduced payload sizes** - Protobuf based
 * **Metrics:** - Built-in monitoring includes latency and active connections.
 
-To know more, follow the detailed [documentation](docs) 
+To know more, follow the detailed [documentation](docs)
 
 ## Use cases
 Raccoon can be used as an event collector, event distributor and as a forwarder of events generated from mobile/web/IoT front ends as it provides an high volume, high throughput, low latency event-agnostic APIs. Raccoon can serve the needs of data ingestion in near-real-time. Some domains where Raccoon could be used is listed below
 
-* Adtech streams: Where digital marketing data from external sources can be ingested into the organization backends 
-* Clickstream: Where user behavior data can be streamed in real-time 
-* Edge systems: Where devices (say in the IoT world) need to send data to the cloud. 
+* Adtech streams: Where digital marketing data from external sources can be ingested into the organization backends
+* Clickstream: Where user behavior data can be streamed in real-time
+* Edge systems: Where devices (say in the IoT world) need to send data to the cloud.
 * Event Sourcing: Such as Stock updates dashboards, autonomous/self-drive use cases
 
 ## Resources
@@ -73,7 +73,7 @@ Prerequisite:
 
 ```sh
 # Clone the repo
-$ git clone https://github.com/odpf/raccoon.git  
+$ git clone https://github.com/odpf/raccoon.git
 
 # Build the executable
 $ make
@@ -86,7 +86,7 @@ $ ./out/raccoon
 ```
 **Note:** Read the detail of each configurations [here](/docs/reference/configuration.md).
 
-## Running tests 
+## Running tests
 ```sh
 # Running unit tests
 $ make test
@@ -94,7 +94,7 @@ $ make test
 # Running integration tests
 $ cp .env.test .env
 $ make docker-run
-$ INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=ws://localhost:8080 INTEGTEST_TOPIC_FORMAT="clickstream-%s-log" GRPC_SERVER_ADDR="localhost:8081" go test ./integration -v
+$ INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=localhost:8080 INTEGTEST_TOPIC_FORMAT="clickstream-%s-log" GRPC_SERVER_ADDR="localhost:8081" go test ./integration -v
 ```
 
 ## Contribute

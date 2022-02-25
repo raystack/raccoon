@@ -7,20 +7,22 @@ import (
 	"os/signal"
 	"raccoon/collection"
 	"raccoon/config"
-	raccoonhttp "raccoon/http"
+	"raccoon/services"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"raccoon/publisher"
 	"raccoon/worker"
+	"runtime"
 	"syscall"
+	"time"
 )
 
 // StartServer starts the server
 func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	bufferChannel := make(chan collection.CollectRequest, config.Worker.ChannelSize)
-	httpserver := raccoonhttp.CreateServer(bufferChannel)
+	httpServices := services.Create(bufferChannel)
 	logger.Info("Start Server -->")
-	httpserver.StartServers(ctx, cancel)
+	httpServices.Start(ctx, cancel)
 	logger.Info("Start publisher -->")
 	kPublisher, err := publisher.NewKafka()
 	if err != nil {
@@ -33,10 +35,11 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	workerPool := worker.CreateWorkerPool(config.Worker.WorkersPoolSize, bufferChannel, config.Worker.DeliveryChannelSize, kPublisher)
 	workerPool.StartWorkers()
 	go kPublisher.ReportStats()
-	go shutDownServer(ctx, cancel, httpserver, bufferChannel, workerPool, kPublisher)
+	go reportProcMetrics()
+	go shutDownServer(ctx, cancel, httpServices, bufferChannel, workerPool, kPublisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServer *raccoonhttp.Servers, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, kp *publisher.Kafka) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, kp *publisher.Kafka) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
@@ -44,8 +47,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServer *
 		switch sig {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
 			logger.Info(fmt.Sprintf("[App.Server] Received a signal %s", sig))
-			httpServer.HTTPServer.Shutdown(ctx)
-			httpServer.GRPCServer.GracefulStop()
+			httpServices.Shutdown(ctx)
 			logger.Info("Server shutdown all the listeners")
 			timedOut := workerPool.FlushWithTimeOut(config.Worker.WorkerFlushTimeout)
 			if timedOut {
@@ -66,5 +68,24 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServer *
 		default:
 			logger.Info(fmt.Sprintf("[App.Server] Received a unexpected signal %s", sig))
 		}
+	}
+}
+
+func reportProcMetrics() {
+	t := time.Tick(config.MetricStatsd.FlushPeriodMs)
+	m := &runtime.MemStats{}
+	for {
+		<-t
+		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), "")
+
+		runtime.ReadMemStats(m)
+		metrics.Gauge("server_mem_heap_alloc_bytes_current", m.HeapAlloc, "")
+		metrics.Gauge("server_mem_heap_inuse_bytes_current", m.HeapInuse, "")
+		metrics.Gauge("server_mem_heap_objects_total_current", m.HeapObjects, "")
+		metrics.Gauge("server_mem_stack_inuse_bytes_current", m.StackInuse, "")
+		metrics.Gauge("server_mem_gc_triggered_current", m.LastGC/1000, "")
+		metrics.Gauge("server_mem_gc_pauseNs_current", m.PauseNs[(m.NumGC+255)%256]/1000, "")
+		metrics.Gauge("server_mem_gc_count_current", m.NumGC, "")
+		metrics.Gauge("server_mem_gc_pauseTotalNs_current", m.PauseTotalNs, "")
 	}
 }

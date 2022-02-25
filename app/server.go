@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"raccoon/collection"
 	"raccoon/config"
-	raccoonhttp "raccoon/http"
+	"raccoon/services"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"raccoon/publisher"
@@ -20,7 +20,7 @@ import (
 // StartServer starts the server
 func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	bufferChannel := make(chan collection.CollectRequest, config.Worker.ChannelSize)
-	httpServices := raccoonhttp.Create(bufferChannel)
+	httpServices := services.Create(bufferChannel)
 	logger.Info("Start Server -->")
 	httpServices.Start(ctx, cancel)
 	logger.Info("Start publisher -->")
@@ -39,7 +39,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	go shutDownServer(ctx, cancel, httpServices, bufferChannel, workerPool, kPublisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices raccoonhttp.Services, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, kp *publisher.Kafka) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, kp *publisher.Kafka) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {

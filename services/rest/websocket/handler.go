@@ -6,7 +6,7 @@ import (
 	"raccoon/collection"
 	"raccoon/config"
 	"raccoon/deserialization"
-	"raccoon/http/rest/websocket/connection"
+	"raccoon/services/rest/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"raccoon/serialization"

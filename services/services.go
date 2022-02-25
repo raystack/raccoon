@@ -1,13 +1,13 @@
-package http
+package services
 
 import (
 	"context"
 	"raccoon/collection"
 	"raccoon/logger"
 
-	"raccoon/http/grpc"
-	"raccoon/http/pprof"
-	"raccoon/http/rest"
+	"raccoon/services/grpc"
+	"raccoon/services/pprof"
+	"raccoon/services/rest"
 )
 
 type bootstrapper interface {

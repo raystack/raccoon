@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"fmt"
-	"raccoon/http/rest/websocket/connection"
+	"raccoon/services/rest/websocket/connection"
 	"raccoon/identification"
 	"raccoon/logger"
 	"raccoon/metrics"

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"raccoon/collection"
 	"raccoon/config"
-	"raccoon/http/rest/websocket"
-	"raccoon/http/rest/websocket/connection"
+	"raccoon/services/rest/websocket"
+	"raccoon/services/rest/websocket/connection"
 	"raccoon/metrics"
 	"time"
 

@@ -79,9 +79,9 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 
 			err := kp.ProduceBulk([]*pb.Event{{EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
 			assert.Len(t, err.(BulkError).Errors, 3)
-			assert.Error(t, err.(BulkError).Errors[0])
+			assert.Error(t, err.(BulkError).Errors[0].Err)
 			assert.Empty(t, err.(BulkError).Errors[1])
-			assert.Error(t, err.(BulkError).Errors[2])
+			assert.Error(t, err.(BulkError).Errors[2].Err)
 		})
 
 		t.Run("Should return topic name when unknown topic is returned", func(t *testing.T) {
@@ -90,7 +90,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 			kp := NewKafkaFromClient(client, 10, "%s")
 
 			err := kp.ProduceBulk([]*pb.Event{{EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
-			assert.EqualError(t, err.(BulkError).Errors[0], "Local: Unknown topic "+topic)
+			assert.EqualError(t, err.(BulkError).Errors[0].Err, "Local: Unknown topic "+topic)
 		})
 	})
 
@@ -116,8 +116,8 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 			err := kp.ProduceBulk([]*pb.Event{{EventBytes: []byte{}, Type: topic}, {EventBytes: []byte{}, Type: topic}}, make(chan kafka.Event, 2))
 			assert.NotEmpty(t, err)
 			assert.Len(t, err.(BulkError).Errors, 2)
-			assert.Equal(t, "buffer full", err.(BulkError).Errors[0].Error())
-			assert.Equal(t, "timeout", err.(BulkError).Errors[1].Error())
+			assert.Equal(t, "buffer full", err.(BulkError).Errors[0].Err.Error())
+			assert.Equal(t, "timeout", err.(BulkError).Errors[1].Err.Error())
 		})
 	})
 }

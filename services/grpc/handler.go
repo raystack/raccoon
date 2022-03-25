@@ -46,7 +46,7 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.EventRequest) (*pb.Even
 	timeConsumed := time.Now()
 
 	metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", identifier.Group))
-	metrics.Count("events_rx_total", len(req.Events), fmt.Sprintf("conn_group=%s", identifier.Group))
+	h.sendEventCounters(req.Events, identifier.Group)
 
 	h.C.Collect(ctx, &collection.CollectRequest{
 		ConnectionIdentifier: identifier,
@@ -63,4 +63,10 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.EventRequest) (*pb.Even
 		},
 	}, nil
 
+}
+
+func (h *Handler) sendEventCounters(events []*pb.Event, group string) {
+	for _, e := range events {
+		metrics.Increment("events_rx_total", fmt.Sprintf("conn_group=%s,event_type=%s", group, e.Type))
+	}
 }

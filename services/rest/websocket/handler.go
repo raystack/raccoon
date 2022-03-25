@@ -6,10 +6,10 @@ import (
 	"raccoon/collection"
 	"raccoon/config"
 	"raccoon/deserialization"
-	"raccoon/services/rest/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
 	"raccoon/serialization"
+	"raccoon/services/rest/websocket/connection"
 	"time"
 
 	pb "raccoon/proto"
@@ -93,7 +93,6 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		}
 
 		timeConsumed := time.Now()
-		metrics.Count("events_rx_bytes_total", len(message), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
 		payload := &pb.EventRequest{}
 		serde := h.serdeMap[messageType]
 		d, s := serde.deserializer, serde.serializer
@@ -104,13 +103,20 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
-		metrics.Count("events_rx_total", len(payload.Events), fmt.Sprintf("conn_group=%s", conn.Identifier.Group))
+		h.sendEventCounters(payload.Events, conn.Identifier.Group)
 		h.collector.Collect(r.Context(), &collection.CollectRequest{
 			ConnectionIdentifier: conn.Identifier,
 			TimeConsumed:         timeConsumed,
 			EventRequest:         payload,
 		})
 		writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
+	}
+}
+
+func (h *Handler) sendEventCounters(events []*pb.Event, group string) {
+	for _, e := range events {
+		metrics.Count("events_rx_bytes_total", len(e.EventBytes), fmt.Sprintf("conn_group=%s,event_type=%s", group, e.Type))
+		metrics.Increment("events_rx_total", fmt.Sprintf("conn_group=%s,event_type=%s", group, e.Type))
 	}
 }
 

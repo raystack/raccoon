@@ -109,7 +109,6 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	timeConsumed := time.Now()
-	metrics.Count("events_rx_bytes_total", len(b), fmt.Sprintf("conn_group=%s", identifier.Group))
 	req := &pb.EventRequest{}
 
 	if err := d.Deserialize(b, req); err != nil {
@@ -125,8 +124,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", identifier.Group))
-	metrics.Count("events_rx_total", len(req.Events), fmt.Sprintf("conn_group=%s", identifier.Group))
-
+	h.sendEventCounters(req.Events, identifier.Group)
 	h.collector.Collect(r.Context(), &collection.CollectRequest{
 		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
@@ -137,5 +135,12 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		SetDataMap(map[string]string{"req_guid": req.ReqGuid}).Write(rw, s)
 	if err != nil {
 		logger.Errorf("[restGetRESTAPIHandler] %s error sending error response: %v", identifier, err)
+	}
+}
+
+func (h *Handler) sendEventCounters(events []*pb.Event, group string) {
+	for _, e := range events {
+		metrics.Count("events_rx_bytes_total", len(e.EventBytes), fmt.Sprintf("conn_group=%s,event_type=%s", group, e.Type))
+		metrics.Increment("events_rx_total", fmt.Sprintf("conn_group=%s,event_type=%s", group, e.Type))
 	}
 }

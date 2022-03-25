@@ -45,13 +45,30 @@ func (w *Pool) StartWorkers() {
 				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 
+				eventCounts := make(map[string]int)
+				for _, e := range request.GetEvents() {
+					counts, ok := eventCounts[e.Type]
+					if !ok {
+						counts = 0
+					}
+					eventCounts[e.Type] = counts + 1
+				}
+
 				err := w.kafkaProducer.ProduceBulk(request.GetEvents(), deliveryChan)
 				totalErr := 0
+
+				errCounts := make(map[string]int)
 				if err != nil {
-					for _, err := range err.(publisher.BulkError).Errors {
-						if err != nil {
-							logger.Errorf("[worker] Fail to publish message to kafka %v", err)
+					for _, eErr := range err.(publisher.BulkError).Errors {
+						if eErr != nil && eErr.Err != nil {
+							metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=false,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eErr.EventType))
+							logger.Errorf("[worker] Fail to publish message to kafka %v", eErr.Err)
 							totalErr++
+							counts, ok := errCounts[eErr.EventType]
+							if !ok {
+								counts = 0
+							}
+							errCounts[eErr.EventType] = counts + 1
 						}
 					}
 				}
@@ -64,8 +81,15 @@ func (w *Pool) StartWorkers() {
 					metrics.Timing("worker_processing_duration_milliseconds", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)
 					metrics.Timing("server_processing_latency_milliseconds", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, fmt.Sprintf("conn_group=%s", request.ConnectionIdentifier.Group))
 				}
-				metrics.Count("kafka_messages_delivered_total", totalErr, fmt.Sprintf("success=false,conn_group=%s", request.ConnectionIdentifier.Group))
-				metrics.Count("kafka_messages_delivered_total", len(request.GetEvents())-totalErr, fmt.Sprintf("success=true,conn_group=%s", request.ConnectionIdentifier.Group))
+
+				for eType, count := range eventCounts {
+					errCount, ok := errCounts[eType]
+					if !ok {
+						errCount = 0
+					}
+					metrics.Count("kafka_messages_delivered_total", count-errCount, fmt.Sprintf("success=true,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eType))
+				}
+
 			}
 			w.wg.Done()
 		}(fmt.Sprintf("worker-%d", i))
@@ -74,7 +98,7 @@ func (w *Pool) StartWorkers() {
 
 // FlushWithTimeOut waits for the workers to complete the pending the messages
 //to be flushed to the publisher within a timeout.
-// Returns true if waiting timed out, meaning not all the events could be processed before this timeout.
+// Returns true if waiting timed out, meaning not all the events could be processed before this timeout.``
 func (w *Pool) FlushWithTimeOut(timeout time.Duration) bool {
 	c := make(chan struct{})
 	go func() {

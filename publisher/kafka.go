@@ -18,7 +18,7 @@ import (
 // KafkaProducer Produce data to kafka synchronously
 type KafkaProducer interface {
 	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
-	ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) error
+	ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) (ProducerStats, error)
 }
 
 func NewKafka() (*Kafka, error) {
@@ -49,10 +49,15 @@ type Kafka struct {
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
 // DeliveryChannel needs to be exclusive. DeliveryChannel is exposed for recyclability purpose.
-func (pr *Kafka) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) error {
-	errors := make([]*EventError, len(events))
+func (pr *Kafka) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) (ProducerStats, error) {
+	producerStats := ProducerStats{
+		EventCounts: make(map[string]int),
+		ErrorCounts: make(map[string]int),
+	}
+	errors := make([]error, len(events))
 	totalProcessed := 0
 	for order, event := range events {
+		producerStats.EventCounts[event.Type] = producerStats.EventCounts[event.Type] + 1
 		topic := fmt.Sprintf(pr.topicFormat, event.Type)
 		message := &kafka.Message{
 			Value:          event.EventBytes,
@@ -62,11 +67,12 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Even
 
 		err := pr.kp.Produce(message, deliveryChannel)
 		if err != nil {
+			producerStats.ErrorCounts[event.Type] = producerStats.ErrorCounts[event.Type] + 1
 			if err.Error() == "Local: Unknown topic" {
-				errors[order] = &EventError{Err: fmt.Errorf("%v %s", err, topic), EventType: event.Type}
+				errors[order] = fmt.Errorf("%v %s", err, topic)
 				metrics.Increment("kafka_unknown_topic_failure_total", fmt.Sprintf("topic=%s,event_type=%s", topic, event.Type))
 			} else {
-				errors[order] = &EventError{Err: err, EventType: event.Type}
+				errors[order] = err
 			}
 			continue
 		}
@@ -78,14 +84,16 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Even
 		m := d.(*kafka.Message)
 		if m.TopicPartition.Error != nil {
 			order := m.Opaque.(int)
-			errors[order] = &EventError{Err: m.TopicPartition.Error, EventType: events[order].Type}
+			eventType := events[order].GetType()
+			producerStats.ErrorCounts[eventType] = producerStats.ErrorCounts[eventType] + 1
+			errors[order] = m.TopicPartition.Error
 		}
 	}
 
 	if allNil(errors) {
-		return nil
+		return producerStats, nil
 	}
-	return BulkError{Errors: errors}
+	return producerStats, BulkError{Errors: errors}
 }
 
 func (pr *Kafka) ReportStats() {
@@ -103,9 +111,9 @@ func (pr *Kafka) ReportStats() {
 				rttValue := brokerStats["rtt"].(map[string]interface{})
 				nodeName := strings.Split(brokerStats["nodename"].(string), ":")[0]
 
-				metrics.Gauge("kafka_brokers_tx_total", brokerStats["tx"], fmt.Sprintf("host=%s,broker=true", nodeName))
-				metrics.Gauge("kafka_brokers_tx_bytes_total", brokerStats["txbytes"], fmt.Sprintf("host=%s,broker=true", nodeName))
-				metrics.Gauge("kafka_brokers_rtt_average_milliseconds", rttValue["avg"], fmt.Sprintf("host=%s,broker=true", nodeName))
+				metrics.Gauge("kafka_brokers_tx_total", brokerStats["tx"], fmt.Sprintf("broker=%s", nodeName))
+				metrics.Gauge("kafka_brokers_tx_bytes_total", brokerStats["txbytes"], fmt.Sprintf("broker=%s", nodeName))
+				metrics.Gauge("kafka_brokers_rtt_average_milliseconds", rttValue["avg"], fmt.Sprintf(",broker=%s", nodeName))
 			}
 
 		default:
@@ -122,32 +130,32 @@ func (pr *Kafka) Close() int {
 	return remaining
 }
 
-func allNil(errors []*EventError) bool {
-	for _, eErr := range errors {
-		if eErr != nil && eErr.Err != nil {
+func allNil(errors []error) bool {
+	for _, err := range errors {
+		if err != nil {
 			return false
 		}
 	}
 	return true
 }
 
-type BulkError struct {
-	Errors []*EventError
+type ProducerStats struct {
+	EventCounts map[string]int
+	ErrorCounts map[string]int
 }
 
-type EventError struct {
-	Err       error
-	EventType string
+type BulkError struct {
+	Errors []error
 }
 
 func (b BulkError) Error() string {
 	err := "error when sending messages: "
-	for i, eErr := range b.Errors {
+	for i, mErr := range b.Errors {
 		if i != 0 {
-			err += fmt.Sprintf(", %v", eErr.Err)
+			err += fmt.Sprintf(", %v", mErr)
 			continue
 		}
-		err += eErr.Err.Error()
+		err += mErr.Error()
 	}
 	return err
 }

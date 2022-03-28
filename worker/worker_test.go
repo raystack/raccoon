@@ -10,6 +10,7 @@ import (
 	"raccoon/collection"
 	"raccoon/identification"
 	pb "raccoon/proto"
+	"raccoon/publisher"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -28,7 +29,7 @@ func TestWorker(t *testing.T) {
 
 	t.Run("StartWorkers", func(t *testing.T) {
 		t.Run("Should publish messages on bufferChannel to kafka", func(t *testing.T) {
-			kp := mockKafkaPublisher{}
+			kp := mockKafkaProducer{}
 			m := &mockMetric{}
 			m.On("Timing", "processing.latency", mock.Anything, "")
 			m.On("Count", "kafka_messages_delivered_total", 0, "success=true")
@@ -43,7 +44,7 @@ func TestWorker(t *testing.T) {
 			}
 			worker.StartWorkers()
 
-			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Twice()
+			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(publisher.ProducerStats{EventCounts: map[string]int{}, ErrorCounts: map[string]int{}}, nil).Twice()
 			bc <- *request
 			bc <- *request
 			time.Sleep(10 * time.Millisecond)
@@ -54,7 +55,7 @@ func TestWorker(t *testing.T) {
 
 	t.Run("Flush", func(t *testing.T) {
 		t.Run("Should block until all messages is processed", func(t *testing.T) {
-			kp := mockKafkaPublisher{}
+			kp := mockKafkaProducer{}
 			bc := make(chan collection.CollectRequest, 2)
 			m := &mockMetric{}
 			m.On("Timing", "processing.latency", mock.Anything, "")
@@ -69,7 +70,7 @@ func TestWorker(t *testing.T) {
 				wg:                  sync.WaitGroup{},
 			}
 			worker.StartWorkers()
-			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)
+			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(publisher.ProducerStats{EventCounts: map[string]int{}, ErrorCounts: map[string]int{}}, nil).Times(3).After(3 * time.Millisecond)
 			bc <- *request
 			bc <- *request
 			bc <- *request

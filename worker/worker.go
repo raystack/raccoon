@@ -54,21 +54,14 @@ func (w *Pool) StartWorkers() {
 					eventCounts[e.Type] = counts + 1
 				}
 
-				err := w.kafkaProducer.ProduceBulk(request.GetEvents(), deliveryChan)
+				producerStats, err := w.kafkaProducer.ProduceBulk(request.GetEvents(), deliveryChan)
 				totalErr := 0
 
-				errCounts := make(map[string]int)
 				if err != nil {
-					for _, eErr := range err.(publisher.BulkError).Errors {
-						if eErr != nil && eErr.Err != nil {
-							metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=false,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eErr.EventType))
-							logger.Errorf("[worker] Fail to publish message to kafka %v", eErr.Err)
+					for _, err := range err.(publisher.BulkError).Errors {
+						if err != nil {
+							logger.Errorf("[worker] Fail to publish message to kafka %v", err)
 							totalErr++
-							counts, ok := errCounts[eErr.EventType]
-							if !ok {
-								counts = 0
-							}
-							errCounts[eErr.EventType] = counts + 1
 						}
 					}
 				}
@@ -81,15 +74,11 @@ func (w *Pool) StartWorkers() {
 					metrics.Timing("worker_processing_duration_milliseconds", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)
 					metrics.Timing("server_processing_latency_milliseconds", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, fmt.Sprintf("conn_group=%s", request.ConnectionIdentifier.Group))
 				}
-
-				for eType, count := range eventCounts {
-					errCount, ok := errCounts[eType]
-					if !ok {
-						errCount = 0
-					}
-					metrics.Count("kafka_messages_delivered_total", count-errCount, fmt.Sprintf("success=true,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eType))
+				for eventType, count := range producerStats.EventCounts {
+					errCount := producerStats.ErrorCounts[eventType]
+					metrics.Count("kafka_messages_delivered_total", errCount, fmt.Sprintf("success=false,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eventType))
+					metrics.Count("kafka_messages_delivered_total", count-errCount, fmt.Sprintf("success=true,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eventType))
 				}
-
 			}
 			w.wg.Done()
 		}(fmt.Sprintf("worker-%d", i))

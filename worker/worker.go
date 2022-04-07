@@ -45,15 +45,6 @@ func (w *Pool) StartWorkers() {
 				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 
-				eventCounts := make(map[string]int)
-				for _, e := range request.GetEvents() {
-					counts, ok := eventCounts[e.Type]
-					if !ok {
-						counts = 0
-					}
-					eventCounts[e.Type] = counts + 1
-				}
-
 				producerStats, err := w.kafkaProducer.ProduceBulk(request.GetEvents(), deliveryChan)
 				totalErr := 0
 

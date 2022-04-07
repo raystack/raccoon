@@ -122,8 +122,8 @@ func (h *Handler) sendEventCounters(events []*pb.Event, group string) {
 
 func writeSuccessResponse(conn connection.Conn, serializer serialization.Serializer, messageType int, requestGUID string) {
 	response := &pb.EventResponse{
-		Status:   pb.Status_SUCCESS,
-		Code:     pb.Code_OK,
+		Status:   pb.Status_STATUS_SUCCESS,
+		Code:     pb.Code_CODE_OK,
 		SentTime: time.Now().Unix(),
 		Reason:   "",
 		Data: map[string]string{
@@ -136,8 +136,8 @@ func writeSuccessResponse(conn connection.Conn, serializer serialization.Seriali
 
 func writeBadRequestResponse(conn connection.Conn, serializer serialization.Serializer, messageType int, err error) {
 	response := &pb.EventResponse{
-		Status:   pb.Status_ERROR,
-		Code:     pb.Code_BAD_REQUEST,
+		Status:   pb.Status_STATUS_ERROR,
+		Code:     pb.Code_CODE_BAD_REQUEST,
 		SentTime: time.Now().Unix(),
 		Reason:   fmt.Sprintf("cannot deserialize request: %s", err),
 		Data:     nil,

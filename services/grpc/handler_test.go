@@ -69,8 +69,8 @@ func TestHandler_SendEvent(t *testing.T) {
 				req: req,
 			},
 			want: &pb.EventResponse{
-				Status:   pb.Status_SUCCESS,
-				Code:     pb.Code_OK,
+				Status:   pb.Status_STATUS_SUCCESS,
+				Code:     pb.Code_CODE_OK,
 				SentTime: sentTime.Seconds,
 				Data: map[string]string{
 					"req_guid": req.ReqGuid,
@@ -87,8 +87,8 @@ func TestHandler_SendEvent(t *testing.T) {
 				req: req,
 			},
 			want: &pb.EventResponse{
-				Status:   pb.Status_SUCCESS,
-				Code:     pb.Code_OK,
+				Status:   pb.Status_STATUS_SUCCESS,
+				Code:     pb.Code_CODE_OK,
 				SentTime: sentTime.Seconds,
 				Data: map[string]string{
 					"req_guid": req.ReqGuid,

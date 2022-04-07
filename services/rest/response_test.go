@@ -29,11 +29,11 @@ func TestResponse_SetCode(t *testing.T) {
 				EventResponse: &pb.EventResponse{},
 			},
 			args: args{
-				code: pb.Code_UNKNOWN_CODE,
+				code: pb.Code_CODE_UNSPECIFIED,
 			},
 			want: &Response{
 				EventResponse: &pb.EventResponse{
-					Code: pb.Code_UNKNOWN_CODE,
+					Code: pb.Code_CODE_UNSPECIFIED,
 				},
 			},
 		},
@@ -69,11 +69,11 @@ func TestResponse_SetStatus(t *testing.T) {
 				EventResponse: &pb.EventResponse{},
 			},
 			args: args{
-				status: pb.Status_SUCCESS,
+				status: pb.Status_STATUS_SUCCESS,
 			},
 			want: &Response{
 				EventResponse: &pb.EventResponse{
-					Status: pb.Status_SUCCESS,
+					Status: pb.Status_STATUS_SUCCESS,
 				},
 			},
 		},
@@ -214,8 +214,8 @@ func TestResponse_SetDataMap(t *testing.T) {
 func TestResponse_Write(t *testing.T) {
 	s := &serialization.MockSerializer{}
 	res := &pb.EventResponse{
-		Status:   pb.Status_SUCCESS,
-		Code:     pb.Code_OK,
+		Status:   pb.Status_STATUS_SUCCESS,
+		Code:     pb.Code_CODE_OK,
 		SentTime: time.Now().Unix(),
 		Data:     map[string]string{},
 	}

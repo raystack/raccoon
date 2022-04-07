@@ -63,8 +63,8 @@ func TestIntegration(t *testing.T) {
 		_ = proto.Unmarshal(resp, r)
 		assert.Equal(t, mType, websocket.BinaryMessage)
 		assert.Empty(t, err)
-		assert.Equal(t, pb.Status_ERROR, r.Status)
-		assert.Equal(t, pb.Code_BAD_REQUEST, r.Code)
+		assert.Equal(t, pb.Status_STATUS_ERROR, r.Status)
+		assert.Equal(t, pb.Code_CODE_BAD_REQUEST, r.Code)
 		assert.NotEmpty(t, r.Reason)
 		assert.Empty(t, r.Data)
 
@@ -103,8 +103,8 @@ func TestIntegration(t *testing.T) {
 		_ = json.Unmarshal(resp, r)
 		assert.Equal(t, websocket.TextMessage, mType)
 		assert.Empty(t, err)
-		assert.Equal(t, pb.Status_ERROR, r.Status)
-		assert.Equal(t, pb.Code_BAD_REQUEST, r.Code)
+		assert.Equal(t, pb.Status_STATUS_ERROR, r.Status)
+		assert.Equal(t, pb.Code_CODE_BAD_REQUEST, r.Code)
 		assert.NotEmpty(t, r.Reason)
 		assert.Empty(t, r.Data)
 
@@ -129,8 +129,8 @@ func TestIntegration(t *testing.T) {
 		r := &pb.EventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
 		assert.Empty(t, err)
-		assert.Equal(t, pb.Status_ERROR, r.Status)
-		assert.Equal(t, pb.Code_BAD_REQUEST, r.Code)
+		assert.Equal(t, pb.Status_STATUS_ERROR, r.Status)
+		assert.Equal(t, pb.Code_CODE_BAD_REQUEST, r.Code)
 		assert.NotEmpty(t, r.Reason)
 		assert.Empty(t, r.Data)
 	})
@@ -154,8 +154,8 @@ func TestIntegration(t *testing.T) {
 		r := &pb.EventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
 		assert.Empty(t, err)
-		assert.Equal(t, pb.Status_ERROR, r.Status)
-		assert.Equal(t, pb.Code_BAD_REQUEST, r.Code)
+		assert.Equal(t, pb.Status_STATUS_ERROR, r.Status)
+		assert.Equal(t, pb.Code_CODE_BAD_REQUEST, r.Code)
 		assert.NotEmpty(t, r.Reason)
 		assert.Empty(t, r.Data)
 	})
@@ -198,8 +198,8 @@ func TestIntegration(t *testing.T) {
 		r := &pb.EventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
 		assert.Empty(t, err)
-		assert.Equal(t, pb.Code_OK, r.Code)
-		assert.Equal(t, pb.Status_SUCCESS, r.Status)
+		assert.Equal(t, pb.Code_CODE_OK, r.Code)
+		assert.Equal(t, pb.Status_STATUS_SUCCESS, r.Status)
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
 
@@ -237,8 +237,8 @@ func TestIntegration(t *testing.T) {
 		_ = json.Unmarshal(resp, r)
 		assert.Equal(t, mType, websocket.TextMessage)
 		assert.Empty(t, err)
-		assert.Equal(t, r.Code.String(), pb.Code_OK.String())
-		assert.Equal(t, r.Status.String(), pb.Status_SUCCESS.String())
+		assert.Equal(t, r.Code.String(), pb.Code_CODE_OK.String())
+		assert.Equal(t, r.Status.String(), pb.Status_STATUS_SUCCESS.String())
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
 
@@ -278,8 +278,8 @@ func TestIntegration(t *testing.T) {
 		ctx := metadata.NewOutgoingContext(context.Background(), md)
 		r, err := client.SendEvent(ctx, req)
 		assert.Empty(t, err)
-		assert.Equal(t, r.Code.String(), pb.Code_OK.String())
-		assert.Equal(t, r.Status.String(), pb.Status_SUCCESS.String())
+		assert.Equal(t, r.Code.String(), pb.Code_CODE_OK.String())
+		assert.Equal(t, r.Status.String(), pb.Status_STATUS_SUCCESS.String())
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
 
@@ -318,8 +318,8 @@ func TestIntegration(t *testing.T) {
 		_ = proto.Unmarshal(resp, r)
 		assert.Equal(t, mType, websocket.BinaryMessage)
 		assert.Empty(t, err)
-		assert.Equal(t, r.Code.String(), pb.Code_OK.String())
-		assert.Equal(t, r.Status.String(), pb.Status_SUCCESS.String())
+		assert.Equal(t, r.Code.String(), pb.Code_CODE_OK.String())
+		assert.Equal(t, r.Status.String(), pb.Status_STATUS_SUCCESS.String())
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
 

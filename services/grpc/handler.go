@@ -55,8 +55,8 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.EventRequest) (*pb.Even
 	})
 
 	return &pb.EventResponse{
-		Status:   pb.Status_SUCCESS,
-		Code:     pb.Code_OK,
+		Status:   pb.Status_STATUS_SUCCESS,
+		Code:     pb.Code_CODE_OK,
 		SentTime: time.Now().Unix(),
 		Data: map[string]string{
 			"req_guid": req.GetReqGuid(),

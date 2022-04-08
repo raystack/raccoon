@@ -45,7 +45,7 @@ func (w *Pool) StartWorkers() {
 				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 
-				producerStats, err := w.kafkaProducer.ProduceBulk(request.GetEvents(), deliveryChan)
+				err := w.kafkaProducer.ProduceBulk(request, deliveryChan)
 				totalErr := 0
 
 				if err != nil {
@@ -65,11 +65,6 @@ func (w *Pool) StartWorkers() {
 					metrics.Timing("worker_processing_duration_milliseconds", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)
 					metrics.Timing("server_processing_latency_milliseconds", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, fmt.Sprintf("conn_group=%s", request.ConnectionIdentifier.Group))
 				}
-				for eventType, count := range producerStats.EventCounts {
-					errCount := producerStats.ErrorCounts[eventType]
-					metrics.Count("kafka_messages_delivered_total", errCount, fmt.Sprintf("success=false,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eventType))
-					metrics.Count("kafka_messages_delivered_total", count-errCount, fmt.Sprintf("success=true,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eventType))
-				}
 			}
 			w.wg.Done()
 		}(fmt.Sprintf("worker-%d", i))
@@ -78,7 +73,7 @@ func (w *Pool) StartWorkers() {
 
 // FlushWithTimeOut waits for the workers to complete the pending the messages
 //to be flushed to the publisher within a timeout.
-// Returns true if waiting timed out, meaning not all the events could be processed before this timeout.``
+// Returns true if waiting timed out, meaning not all the events could be processed before this timeout.
 func (w *Pool) FlushWithTimeOut(timeout time.Duration) bool {
 	c := make(chan struct{})
 	go func() {

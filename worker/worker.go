@@ -45,8 +45,9 @@ func (w *Pool) StartWorkers() {
 				batchReadTime := time.Now()
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 
-				err := w.kafkaProducer.ProduceBulk(request.GetEvents(), deliveryChan)
+				err := w.kafkaProducer.ProduceBulk(request, deliveryChan)
 				totalErr := 0
+
 				if err != nil {
 					for _, err := range err.(publisher.BulkError).Errors {
 						if err != nil {
@@ -64,8 +65,6 @@ func (w *Pool) StartWorkers() {
 					metrics.Timing("worker_processing_duration_milliseconds", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)
 					metrics.Timing("server_processing_latency_milliseconds", (now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch, fmt.Sprintf("conn_group=%s", request.ConnectionIdentifier.Group))
 				}
-				metrics.Count("kafka_messages_delivered_total", totalErr, fmt.Sprintf("success=false,conn_group=%s", request.ConnectionIdentifier.Group))
-				metrics.Count("kafka_messages_delivered_total", len(request.GetEvents())-totalErr, fmt.Sprintf("success=true,conn_group=%s", request.ConnectionIdentifier.Group))
 			}
 			w.wg.Done()
 		}(fmt.Sprintf("worker-%d", i))

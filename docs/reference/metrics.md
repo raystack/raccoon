@@ -60,14 +60,14 @@ Duration of alive connection per session per connection
 Number of delivered events to Kafka
 
 * Type: `Count`
-* Tags: `success=false` `success=true` `conn_group=*`
+* Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
 
 ### `kafka_unknown_topic_failure_total`
 
 Number of delivery failure caused by topic does not exist in kafka.
 
 * Type: `Count`
-* Tags: `topic=topicname`
+* Tags: `topic=topicname` `event_type=*`
 
 ### `kafka_tx_messages_total`
 
@@ -169,13 +169,14 @@ Following metrics are event delivery reports. Each metrics reported at a differe
 Total byte receieved in requests
 
 * Type: `Count`
-* Tags: `conn_group=*`
+* Tags: `conn_group=*` `event_type=*`
 
 ### `events_rx_total`
 
 Number of events received in requests
 
 * Type: `Count`
+* Tags: `conn_group=*` `event_type=*`
 
 ### `batches_read_total`
 

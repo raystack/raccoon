@@ -3,7 +3,7 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
-	pb "raccoon/proto"
+	"raccoon/collection"
 
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 	// Importing librd to make it work on vendor mode
@@ -18,7 +18,7 @@ import (
 // KafkaProducer Produce data to kafka synchronously
 type KafkaProducer interface {
 	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
-	ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) error
+	ProduceBulk(request collection.CollectRequest, deliveryChannel chan kafka.Event) error
 }
 
 func NewKafka() (*Kafka, error) {
@@ -49,7 +49,8 @@ type Kafka struct {
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
 // DeliveryChannel needs to be exclusive. DeliveryChannel is exposed for recyclability purpose.
-func (pr *Kafka) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Event) error {
+func (pr *Kafka) ProduceBulk(request collection.CollectRequest, deliveryChannel chan kafka.Event) error {
+	events := request.GetEvents()
 	errors := make([]error, len(events))
 	totalProcessed := 0
 	for order, event := range events {
@@ -62,14 +63,16 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Even
 
 		err := pr.kp.Produce(message, deliveryChannel)
 		if err != nil {
+			metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=false,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, event.GetType()))
 			if err.Error() == "Local: Unknown topic" {
 				errors[order] = fmt.Errorf("%v %s", err, topic)
-				metrics.Increment("kafka_unknown_topic_failure_total", "topic="+topic)
+				metrics.Increment("kafka_unknown_topic_failure_total", fmt.Sprintf("topic=%s,event_type=%s,conn_group=%s", topic, event.Type, request.ConnectionIdentifier.Group))
 			} else {
 				errors[order] = err
 			}
 			continue
 		}
+		metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=true,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, event.GetType()))
 		totalProcessed++
 	}
 	// Wait for deliveryChannel as many as processed
@@ -77,6 +80,9 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, deliveryChannel chan kafka.Even
 		d := <-deliveryChannel
 		m := d.(*kafka.Message)
 		if m.TopicPartition.Error != nil {
+			eventType := events[i].GetType()
+			metrics.Decrement("kafka_messages_delivered_total", fmt.Sprintf("success=true,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eventType))
+			metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=false,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eventType))
 			order := m.Opaque.(int)
 			errors[order] = m.TopicPartition.Error
 		}
@@ -129,6 +135,11 @@ func allNil(errors []error) bool {
 		}
 	}
 	return true
+}
+
+type ProducerStats struct {
+	EventCounts map[string]int
+	ErrorCounts map[string]int
 }
 
 type BulkError struct {

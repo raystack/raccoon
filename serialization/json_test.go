@@ -22,7 +22,7 @@ func TestJSONSerializer_Serialize(t *testing.T) {
 			name: "Serialize JSON",
 			s:    &JSONSerializer{},
 			args: args{
-				m: &pb.EventRequest{},
+				m: &pb.SendEventRequest{},
 			},
 			want:    []byte{123, 125},
 			wantErr: false,

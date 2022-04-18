@@ -59,7 +59,7 @@ func TestIntegration(t *testing.T) {
 		defer wss.Close()
 		wss.WriteMessage(websocket.BinaryMessage, []byte{1})
 		mType, resp, err := wss.ReadMessage()
-		r := &pb.EventResponse{}
+		r := &pb.SendEventResponse{}
 		_ = proto.Unmarshal(resp, r)
 		assert.Equal(t, mType, websocket.BinaryMessage)
 		assert.Empty(t, err)
@@ -81,7 +81,7 @@ func TestIntegration(t *testing.T) {
 		defer conn.Close()
 
 		client := pb.NewEventServiceClient(conn)
-		r, err := client.SendEvent(context.Background(), &pb.EventRequest{})
+		r, err := client.SendEvent(context.Background(), &pb.SendEventRequest{})
 
 		assert.NotEmpty(t, err)
 		assert.Empty(t, r)
@@ -99,7 +99,7 @@ func TestIntegration(t *testing.T) {
 		wss.WriteMessage(websocket.TextMessage, []byte(""))
 
 		mType, resp, err := wss.ReadMessage()
-		r := &pb.EventResponse{}
+		r := &pb.SendEventResponse{}
 		_ = json.Unmarshal(resp, r)
 		assert.Equal(t, websocket.TextMessage, mType)
 		assert.Empty(t, err)
@@ -126,7 +126,7 @@ func TestIntegration(t *testing.T) {
 		}
 		defer io.Copy(ioutil.Discard, res.Body)
 		defer res.Body.Close()
-		r := &pb.EventResponse{}
+		r := &pb.SendEventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
 		assert.Empty(t, err)
 		assert.Equal(t, pb.Status_STATUS_ERROR, r.Status)
@@ -151,7 +151,7 @@ func TestIntegration(t *testing.T) {
 		}
 		defer io.Copy(ioutil.Discard, res.Body)
 		defer res.Body.Close()
-		r := &pb.EventResponse{}
+		r := &pb.SendEventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
 		assert.Empty(t, err)
 		assert.Equal(t, pb.Status_STATUS_ERROR, r.Status)
@@ -174,7 +174,7 @@ func TestIntegration(t *testing.T) {
 		}
 		events = append(events, eEvent1)
 		events = append(events, eEvent2)
-		req := &pb.EventRequest{
+		req := &pb.SendEventRequest{
 			ReqGuid:  "1234",
 			SentTime: timestamppb.Now(),
 			Events:   events,
@@ -195,7 +195,7 @@ func TestIntegration(t *testing.T) {
 		}
 		defer io.Copy(ioutil.Discard, res.Body)
 		defer res.Body.Close()
-		r := &pb.EventResponse{}
+		r := &pb.SendEventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
 		assert.Empty(t, err)
 		assert.Equal(t, pb.Code_CODE_OK, r.Code)
@@ -224,7 +224,7 @@ func TestIntegration(t *testing.T) {
 		}
 		events = append(events, eEvent1)
 		events = append(events, eEvent2)
-		req := &pb.EventRequest{
+		req := &pb.SendEventRequest{
 			ReqGuid:  "1234",
 			SentTime: timestamppb.Now(),
 			Events:   events,
@@ -233,7 +233,7 @@ func TestIntegration(t *testing.T) {
 		wss.WriteMessage(websocket.TextMessage, bReq)
 
 		mType, resp, err := wss.ReadMessage()
-		r := &pb.EventResponse{}
+		r := &pb.SendEventResponse{}
 		_ = json.Unmarshal(resp, r)
 		assert.Equal(t, mType, websocket.TextMessage)
 		assert.Empty(t, err)
@@ -268,7 +268,7 @@ func TestIntegration(t *testing.T) {
 		}
 		events = append(events, eEvent1)
 		events = append(events, eEvent2)
-		req := &pb.EventRequest{
+		req := &pb.SendEventRequest{
 			ReqGuid:  "1234",
 			SentTime: timestamppb.Now(),
 			Events:   events,
@@ -305,7 +305,7 @@ func TestIntegration(t *testing.T) {
 		}
 		events = append(events, eEvent1)
 		events = append(events, eEvent2)
-		req := &pb.EventRequest{
+		req := &pb.SendEventRequest{
 			ReqGuid:  "1234",
 			SentTime: timestamppb.Now(),
 			Events:   events,
@@ -314,7 +314,7 @@ func TestIntegration(t *testing.T) {
 		wss.WriteMessage(websocket.BinaryMessage, bReq)
 
 		mType, resp, err := wss.ReadMessage()
-		r := &pb.EventResponse{}
+		r := &pb.SendEventResponse{}
 		_ = proto.Unmarshal(resp, r)
 		assert.Equal(t, mType, websocket.BinaryMessage)
 		assert.Empty(t, err)

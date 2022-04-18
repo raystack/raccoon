@@ -35,7 +35,7 @@ func main() {
 	}
 
 	sentTime := time.Now()
-	request := &pb.EventRequest{
+	request := &pb.SendEventRequest{
 		ReqGuid: "55F648D1-9A73-4F6C-8657-4D26A6C1F168",
 		SentTime: &timestamppb.Timestamp{
 			Seconds: sentTime.Unix(),
@@ -47,10 +47,10 @@ func main() {
 	ws.WriteMessage(websocket.BinaryMessage, reqBin)
 
 	_, response, _ := ws.ReadMessage()
-	eventResponse := &pb.EventResponse{}
-	proto.Unmarshal(response, eventResponse)
+	SendEventResponse := &pb.SendEventResponse{}
+	proto.Unmarshal(response, SendEventResponse)
 	// Handle the response accordingly
-	fmt.Printf("%v", eventResponse)
+	fmt.Printf("%v", SendEventResponse)
 }
 
 func generateSampleEvent() *pb.Event {

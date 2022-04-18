@@ -19,7 +19,7 @@ type Handler struct {
 	pb.UnimplementedEventServiceServer
 }
 
-func (h *Handler) SendEvent(ctx context.Context, req *pb.EventRequest) (*pb.EventResponse, error) {
+func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.SendEventResponse, error) {
 	metadata, _ := metadata.FromIncomingContext(ctx)
 	groups := metadata.Get(config.ServerWs.ConnGroupHeader)
 	var group string
@@ -51,10 +51,10 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.EventRequest) (*pb.Even
 	h.C.Collect(ctx, &collection.CollectRequest{
 		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
-		EventRequest:         req,
+		SendEventRequest:     req,
 	})
 
-	return &pb.EventResponse{
+	return &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_SUCCESS,
 		Code:     pb.Code_CODE_OK,
 		SentTime: time.Now().Unix(),

@@ -7,7 +7,7 @@ import (
 )
 
 type Response struct {
-	*pb.EventResponse
+	*pb.SendEventResponse
 }
 
 func (r *Response) SetCode(code pb.Code) *Response {

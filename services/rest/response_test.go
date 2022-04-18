@@ -12,7 +12,7 @@ import (
 
 func TestResponse_SetCode(t *testing.T) {
 	type fields struct {
-		EventResponse *pb.EventResponse
+		SendEventResponse *pb.SendEventResponse
 	}
 	type args struct {
 		code pb.Code
@@ -26,13 +26,13 @@ func TestResponse_SetCode(t *testing.T) {
 		{
 			name: "sets response code",
 			fields: fields{
-				EventResponse: &pb.EventResponse{},
+				SendEventResponse: &pb.SendEventResponse{},
 			},
 			args: args{
 				code: pb.Code_CODE_UNSPECIFIED,
 			},
 			want: &Response{
-				EventResponse: &pb.EventResponse{
+				SendEventResponse: &pb.SendEventResponse{
 					Code: pb.Code_CODE_UNSPECIFIED,
 				},
 			},
@@ -41,7 +41,7 @@ func TestResponse_SetCode(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &Response{
-				EventResponse: tt.fields.EventResponse,
+				SendEventResponse: tt.fields.SendEventResponse,
 			}
 			if got := r.SetCode(tt.args.code); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Response.SetCode() = %v, want %v", got, tt.want)
@@ -52,7 +52,7 @@ func TestResponse_SetCode(t *testing.T) {
 
 func TestResponse_SetStatus(t *testing.T) {
 	type fields struct {
-		EventResponse *pb.EventResponse
+		SendEventResponse *pb.SendEventResponse
 	}
 	type args struct {
 		status pb.Status
@@ -66,13 +66,13 @@ func TestResponse_SetStatus(t *testing.T) {
 		{
 			name: "set status",
 			fields: fields{
-				EventResponse: &pb.EventResponse{},
+				SendEventResponse: &pb.SendEventResponse{},
 			},
 			args: args{
 				status: pb.Status_STATUS_SUCCESS,
 			},
 			want: &Response{
-				EventResponse: &pb.EventResponse{
+				SendEventResponse: &pb.SendEventResponse{
 					Status: pb.Status_STATUS_SUCCESS,
 				},
 			},
@@ -81,7 +81,7 @@ func TestResponse_SetStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &Response{
-				EventResponse: tt.fields.EventResponse,
+				SendEventResponse: tt.fields.SendEventResponse,
 			}
 			if got := r.SetStatus(tt.args.status); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Response.SetStatus() = %v, want %v", got, tt.want)
@@ -93,7 +93,7 @@ func TestResponse_SetStatus(t *testing.T) {
 func TestResponse_SetSentTime(t *testing.T) {
 	timeNow := time.Now().Unix()
 	type fields struct {
-		EventResponse *pb.EventResponse
+		SendEventResponse *pb.SendEventResponse
 	}
 	type args struct {
 		sentTime int64
@@ -107,13 +107,13 @@ func TestResponse_SetSentTime(t *testing.T) {
 		{
 			name: "set sent time",
 			fields: fields{
-				EventResponse: &pb.EventResponse{},
+				SendEventResponse: &pb.SendEventResponse{},
 			},
 			args: args{
 				sentTime: timeNow,
 			},
 			want: &Response{
-				EventResponse: &pb.EventResponse{
+				SendEventResponse: &pb.SendEventResponse{
 					SentTime: timeNow,
 				},
 			},
@@ -122,7 +122,7 @@ func TestResponse_SetSentTime(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &Response{
-				EventResponse: tt.fields.EventResponse,
+				SendEventResponse: tt.fields.SendEventResponse,
 			}
 			if got := r.SetSentTime(tt.args.sentTime); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Response.SetSentTime() = %v, want %v", got, tt.want)
@@ -133,7 +133,7 @@ func TestResponse_SetSentTime(t *testing.T) {
 
 func TestResponse_SetReason(t *testing.T) {
 	type fields struct {
-		EventResponse *pb.EventResponse
+		SendEventResponse *pb.SendEventResponse
 	}
 	type args struct {
 		reason string
@@ -147,13 +147,13 @@ func TestResponse_SetReason(t *testing.T) {
 		{
 			name: "set reason",
 			fields: fields{
-				EventResponse: &pb.EventResponse{},
+				SendEventResponse: &pb.SendEventResponse{},
 			},
 			args: args{
 				reason: "test reason",
 			},
 			want: &Response{
-				EventResponse: &pb.EventResponse{
+				SendEventResponse: &pb.SendEventResponse{
 					Reason: "test reason",
 				},
 			},
@@ -162,7 +162,7 @@ func TestResponse_SetReason(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &Response{
-				EventResponse: tt.fields.EventResponse,
+				SendEventResponse: tt.fields.SendEventResponse,
 			}
 			if got := r.SetReason(tt.args.reason); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Response.SetReason() = %v, want %v", got, tt.want)
@@ -173,7 +173,7 @@ func TestResponse_SetReason(t *testing.T) {
 
 func TestResponse_SetDataMap(t *testing.T) {
 	type fields struct {
-		EventResponse *pb.EventResponse
+		SendEventResponse *pb.SendEventResponse
 	}
 	type args struct {
 		data map[string]string
@@ -187,13 +187,13 @@ func TestResponse_SetDataMap(t *testing.T) {
 		{
 			name: "set data map",
 			fields: fields{
-				EventResponse: &pb.EventResponse{},
+				SendEventResponse: &pb.SendEventResponse{},
 			},
 			args: args{
 				data: map[string]string{"test_key": "test_value"},
 			},
 			want: &Response{
-				EventResponse: &pb.EventResponse{
+				SendEventResponse: &pb.SendEventResponse{
 					Data: map[string]string{"test_key": "test_value"},
 				},
 			},
@@ -202,7 +202,7 @@ func TestResponse_SetDataMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &Response{
-				EventResponse: tt.fields.EventResponse,
+				SendEventResponse: tt.fields.SendEventResponse,
 			}
 			if got := r.SetDataMap(tt.args.data); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Response.SetDataMap() = %v, want %v", got, tt.want)
@@ -213,7 +213,7 @@ func TestResponse_SetDataMap(t *testing.T) {
 
 func TestResponse_Write(t *testing.T) {
 	s := &serialization.MockSerializer{}
-	res := &pb.EventResponse{
+	res := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_SUCCESS,
 		Code:     pb.Code_CODE_OK,
 		SentTime: time.Now().Unix(),
@@ -221,10 +221,10 @@ func TestResponse_Write(t *testing.T) {
 	}
 	s.On("Serialize", &Response{res}).Return("1", nil)
 
-	errorRes := &pb.EventResponse{}
+	errorRes := &pb.SendEventResponse{}
 	s.On("Serialize", &Response{errorRes}).Return("", errors.New("serialization failure"))
 	type fields struct {
-		EventResponse *pb.EventResponse
+		SendEventResponse *pb.SendEventResponse
 	}
 	type args struct {
 		s serialization.Serializer
@@ -240,7 +240,7 @@ func TestResponse_Write(t *testing.T) {
 		{
 			name: "test normal write",
 			fields: fields{
-				EventResponse: res,
+				SendEventResponse: res,
 			},
 			args: args{
 				s: s,
@@ -252,7 +252,7 @@ func TestResponse_Write(t *testing.T) {
 		{
 			name: "seralization error",
 			fields: fields{
-				EventResponse: errorRes,
+				SendEventResponse: errorRes,
 			},
 			args: args{
 				s: s,
@@ -265,7 +265,7 @@ func TestResponse_Write(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &Response{
-				EventResponse: tt.fields.EventResponse,
+				SendEventResponse: tt.fields.SendEventResponse,
 			}
 			w := &bytes.Buffer{}
 			got, err := r.Write(w, tt.args.s)

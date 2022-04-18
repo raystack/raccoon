@@ -52,7 +52,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", contentType)
 
 	res := &Response{
-		EventResponse: &pb.EventResponse{},
+		SendEventResponse: &pb.SendEventResponse{},
 	}
 
 	serde, ok := h.serDeMap[contentType]
@@ -109,7 +109,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	timeConsumed := time.Now()
-	req := &pb.EventRequest{}
+	req := &pb.SendEventRequest{}
 
 	if err := d.Deserialize(b, req); err != nil {
 		logger.Errorf("[rest.GetRESTAPIHandler] error while calling d.Deserialize() for %s, error: %s", identifier, err)
@@ -128,7 +128,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	h.collector.Collect(r.Context(), &collection.CollectRequest{
 		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
-		EventRequest:         req,
+		SendEventRequest:     req,
 	})
 
 	_, err = res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).

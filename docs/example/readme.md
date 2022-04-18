@@ -67,7 +67,7 @@ func generateSampleEvent() *pb.Event {
 Now you have websocket connection and batch of event ready, all you need is send the batch. Don't forget to fill `send_time` field before sending the request.
 ```go
 	sentTime := time.Now()
-	request := &pb.EventRequest{
+	request := &pb.SendEventRequest{
 		ReqGuid: "55F648D1-9A73-4F6C-8657-4D26A6C1F168",
 		SentTime: &timestamppb.Timestamp{
 			Seconds: sentTime.Unix(),
@@ -80,11 +80,11 @@ Now you have websocket connection and batch of event ready, all you need is send
 ```
 
 ## Handle The Response
-Raccoon sends EventResponse for every batch of events sent from the client. The ReqGuid in the response identifies the batch that the client sent. The response object could be used for client's telemetry in terms of how may batches succeeded, failed etc., The clients can retry based on failures however server side kafka send failures are not sent as failures due to the [acknowledgement design as explained here](https://github.com/odpf/raccoon/blob/main/docs/concepts/architecture.md#acknowledging-events).
+Raccoon sends SendEventResponse for every batch of events sent from the client. The ReqGuid in the response identifies the batch that the client sent. The response object could be used for client's telemetry in terms of how may batches succeeded, failed etc., The clients can retry based on failures however server side kafka send failures are not sent as failures due to the [acknowledgement design as explained here](https://github.com/odpf/raccoon/blob/main/docs/concepts/architecture.md#acknowledging-events).
 ```go
 	_, response, _ := ws.ReadMessage()
-	eventResponse := &pb.EventResponse{}
-	proto.Unmarshal(response, eventResponse)
+	SendEventResponse := &pb.SendEventResponse{}
+	proto.Unmarshal(response, SendEventResponse)
 	// Handle the response accordingly
-	fmt.Printf("%v", eventResponse)
+	fmt.Printf("%v", SendEventResponse)
 ```

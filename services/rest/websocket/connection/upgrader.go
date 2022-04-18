@@ -131,7 +131,7 @@ func (u *Upgrader) newIdentifier(h http.Header) identification.Identifier {
 }
 
 func createEmptyErrorResponse(errCode pb.Code) []byte {
-	resp := pb.EventResponse{
+	resp := pb.SendEventResponse{
 		Status:   pb.Status_STATUS_ERROR,
 		Code:     errCode,
 		SentTime: time.Now().Unix(),

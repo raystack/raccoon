@@ -12,7 +12,7 @@ type CollectRequest struct {
 	ConnectionIdentifier identification.Identifier
 	TimeConsumed         time.Time
 	TimePushed           time.Time
-	*pb.EventRequest
+	*pb.SendEventRequest
 }
 
 type Collector interface {

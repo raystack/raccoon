@@ -139,7 +139,7 @@ func TestHandler_GETHandlerWSEvents(t *testing.T) {
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)
 		require.NoError(t, err)
 
-		request := &pb.EventRequest{
+		request := &pb.SendEventRequest{
 			ReqGuid:  "1234",
 			SentTime: timestamppb.Now(),
 			Events:   nil,
@@ -153,7 +153,7 @@ func TestHandler_GETHandlerWSEvents(t *testing.T) {
 		responseMsgType, response, err := wss.ReadMessage()
 		require.NoError(t, err)
 
-		resp := &pb.EventResponse{}
+		resp := &pb.SendEventResponse{}
 		proto.Unmarshal(response, resp)
 		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
 		assert.Equal(t, request.ReqGuid, resp.GetData()["req_guid"])
@@ -178,7 +178,7 @@ func TestHandler_GETHandlerWSEvents(t *testing.T) {
 		responseMsgType, response, err := wss.ReadMessage()
 		require.NoError(t, err)
 
-		resp := &pb.EventResponse{}
+		resp := &pb.SendEventResponse{}
 		proto.Unmarshal(response, resp)
 		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
 		assert.Equal(t, pb.Status_STATUS_ERROR, resp.GetStatus())

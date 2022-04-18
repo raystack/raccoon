@@ -67,6 +67,6 @@ To infer data loss, you can count [`kafka_messages_delivered_total`](https://odp
 Raccoon provides fine-grained metrics that denote latency. That gives clues as to where to look in case something goes wrong. In summary, these are key metrics for latency:
 
 * [`event_processing_duration_milliseconds`](https://odpf.gitbook.io/raccoon/reference/metrics#event_processing_duration_milliseconds) This metrics denotes overall latency. You need to look at other latency metrics to find the root cause when this metric is high.
-* [`server_processing_latency_milliseconds`](https://odpf.gitbook.io/raccoon/reference/metrics#server_processing_latency_milliseconds) Correlate this metric with `event_processing_duration_milliseconds` to infer whether the issue is with Raccoon itself, or something wrong with the network, or the way [sent\_time](https://github.com/odpf/proton/blob/main/odpf/raccoon/SendEventRequest.proto#L43) is generated.-
+* [`server_processing_latency_milliseconds`](https://odpf.gitbook.io/raccoon/reference/metrics#server_processing_latency_milliseconds) Correlate this metric with `event_processing_duration_milliseconds` to infer whether the issue is with Raccoon itself, or something wrong with the network, or the way [sent\_time](https://github.com/odpf/proton/blob/main/odpf/raccoon/v1beta1/raccoon.proto#L47) is generated.-
 * [`worker_processing_duration_milliseconds`](https://odpf.gitbook.io/raccoon/reference/metrics#worker_processing_duration_milliseconds) High value of this metric indicates that the publisher is slow or can't keep up.
 

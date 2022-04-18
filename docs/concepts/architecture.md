@@ -84,7 +84,7 @@ When an SendEventRequest is sent to Raccoon over any connection be it Websocket/
 
 ## Request and Response Models
 ### Protobufs
-When an [SendEventRequest](https://github.com/odpf/proton/blob/main/odpf/raccoon/SendEventRequest.proto) proto below containing events are sent over the wire
+When an [SendEventRequest](https://github.com/odpf/proton/blob/main/odpf/raccoon/v1beta1/raccoon.proto) proto below containing events are sent over the wire
 
 ```text
 message SendEventRequest {
@@ -97,7 +97,7 @@ message SendEventRequest {
 }
 ```
 
-a corresponding [SendEventResponse](https://github.com/odpf/proton/blob/main/odpf/raccoon/SendEventResponse.proto) is sent by the server.
+a corresponding [SendEventResponse](https://github.com/odpf/proton/blob/main/odpf/raccoon/v1beta1/raccoon.proto) is sent by the server.
 
 ```text
 message SendEventResponse {

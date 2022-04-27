@@ -57,7 +57,7 @@ $ docker run -p 8080:8080 \
 ```
 
 **Run Docker Compose**
-You can also use `docker-compose` on this repo. The `docker-compose` provides raccoon along with Kafka setup. Make sure to adjust the `.env` config to point to that kafka `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=kafka:9092`. Then, run the following command.
+You can also use `docker-compose` on this repo. The `docker-compose` provides raccoon along with Kafka setup. Then, run the following command.
 ```sh
 # Run raccoon along with kafka setup
 $ make docker-run

@@ -28,7 +28,7 @@ func TestHandler_SendEvent(t *testing.T) {
 	}
 	type args struct {
 		ctx context.Context
-		req *pb.EventRequest
+		req *pb.SendEventRequest
 	}
 
 	logger.SetOutput(void{})
@@ -39,7 +39,7 @@ func TestHandler_SendEvent(t *testing.T) {
 	meta.Set(config.ServerWs.ConnGroupHeader, "group")
 	meta.Set(config.ServerWs.ConnIDHeader, "1235")
 	sentTime := timestamppb.Now()
-	req := &pb.EventRequest{
+	req := &pb.SendEventRequest{
 		ReqGuid:  "abcd",
 		SentTime: sentTime,
 		Events:   []*pb.Event{},
@@ -56,7 +56,7 @@ func TestHandler_SendEvent(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *pb.EventResponse
+		want    *pb.SendEventResponse
 		wantErr bool
 	}{
 		{
@@ -68,9 +68,9 @@ func TestHandler_SendEvent(t *testing.T) {
 				ctx: contextWithIDGroup,
 				req: req,
 			},
-			want: &pb.EventResponse{
-				Status:   pb.Status_SUCCESS,
-				Code:     pb.Code_OK,
+			want: &pb.SendEventResponse{
+				Status:   pb.Status_STATUS_SUCCESS,
+				Code:     pb.Code_CODE_OK,
 				SentTime: sentTime.Seconds,
 				Data: map[string]string{
 					"req_guid": req.ReqGuid,
@@ -86,9 +86,9 @@ func TestHandler_SendEvent(t *testing.T) {
 				ctx: contextWithoutGroup,
 				req: req,
 			},
-			want: &pb.EventResponse{
-				Status:   pb.Status_SUCCESS,
-				Code:     pb.Code_OK,
+			want: &pb.SendEventResponse{
+				Status:   pb.Status_STATUS_SUCCESS,
+				Code:     pb.Code_CODE_OK,
 				SentTime: sentTime.Seconds,
 				Data: map[string]string{
 					"req_guid": req.ReqGuid,

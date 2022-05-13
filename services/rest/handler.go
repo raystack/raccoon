@@ -52,7 +52,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", contentType)
 
 	res := &Response{
-		EventResponse: &pb.EventResponse{},
+		SendEventResponse: &pb.SendEventResponse{},
 	}
 
 	serde, ok := h.serDeMap[contentType]
@@ -61,7 +61,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		metrics.Increment("batches_read_total", "status=failed,reason=unknowncontentype")
 		logger.Errorf("[rest.GetRESTAPIHandler] invalid content type %s", contentType)
 		rw.WriteHeader(http.StatusBadRequest)
-		_, err := res.SetCode(pb.Code_BAD_REQUEST).SetStatus(pb.Status_ERROR).SetReason("invalid content type").
+		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("invalid content type").
 			SetSentTime(time.Now().Unix()).Write(rw, &serialization.JSONSerializer{})
 		if err != nil {
 			logger.Errorf("[rest.GetRESTAPIHandler] error sending response: %v", err)
@@ -84,7 +84,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=emptybody,conn_group=%s", identifier.Group))
 		logger.Errorf("[rest.GetRESTAPIHandler] %s no body", identifier)
 		rw.WriteHeader(http.StatusBadRequest)
-		_, err := res.SetCode(pb.Code_BAD_REQUEST).SetStatus(pb.Status_ERROR).SetReason("no body present").
+		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("no body present").
 			SetSentTime(time.Now().Unix()).Write(rw, s)
 		if err != nil {
 			logger.Errorf("[rest.GetRESTAPIHandler] %s error sending response: %v", identifier, err)
@@ -100,7 +100,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		logger.Errorf(fmt.Sprintf("[rest.GetRESTAPIHandler] %s error reading request body, error: %v", identifier, err))
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=readerr,conn_group=%s", identifier.Group))
 		rw.WriteHeader(http.StatusInternalServerError)
-		_, err := res.SetCode(pb.Code_INTERNAL_ERROR).SetStatus(pb.Status_ERROR).SetReason("deserialization failure").
+		_, err := res.SetCode(pb.Code_CODE_INTERNAL_ERROR).SetStatus(pb.Status_STATUS_ERROR).SetReason("deserialization failure").
 			SetSentTime(time.Now().Unix()).Write(rw, s)
 		if err != nil {
 			logger.Errorf("[restGetRESTAPIHandler] %s error sending error response: %v", identifier, err)
@@ -109,13 +109,13 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	timeConsumed := time.Now()
-	req := &pb.EventRequest{}
+	req := &pb.SendEventRequest{}
 
 	if err := d.Deserialize(b, req); err != nil {
 		logger.Errorf("[rest.GetRESTAPIHandler] error while calling d.Deserialize() for %s, error: %s", identifier, err)
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_group=%s", identifier.Group))
 		rw.WriteHeader(http.StatusBadRequest)
-		_, err := res.SetCode(pb.Code_BAD_REQUEST).SetStatus(pb.Status_ERROR).SetReason("deserialization failure").
+		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("deserialization failure").
 			SetSentTime(time.Now().Unix()).Write(rw, s)
 		if err != nil {
 			logger.Errorf("[restGetRESTAPIHandler] %s error sending error response: %v", identifier, err)
@@ -128,10 +128,10 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	h.collector.Collect(r.Context(), &collection.CollectRequest{
 		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
-		EventRequest:         req,
+		SendEventRequest:     req,
 	})
 
-	_, err = res.SetCode(pb.Code_OK).SetStatus(pb.Status_SUCCESS).SetSentTime(time.Now().Unix()).
+	_, err = res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).
 		SetDataMap(map[string]string{"req_guid": req.ReqGuid}).Write(rw, s)
 	if err != nil {
 		logger.Errorf("[restGetRESTAPIHandler] %s error sending error response: %v", identifier, err)

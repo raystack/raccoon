@@ -93,7 +93,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		}
 
 		timeConsumed := time.Now()
-		payload := &pb.EventRequest{}
+		payload := &pb.SendEventRequest{}
 		serde := h.serdeMap[messageType]
 		d, s := serde.deserializer, serde.serializer
 		if err := d.Deserialize(message, payload); err != nil {
@@ -107,7 +107,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		h.collector.Collect(r.Context(), &collection.CollectRequest{
 			ConnectionIdentifier: conn.Identifier,
 			TimeConsumed:         timeConsumed,
-			EventRequest:         payload,
+			SendEventRequest:     payload,
 		})
 		writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
 	}
@@ -121,9 +121,9 @@ func (h *Handler) sendEventCounters(events []*pb.Event, group string) {
 }
 
 func writeSuccessResponse(conn connection.Conn, serializer serialization.Serializer, messageType int, requestGUID string) {
-	response := &pb.EventResponse{
-		Status:   pb.Status_SUCCESS,
-		Code:     pb.Code_OK,
+	response := &pb.SendEventResponse{
+		Status:   pb.Status_STATUS_SUCCESS,
+		Code:     pb.Code_CODE_OK,
 		SentTime: time.Now().Unix(),
 		Reason:   "",
 		Data: map[string]string{
@@ -135,9 +135,9 @@ func writeSuccessResponse(conn connection.Conn, serializer serialization.Seriali
 }
 
 func writeBadRequestResponse(conn connection.Conn, serializer serialization.Serializer, messageType int, err error) {
-	response := &pb.EventResponse{
-		Status:   pb.Status_ERROR,
-		Code:     pb.Code_BAD_REQUEST,
+	response := &pb.SendEventResponse{
+		Status:   pb.Status_STATUS_ERROR,
+		Code:     pb.Code_CODE_BAD_REQUEST,
 		SentTime: time.Now().Unix(),
 		Reason:   fmt.Sprintf("cannot deserialize request: %s", err),
 		Data:     nil,

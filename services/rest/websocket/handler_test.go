@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"raccoon/collection"
-	"raccoon/services/rest/websocket/connection"
 	"raccoon/logger"
 	"raccoon/metrics"
 	pb "raccoon/proto"
+	"raccoon/services/rest/websocket/connection"
 	"reflect"
 	"strings"
 	"testing"
@@ -139,7 +139,7 @@ func TestHandler_GETHandlerWSEvents(t *testing.T) {
 		wss, _, err := websocket.DefaultDialer.Dial(url, header)
 		require.NoError(t, err)
 
-		request := &pb.EventRequest{
+		request := &pb.SendEventRequest{
 			ReqGuid:  "1234",
 			SentTime: timestamppb.Now(),
 			Events:   nil,
@@ -153,12 +153,12 @@ func TestHandler_GETHandlerWSEvents(t *testing.T) {
 		responseMsgType, response, err := wss.ReadMessage()
 		require.NoError(t, err)
 
-		resp := &pb.EventResponse{}
+		resp := &pb.SendEventResponse{}
 		proto.Unmarshal(response, resp)
 		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
 		assert.Equal(t, request.ReqGuid, resp.GetData()["req_guid"])
-		assert.Equal(t, pb.Status_SUCCESS, resp.GetStatus())
-		assert.Equal(t, pb.Code_OK, resp.GetCode())
+		assert.Equal(t, pb.Status_STATUS_SUCCESS, resp.GetStatus())
+		assert.Equal(t, pb.Code_CODE_OK, resp.GetCode())
 		assert.Equal(t, "", resp.GetReason())
 	})
 
@@ -178,11 +178,11 @@ func TestHandler_GETHandlerWSEvents(t *testing.T) {
 		responseMsgType, response, err := wss.ReadMessage()
 		require.NoError(t, err)
 
-		resp := &pb.EventResponse{}
+		resp := &pb.SendEventResponse{}
 		proto.Unmarshal(response, resp)
 		assert.Equal(t, responseMsgType, websocket.BinaryMessage)
-		assert.Equal(t, pb.Status_ERROR, resp.GetStatus())
-		assert.Equal(t, pb.Code_BAD_REQUEST, resp.GetCode())
+		assert.Equal(t, pb.Status_STATUS_ERROR, resp.GetStatus())
+		assert.Equal(t, pb.Code_CODE_BAD_REQUEST, resp.GetCode())
 		assert.Empty(t, resp.GetData())
 	})
 }

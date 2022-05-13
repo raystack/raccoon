@@ -21,7 +21,7 @@ func TestProtoDeserilizer_Deserialize(t *testing.T) {
 			d:    &ProtoDeserilizer{},
 			args: args{
 				b: []byte{},
-				i: &pb.EventRequest{},
+				i: &pb.SendEventRequest{},
 			},
 			wantErr: false,
 		},

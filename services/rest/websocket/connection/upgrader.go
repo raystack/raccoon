@@ -69,7 +69,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 	}
 	err = u.Table.Store(identifier)
 	if errors.Is(err, errConnDuplicated) {
-		duplicateConnResp := createEmptyErrorResponse(pb.Code_MAX_USER_LIMIT_REACHED)
+		duplicateConnResp := createEmptyErrorResponse(pb.Code_CODE_MAX_USER_LIMIT_REACHED)
 
 		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Duplicate connection"))
@@ -79,7 +79,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 	}
 	if errors.Is(err, errMaxConnectionReached) {
 		logger.Errorf("[websocket.Handler] Disconnecting %v, max connection reached", identifier)
-		maxConnResp := createEmptyErrorResponse(pb.Code_MAX_CONNECTION_LIMIT_REACHED)
+		maxConnResp := createEmptyErrorResponse(pb.Code_CODE_MAX_USER_LIMIT_REACHED)
 		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Max connection reached"))
 		metrics.Increment("user_connection_failure_total", fmt.Sprintf("reason=serverlimit,conn_group=%s", identifier.Group))
@@ -131,8 +131,8 @@ func (u *Upgrader) newIdentifier(h http.Header) identification.Identifier {
 }
 
 func createEmptyErrorResponse(errCode pb.Code) []byte {
-	resp := pb.EventResponse{
-		Status:   pb.Status_ERROR,
+	resp := pb.SendEventResponse{
+		Status:   pb.Status_STATUS_ERROR,
 		Code:     errCode,
 		SentTime: time.Now().Unix(),
 		Reason:   "",

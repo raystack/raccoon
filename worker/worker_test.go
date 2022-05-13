@@ -21,7 +21,7 @@ func TestWorker(t *testing.T) {
 			ID:    "12345",
 			Group: "viewer",
 		},
-		EventRequest: &pb.EventRequest{
+		SendEventRequest: &pb.SendEventRequest{
 			SentTime: &timestamp.Timestamp{Seconds: 1593574343},
 		},
 	}

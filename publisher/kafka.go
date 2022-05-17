@@ -3,15 +3,16 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
-	"raccoon/collection"
 
+	"github.com/odpf/raccoon/collection"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
+
 	// Importing librd to make it work on vendor mode
-	"raccoon/config"
-	"raccoon/logger"
-	"raccoon/metrics"
 	"strings"
 
+	"github.com/odpf/raccoon/config"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
 	_ "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka/librdkafka"
 )
 

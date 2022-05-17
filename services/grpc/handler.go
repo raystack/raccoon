@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"raccoon/collection"
-	"raccoon/config"
-	"raccoon/identification"
-	"raccoon/metrics"
-	pb "raccoon/proto"
 	"time"
 
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/config"
+	"github.com/odpf/raccoon/identification"
+	"github.com/odpf/raccoon/metrics"
+	pb "github.com/odpf/raccoon/proto"
 	"google.golang.org/grpc/metadata"
 )
 

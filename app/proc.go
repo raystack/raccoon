@@ -2,7 +2,8 @@ package app
 
 import (
 	"context"
-	"raccoon/logger"
+
+	"github.com/odpf/raccoon/logger"
 )
 
 //Run the server

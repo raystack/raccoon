@@ -3,11 +3,10 @@ package config
 import (
 	"bytes"
 	"os"
-	"raccoon/config/util"
 	"strings"
 
+	"github.com/odpf/raccoon/config/util"
 	"github.com/spf13/viper"
-
 	confluent "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 

@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"raccoon/identification"
-	"raccoon/logger"
-	"raccoon/metrics"
-	pb "raccoon/proto"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/odpf/raccoon/identification"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
+	pb "github.com/odpf/raccoon/proto"
 	"google.golang.org/protobuf/proto"
 )
 

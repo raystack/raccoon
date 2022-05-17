@@ -2,14 +2,13 @@ package worker
 
 import (
 	"fmt"
-	"raccoon/collection"
-	"raccoon/logger"
-	"raccoon/metrics"
 	"sync"
 	"time"
 
-	"raccoon/publisher"
-
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
+	"github.com/odpf/raccoon/publisher"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 

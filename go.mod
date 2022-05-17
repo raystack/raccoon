@@ -1,4 +1,4 @@
-module raccoon
+module github.com/odpf/raccoon
 
 go 1.14
 

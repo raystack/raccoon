@@ -3,11 +3,11 @@ package publisher
 import (
 	"fmt"
 	"os"
-	"raccoon/collection"
-	"raccoon/logger"
-	pb "raccoon/proto"
 	"testing"
 
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/logger"
+	pb "github.com/odpf/raccoon/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"

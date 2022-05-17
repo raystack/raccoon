@@ -2,14 +2,14 @@ package grpc
 
 import (
 	"context"
-	"raccoon/collection"
-	"raccoon/config"
-	"raccoon/logger"
-	"raccoon/metrics"
-	pb "raccoon/proto"
 	"reflect"
 	"testing"
 
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/config"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
+	pb "github.com/odpf/raccoon/proto"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"

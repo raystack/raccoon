@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"raccoon/identification"
-	pb "raccoon/proto"
+	"github.com/odpf/raccoon/identification"
+	pb "github.com/odpf/raccoon/proto"
 )
 
 type CollectRequest struct {

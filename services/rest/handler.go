@@ -5,15 +5,16 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"raccoon/collection"
-	"raccoon/config"
-	"raccoon/deserialization"
-	"raccoon/identification"
-	"raccoon/logger"
-	"raccoon/metrics"
-	pb "raccoon/proto"
-	"raccoon/serialization"
 	"time"
+
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/config"
+	"github.com/odpf/raccoon/deserialization"
+	"github.com/odpf/raccoon/identification"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
+	pb "github.com/odpf/raccoon/proto"
+	"github.com/odpf/raccoon/serialization"
 )
 
 const (

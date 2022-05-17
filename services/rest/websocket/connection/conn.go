@@ -2,12 +2,12 @@ package connection
 
 import (
 	"fmt"
-	"raccoon/identification"
-	"raccoon/logger"
-	"raccoon/metrics"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/odpf/raccoon/identification"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
 )
 
 type Conn struct {

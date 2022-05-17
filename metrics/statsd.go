@@ -2,9 +2,9 @@ package metrics
 
 import (
 	"fmt"
-	"raccoon/config"
-	"raccoon/logger"
 
+	"github.com/odpf/raccoon/config"
+	"github.com/odpf/raccoon/logger"
 	client "gopkg.in/alexcesaro/statsd.v2"
 )
 

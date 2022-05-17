@@ -1,10 +1,8 @@
 package worker
 
 import (
-	"raccoon/collection"
-
+	"github.com/odpf/raccoon/collection"
 	mock "github.com/stretchr/testify/mock"
-
 	kafka "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 

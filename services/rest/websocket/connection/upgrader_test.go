@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"raccoon/logger"
-	"raccoon/metrics"
 	"strings"
 	"sync"
 	"testing"
@@ -13,6 +11,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
 	"github.com/stretchr/testify/assert"
 )
 

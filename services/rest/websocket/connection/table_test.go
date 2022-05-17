@@ -1,9 +1,9 @@
 package connection
 
 import (
-	"raccoon/identification"
 	"testing"
 
+	"github.com/odpf/raccoon/identification"
 	"github.com/stretchr/testify/assert"
 )
 

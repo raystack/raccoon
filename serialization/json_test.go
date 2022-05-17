@@ -2,9 +2,10 @@ package serialization
 
 import (
 	"fmt"
-	pb "raccoon/proto"
 	"reflect"
 	"testing"
+
+	pb "github.com/odpf/raccoon/proto"
 )
 
 func TestJSONSerializer_Serialize(t *testing.T) {

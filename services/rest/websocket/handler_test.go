@@ -3,11 +3,6 @@ package websocket
 import (
 	"net/http"
 	"net/http/httptest"
-	"raccoon/collection"
-	"raccoon/logger"
-	"raccoon/metrics"
-	pb "raccoon/proto"
-	"raccoon/services/rest/websocket/connection"
 	"reflect"
 	"strings"
 	"testing"
@@ -15,6 +10,11 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
+	pb "github.com/odpf/raccoon/proto"
+	"github.com/odpf/raccoon/services/rest/websocket/connection"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"

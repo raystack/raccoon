@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
-	pb "raccoon/proto"
 	"time"
 
 	"github.com/gorilla/websocket"
+	pb "github.com/odpf/raccoon/proto"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

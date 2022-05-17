@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"raccoon/collection"
-	"raccoon/config"
-	"raccoon/services/rest/websocket"
-	"raccoon/services/rest/websocket/connection"
-	"raccoon/metrics"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/config"
+	"github.com/odpf/raccoon/metrics"
+	"github.com/odpf/raccoon/services/rest/websocket"
+	"github.com/odpf/raccoon/services/rest/websocket/connection"
 )
 
 type Service struct {

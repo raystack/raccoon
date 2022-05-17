@@ -2,8 +2,9 @@ package rest
 
 import (
 	"io"
-	pb "raccoon/proto"
-	"raccoon/serialization"
+
+	pb "github.com/odpf/raccoon/proto"
+	"github.com/odpf/raccoon/serialization"
 )
 
 type Response struct {

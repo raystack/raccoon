@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"raccoon/collection"
-	"raccoon/config"
-	pb "raccoon/proto"
 
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/config"
+	pb "github.com/odpf/raccoon/proto"
 	"google.golang.org/grpc"
 )
 

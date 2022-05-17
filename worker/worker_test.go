@@ -6,11 +6,9 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
-
-	"raccoon/collection"
-	"raccoon/identification"
-	pb "raccoon/proto"
-
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/identification"
+	pb "github.com/odpf/raccoon/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

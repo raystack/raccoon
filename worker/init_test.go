@@ -2,8 +2,9 @@ package worker
 
 import (
 	"os"
-	"raccoon/logger"
 	"testing"
+
+	"github.com/odpf/raccoon/logger"
 )
 
 type void struct{}

@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"raccoon/collection"
-	"raccoon/config"
-	"raccoon/services"
-	"raccoon/logger"
-	"raccoon/metrics"
-	"raccoon/publisher"
-	"raccoon/worker"
 	"runtime"
 	"syscall"
 	"time"
+
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/config"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
+	"github.com/odpf/raccoon/publisher"
+	"github.com/odpf/raccoon/services"
+	"github.com/odpf/raccoon/worker"
 )
 
 // StartServer starts the server

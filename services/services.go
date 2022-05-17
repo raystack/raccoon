@@ -2,12 +2,12 @@ package services
 
 import (
 	"context"
-	"raccoon/collection"
-	"raccoon/logger"
 
-	"raccoon/services/grpc"
-	"raccoon/services/pprof"
-	"raccoon/services/rest"
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/services/grpc"
+	"github.com/odpf/raccoon/services/pprof"
+	"github.com/odpf/raccoon/services/rest"
 )
 
 type bootstrapper interface {

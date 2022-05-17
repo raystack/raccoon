@@ -2,11 +2,12 @@ package websocket
 
 import (
 	"fmt"
-	"raccoon/services/rest/websocket/connection"
-	"raccoon/identification"
-	"raccoon/logger"
-	"raccoon/metrics"
 	"time"
+
+	"github.com/odpf/raccoon/identification"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
+	"github.com/odpf/raccoon/services/rest/websocket/connection"
 )
 
 //Pinger is worker that pings the connected peers based on ping interval.

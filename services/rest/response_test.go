@@ -3,11 +3,12 @@ package rest
 import (
 	"bytes"
 	"errors"
-	pb "raccoon/proto"
-	"raccoon/serialization"
 	"reflect"
 	"testing"
 	"time"
+
+	pb "github.com/odpf/raccoon/proto"
+	"github.com/odpf/raccoon/serialization"
 )
 
 func TestResponse_SetCode(t *testing.T) {

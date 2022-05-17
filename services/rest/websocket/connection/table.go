@@ -2,8 +2,9 @@ package connection
 
 import (
 	"errors"
-	"raccoon/identification"
 	"sync"
+
+	"github.com/odpf/raccoon/identification"
 )
 
 var (

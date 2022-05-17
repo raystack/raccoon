@@ -1,9 +1,9 @@
 package config
 
 import (
-	"raccoon/config/util"
 	"time"
 
+	"github.com/odpf/raccoon/config/util"
 	"github.com/spf13/viper"
 )
 

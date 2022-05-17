@@ -3,18 +3,17 @@ package websocket
 import (
 	"fmt"
 	"net/http"
-	"raccoon/collection"
-	"raccoon/config"
-	"raccoon/deserialization"
-	"raccoon/logger"
-	"raccoon/metrics"
-	"raccoon/serialization"
-	"raccoon/services/rest/websocket/connection"
 	"time"
 
-	pb "raccoon/proto"
-
 	"github.com/gorilla/websocket"
+	"github.com/odpf/raccoon/collection"
+	"github.com/odpf/raccoon/config"
+	"github.com/odpf/raccoon/deserialization"
+	"github.com/odpf/raccoon/logger"
+	"github.com/odpf/raccoon/metrics"
+	pb "github.com/odpf/raccoon/proto"
+	"github.com/odpf/raccoon/serialization"
+	"github.com/odpf/raccoon/services/rest/websocket/connection"
 )
 
 type serDe struct {

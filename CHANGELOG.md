@@ -2,6 +2,7 @@
 
 ### Chore
 - **metrics:** add event level metrics ([#27](https://github.com/odpf/raccoon/issues/27))
+- **proto:** buf lint fix ([#29](https://github.com/odpf/raccoon/issues/29))
 
 ### Docs
 - adding protocol agnostic documentation ([#20](https://github.com/odpf/raccoon/issues/20))
@@ -16,8 +17,8 @@
 - update package names ([#34](https://github.com/odpf/raccoon/issues/34))
 - introduces bootstrapper to orchestrate server initialization ([#23](https://github.com/odpf/raccoon/issues/23))
 
-### WIP
-- chore(proto): buf lint fix ([#29](https://github.com/odpf/raccoon/issues/29))
+
+
 
 
 ## [v0.1.2](https://github.com/odpf/raccoon/compare/v0.1.1...v0.1.2) (2021-11-23)

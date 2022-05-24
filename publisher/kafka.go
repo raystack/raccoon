@@ -64,7 +64,7 @@ func (pr *Kafka) ProduceBulk(request collection.CollectRequest, deliveryChannel 
 
 		err := pr.kp.Produce(message, deliveryChannel)
 		if err != nil {
-			metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=false,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, event.GetType()))
+			metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=false,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, event.Type))
 			if err.Error() == "Local: Unknown topic" {
 				errors[order] = fmt.Errorf("%v %s", err, topic)
 				metrics.Increment("kafka_unknown_topic_failure_total", fmt.Sprintf("topic=%s,event_type=%s,conn_group=%s", topic, event.Type, request.ConnectionIdentifier.Group))
@@ -73,7 +73,7 @@ func (pr *Kafka) ProduceBulk(request collection.CollectRequest, deliveryChannel 
 			}
 			continue
 		}
-		metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=true,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, event.GetType()))
+		metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=true,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, event.Type))
 		totalProcessed++
 	}
 	// Wait for deliveryChannel as many as processed
@@ -81,7 +81,7 @@ func (pr *Kafka) ProduceBulk(request collection.CollectRequest, deliveryChannel 
 		d := <-deliveryChannel
 		m := d.(*kafka.Message)
 		if m.TopicPartition.Error != nil {
-			eventType := events[i].GetType()
+			eventType := events[i].Type
 			metrics.Decrement("kafka_messages_delivered_total", fmt.Sprintf("success=true,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eventType))
 			metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=false,conn_group=%s,event_type=%s", request.ConnectionIdentifier.Group, eventType))
 			order := m.Opaque.(int)

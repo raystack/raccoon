@@ -58,7 +58,7 @@ func (w *Pool) StartWorkers() {
 				lenBatch := int64(len(request.GetEvents()))
 				logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch-int64(totalErr)))
 				if lenBatch > 0 {
-					eventTimingMs := time.Since(time.Unix(request.SentTime.Seconds, 0)).Milliseconds() / lenBatch
+					eventTimingMs := time.Since(request.SentTime).Milliseconds() / lenBatch
 					metrics.Timing("event_processing_duration_milliseconds", eventTimingMs, fmt.Sprintf("conn_group=%s", request.ConnectionIdentifier.Group))
 					now := time.Now()
 					metrics.Timing("worker_processing_duration_milliseconds", (now.Sub(batchReadTime).Milliseconds())/lenBatch, "worker="+workerName)

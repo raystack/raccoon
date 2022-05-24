@@ -103,10 +103,19 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
 		h.sendEventCounters(payload.Events, conn.Identifier.Group)
+
+		events := make([]collection.Event, len(payload.GetEvents()))
+		for i, event := range payload.GetEvents() {
+			events[i] = collection.Event{
+				Type:       event.Type,
+				EventBytes: event.GetEventBytes(),
+			}
+		}
 		h.collector.Collect(r.Context(), &collection.CollectRequest{
 			ConnectionIdentifier: conn.Identifier,
 			TimeConsumed:         timeConsumed,
-			SendEventRequest:     payload,
+			Events:               events,
+			SentTime:             payload.SentTime.AsTime(),
 		})
 		writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
 	}

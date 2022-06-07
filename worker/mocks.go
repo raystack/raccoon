@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"github.com/odpf/raccoon/collection"
+	pb "github.com/odpf/raccoon/proto"
 	mock "github.com/stretchr/testify/mock"
 	kafka "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
@@ -12,8 +12,8 @@ type mockKafkaPublisher struct {
 }
 
 // ProduceBulk provides a mock function with given fields: events, deliveryChannel
-func (m *mockKafkaPublisher) ProduceBulk(request collection.CollectRequest, deliveryChannel chan kafka.Event) error {
-	mock := m.Called(request, deliveryChannel)
+func (m *mockKafkaPublisher) ProduceBulk(events []*pb.Event, connGroup string, deliveryChannel chan kafka.Event) error {
+	mock := m.Called(events, connGroup, deliveryChannel)
 	return mock.Error(0)
 }
 

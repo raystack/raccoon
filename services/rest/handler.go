@@ -126,19 +126,11 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 
 	metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", identifier.Group))
 	h.sendEventCounters(req.Events, identifier.Group)
-	events := make([]collection.Event, len(req.GetEvents()))
 
-	for i, event := range req.GetEvents() {
-		events[i] = collection.Event{
-			Type:       event.Type,
-			EventBytes: event.GetEventBytes(),
-		}
-	}
 	h.collector.Collect(r.Context(), &collection.CollectRequest{
 		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
-		Events:               events,
-		SentTime:             req.SentTime.AsTime(),
+		SendEventRequest:     req,
 	})
 
 	_, err = res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).

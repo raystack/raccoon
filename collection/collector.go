@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/odpf/raccoon/identification"
+	pb "github.com/odpf/raccoon/proto"
 )
 
 type Event struct {
@@ -16,12 +17,7 @@ type CollectRequest struct {
 	ConnectionIdentifier identification.Identifier
 	TimeConsumed         time.Time
 	TimePushed           time.Time
-	SentTime             time.Time
-	Events               []Event
-}
-
-func (c CollectRequest) GetEvents() []Event {
-	return c.Events
+	*pb.SendEventRequest
 }
 
 type Collector interface {

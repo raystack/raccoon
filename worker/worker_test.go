@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/odpf/raccoon/collection"
 	"github.com/odpf/raccoon/identification"
 	pb "github.com/odpf/raccoon/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestWorker(t *testing.T) {
@@ -20,7 +20,7 @@ func TestWorker(t *testing.T) {
 			Group: "viewer",
 		},
 		SendEventRequest: &pb.SendEventRequest{
-			SentTime: &timestamp.Timestamp{Seconds: 1593574343},
+			SentTime: &timestamppb.Timestamp{},
 		},
 	}
 

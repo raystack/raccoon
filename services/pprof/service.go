@@ -3,6 +3,7 @@ package pprof
 import (
 	"context"
 	"net/http"
+
 	// enable pprof https://pkg.go.dev/net/http/pprof#pkg-overview
 	_ "net/http/pprof"
 )
@@ -11,10 +12,14 @@ type Service struct {
 	s *http.Server
 }
 
+func NewPprofService() Service {
+	return Service{
+		s: &http.Server{Addr: "localhost:6060", Handler: nil},
+	}
+}
+
 func (s Service) Init(ctx context.Context) error {
-	server := &http.Server{Addr: "localhost:6060", Handler: nil}
-	s.s = server
-	return server.ListenAndServe()
+	return s.s.ListenAndServe()
 }
 
 func (s Service) Name() string {

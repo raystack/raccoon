@@ -17,8 +17,8 @@ import (
 )
 
 type serDe struct {
-	serializer   serialization.Serializer
-	deserializer deserialization.Deserializer
+	serializer   serialization.SerializeFunc
+	deserializer deserialization.DeserializeFunc
 }
 type Handler struct {
 	upgrader    *connection.Upgrader
@@ -30,13 +30,13 @@ type Handler struct {
 func getSerDeMap() map[int]*serDe {
 	serDeMap := make(map[int]*serDe)
 	serDeMap[websocket.BinaryMessage] = &serDe{
-		serializer:   &serialization.ProtoSerilizer{},
-		deserializer: &deserialization.ProtoDeserilizer{},
+		serializer:   serialization.SerializeProto,
+		deserializer: deserialization.DeserializeProto,
 	}
 
 	serDeMap[websocket.TextMessage] = &serDe{
-		serializer:   &serialization.JSONSerializer{},
-		deserializer: &deserialization.JSONDeserializer{},
+		serializer:   serialization.SerializeJSON,
+		deserializer: deserialization.DeserializeJSON,
 	}
 	return serDeMap
 }
@@ -95,7 +95,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		payload := &pb.SendEventRequest{}
 		serde := h.serdeMap[messageType]
 		d, s := serde.deserializer, serde.serializer
-		if err := d.Deserialize(message, payload); err != nil {
+		if err := d(message, payload); err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed for %s: %v", conn.Identifier, err))
 			metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_group=%s", conn.Identifier.Group))
 			writeBadRequestResponse(conn, s, messageType, err)
@@ -120,7 +120,7 @@ func (h *Handler) sendEventCounters(events []*pb.Event, group string) {
 	}
 }
 
-func writeSuccessResponse(conn connection.Conn, serializer serialization.Serializer, messageType int, requestGUID string) {
+func writeSuccessResponse(conn connection.Conn, serialize serialization.SerializeFunc, messageType int, requestGUID string) {
 	response := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_SUCCESS,
 		Code:     pb.Code_CODE_OK,
@@ -130,11 +130,11 @@ func writeSuccessResponse(conn connection.Conn, serializer serialization.Seriali
 			"req_guid": requestGUID,
 		},
 	}
-	success, _ := serializer.Serialize(response)
+	success, _ := serialize(response)
 	conn.WriteMessage(messageType, success)
 }
 
-func writeBadRequestResponse(conn connection.Conn, serializer serialization.Serializer, messageType int, err error) {
+func writeBadRequestResponse(conn connection.Conn, serialize serialization.SerializeFunc, messageType int, err error) {
 	response := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_ERROR,
 		Code:     pb.Code_CODE_BAD_REQUEST,
@@ -143,6 +143,6 @@ func writeBadRequestResponse(conn connection.Conn, serializer serialization.Seri
 		Data:     nil,
 	}
 
-	failure, _ := serializer.Serialize(response)
+	failure, _ := serialize(response)
 	conn.WriteMessage(messageType, failure)
 }

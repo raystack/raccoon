@@ -23,8 +23,8 @@ const (
 )
 
 type serDe struct {
-	serializer   serialization.Serializer
-	deserializer deserialization.Deserializer
+	serializer   serialization.SerializeFunc
+	deserializer deserialization.DeserializeFunc
 }
 type Handler struct {
 	serDeMap  map[string]*serDe
@@ -34,13 +34,13 @@ type Handler struct {
 func NewHandler(collector collection.Collector) *Handler {
 	serDeMap := make(map[string]*serDe)
 	serDeMap[ContentJSON] = &serDe{
-		serializer:   &serialization.JSONSerializer{},
-		deserializer: &deserialization.JSONDeserializer{},
+		serializer:   serialization.SerializeJSON,
+		deserializer: deserialization.DeserializeJSON,
 	}
 
 	serDeMap[ContentProto] = &serDe{
-		serializer:   &serialization.ProtoSerilizer{},
-		deserializer: &deserialization.ProtoDeserilizer{},
+		serializer:   serialization.SerializeProto,
+		deserializer: deserialization.DeserializeProto,
 	}
 	return &Handler{
 		serDeMap:  serDeMap,
@@ -63,7 +63,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		logger.Errorf("[rest.GetRESTAPIHandler] invalid content type %s", contentType)
 		rw.WriteHeader(http.StatusBadRequest)
 		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("invalid content type").
-			SetSentTime(time.Now().Unix()).Write(rw, &serialization.JSONSerializer{})
+			SetSentTime(time.Now().Unix()).Write(rw, serialization.SerializeJSON)
 		if err != nil {
 			logger.Errorf("[rest.GetRESTAPIHandler] error sending response: %v", err)
 		}
@@ -112,7 +112,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	timeConsumed := time.Now()
 	req := &pb.SendEventRequest{}
 
-	if err := d.Deserialize(b, req); err != nil {
+	if err := d(b, req); err != nil {
 		logger.Errorf("[rest.GetRESTAPIHandler] error while calling d.Deserialize() for %s, error: %s", identifier, err)
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_group=%s", identifier.Group))
 		rw.WriteHeader(http.StatusBadRequest)

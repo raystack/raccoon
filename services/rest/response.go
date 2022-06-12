@@ -36,8 +36,8 @@ func (r *Response) SetDataMap(data map[string]string) *Response {
 	return r
 }
 
-func (r *Response) Write(w io.Writer, s serialization.Serializer) (int, error) {
-	b, err := s.Serialize(r)
+func (r *Response) Write(w io.Writer, s serialization.SerializeFunc) (int, error) {
+	b, err := s(r)
 	if err != nil {
 		return 0, err
 	}

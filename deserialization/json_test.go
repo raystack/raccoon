@@ -9,13 +9,13 @@ func TestJSONDeserializer_Deserialize(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		j       *JSONDeserializer
+		j       DeserializeFunc
 		args    args
 		wantErr bool
 	}{
 		{
 			name: "Use JSON Deserializer",
-			j:    &JSONDeserializer{},
+			j:    DeserializeJSON,
 			args: args{
 				b: []byte(`{"A": "a"}`),
 				i: &struct {
@@ -27,8 +27,7 @@ func TestJSONDeserializer_Deserialize(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			j := &JSONDeserializer{}
-			if err := j.Deserialize(tt.args.b, tt.args.i); (err != nil) != tt.wantErr {
+			if err := tt.j(tt.args.b, tt.args.i); (err != nil) != tt.wantErr {
 				t.Errorf("JSONDeserializer.Deserialize() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

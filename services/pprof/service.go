@@ -18,14 +18,14 @@ func NewPprofService() Service {
 	}
 }
 
-func (s Service) Init(ctx context.Context) error {
+func (s *Service) Init(ctx context.Context) error {
 	return s.s.ListenAndServe()
 }
 
-func (s Service) Name() string {
+func (s *Service) Name() string {
 	return "pprof"
 }
 
-func (s Service) Shutdown(ctx context.Context) error {
+func (s *Service) Shutdown(ctx context.Context) error {
 	return s.s.Shutdown(ctx)
 }

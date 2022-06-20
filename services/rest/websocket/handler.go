@@ -51,6 +51,7 @@ func NewHandler(pingC chan connection.Conn, collector collection.Collector) *Han
 		WriteWaitInterval: config.ServerWs.WriteWaitInterval,
 		ConnIDHeader:      config.ServerWs.ConnIDHeader,
 		ConnGroupHeader:   config.ServerWs.ConnGroupHeader,
+		ConnGroupDefault:  config.ServerWs.ConnGroupDefault,
 	}
 
 	upgrader := connection.NewUpgrader(ugConfig)

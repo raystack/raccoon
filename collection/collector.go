@@ -8,11 +8,6 @@ import (
 	pb "github.com/odpf/raccoon/proto"
 )
 
-type Event struct {
-	Type       string
-	EventBytes []byte
-}
-
 type CollectRequest struct {
 	ConnectionIdentifier identification.Identifier
 	TimeConsumed         time.Time

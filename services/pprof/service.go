@@ -12,8 +12,8 @@ type Service struct {
 	s *http.Server
 }
 
-func NewPprofService() Service {
-	return Service{
+func NewPprofService() *Service {
+	return &Service{
 		s: &http.Server{Addr: "localhost:6060", Handler: nil},
 	}
 }

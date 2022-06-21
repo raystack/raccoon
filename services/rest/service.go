@@ -58,11 +58,11 @@ func reportConnectionMetrics(conn connection.Table) {
 	}
 }
 
-func (s *Service) Init(ctx context.Context) error {
+func (s *Service) Init(context.Context) error {
 	return s.s.ListenAndServe()
 }
 
-func (s *Service) Name() string {
+func (*Service) Name() string {
 	return "REST"
 }
 

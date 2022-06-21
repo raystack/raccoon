@@ -25,7 +25,7 @@ func NewGRPCService(c collection.Collector) *Service {
 	}
 }
 
-func (s *Service) Init(ctx context.Context) error {
+func (s *Service) Init(context.Context) error {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.ServerGRPC.Port))
 	if err != nil {
 		return err
@@ -33,11 +33,11 @@ func (s *Service) Init(ctx context.Context) error {
 	return s.s.Serve(lis)
 }
 
-func (s *Service) Name() string {
+func (*Service) Name() string {
 	return "GRPC"
 }
 
-func (s *Service) Shutdown(ctx context.Context) error {
+func (s *Service) Shutdown(context.Context) error {
 	s.s.GracefulStop()
 	return nil
 }

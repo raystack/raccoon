@@ -65,7 +65,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			logger.Info(fmt.Sprintf("Outstanding unprocessed events in the channel, data lost ~ (No batches %d * 5 events) = ~%d", len(bufferChannel), eventsInChannel))
 			metrics.Count("kafka_messages_delivered_total", eventsInChannel+eventsInProducer, "success=false")
 			logger.Info("Exiting server")
-			os.Exit(0)
+			cancel()
 		default:
 			logger.Info(fmt.Sprintf("[App.Server] Received a unexpected signal %s", sig))
 		}

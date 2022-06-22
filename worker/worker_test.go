@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/odpf/raccoon/collection"
 	"github.com/odpf/raccoon/identification"
 	pb "github.com/odpf/raccoon/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestWorker(t *testing.T) {
@@ -20,7 +20,7 @@ func TestWorker(t *testing.T) {
 			Group: "viewer",
 		},
 		SendEventRequest: &pb.SendEventRequest{
-			SentTime: &timestamp.Timestamp{Seconds: 1593574343},
+			SentTime: &timestamppb.Timestamp{},
 		},
 	}
 
@@ -41,7 +41,7 @@ func TestWorker(t *testing.T) {
 			}
 			worker.StartWorkers()
 
-			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Twice()
+			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Twice()
 			bc <- *request
 			bc <- *request
 			time.Sleep(10 * time.Millisecond)
@@ -67,7 +67,7 @@ func TestWorker(t *testing.T) {
 				wg:                  sync.WaitGroup{},
 			}
 			worker.StartWorkers()
-			kp.On("ProduceBulk", mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)
+			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)
 			bc <- *request
 			bc <- *request
 			bc <- *request

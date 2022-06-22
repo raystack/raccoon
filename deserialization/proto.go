@@ -8,9 +8,9 @@ import (
 
 var ErrInvalidProtoMessage = errors.New("invalld proto message")
 
-type ProtoDeserilizer struct{}
+// type ProtoDeserilizer struct{}
 
-func (d *ProtoDeserilizer) Deserialize(b []byte, i interface{}) error {
+func DeserializeProto(b []byte, i interface{}) error {
 	msg, ok := i.(proto.Message)
 	if !ok {
 		return ErrInvalidProtoMessage

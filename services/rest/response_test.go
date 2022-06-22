@@ -213,22 +213,28 @@ func TestResponse_SetDataMap(t *testing.T) {
 }
 
 func TestResponse_Write(t *testing.T) {
-	s := &serialization.MockSerializer{}
+
 	res := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_SUCCESS,
 		Code:     pb.Code_CODE_OK,
 		SentTime: time.Now().Unix(),
 		Data:     map[string]string{},
 	}
-	s.On("Serialize", &Response{res}).Return("1", nil)
 
 	errorRes := &pb.SendEventResponse{}
-	s.On("Serialize", &Response{errorRes}).Return("", errors.New("serialization failure"))
+
+	successSerialization := func(m interface{}) ([]byte, error) {
+		return []byte("1"), nil
+	}
+
+	failureSerialization := func(m interface{}) ([]byte, error) {
+		return []byte{}, errors.New("new error")
+	}
 	type fields struct {
 		SendEventResponse *pb.SendEventResponse
 	}
 	type args struct {
-		s serialization.Serializer
+		s serialization.SerializeFunc
 	}
 	tests := []struct {
 		name    string
@@ -244,7 +250,7 @@ func TestResponse_Write(t *testing.T) {
 				SendEventResponse: res,
 			},
 			args: args{
-				s: s,
+				s: successSerialization,
 			},
 			want:    1,
 			wantW:   "1",
@@ -256,7 +262,7 @@ func TestResponse_Write(t *testing.T) {
 				SendEventResponse: errorRes,
 			},
 			args: args{
-				s: s,
+				s: failureSerialization,
 			},
 			want:    0,
 			wantW:   "",

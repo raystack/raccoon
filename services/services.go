@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/odpf/raccoon/collection"
 	"github.com/odpf/raccoon/logger"
@@ -22,13 +23,13 @@ type Services struct {
 }
 
 func (s *Services) Start(ctx context.Context, cancel context.CancelFunc) {
+	logger.Info("starting servers")
 	for _, init := range s.b {
 		i := init
 		go func() {
 			logger.Infof("%s Server --> startServers", i.Name())
 			err := i.Init(ctx)
-			if err != nil {
-				logger.Errorf("%s Server --> could not be started = %s", i.Name(), err)
+			if err != nil && err != http.ErrServerClosed {
 				cancel()
 			}
 		}()
@@ -46,9 +47,9 @@ func Create(b chan collection.CollectRequest) Services {
 	c := collection.NewChannelCollector(b)
 	return Services{
 		b: []bootstrapper{
-			grpc.Service{Collector: c},
-			pprof.Service{},
-			rest.Service{Collector: c},
+			grpc.NewGRPCService(c),
+			pprof.NewPprofService(),
+			rest.NewRestService(c),
 		},
 	}
 }

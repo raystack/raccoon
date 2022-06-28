@@ -1,3 +1,11 @@
+## [v0.1.4](https://github.com/odpf/raccoon/compare/v0.1.3...v) (2022-06-28)
+
+
+### Performance Improvements
+
+* **channel:** performance improvements  ([#36](https://github.com/odpf/raccoon/issues/36)) ([2e34f07](https://github.com/odpf/raccoon/commit/2e34f07bfac84a77f07d0c19b44162477b8c055f))
+
+
 ## [v0.1.3](https://github.com/odpf/raccoon/compare/v0.1.2...v0.1.3) (2022-05-18)
 
 ### Chore

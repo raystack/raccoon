@@ -6,40 +6,48 @@ Raccoon was built with a primary purpose to source or collect user behaviour dat
 
 ## System Design
 
-![HLD](../.gitbook/assets/raccoon_hld.png)
+![HLD](/assets/raccoon_hld.png)
 
 At a high level, the following sequence details the architecture.
-* Raccoon accepts events through one of the supported protocols.
-* The events are deserialized using the correct deserializer and then forwarded to the buffered channel.
-* A pool of worker go routines works off the buffered channel
-* Each worker iterates over the events' batch, determines the topic based on the type and serializes the bytes to the Kafka producer synchronously.
+
+- Raccoon accepts events through one of the supported protocols.
+- The events are deserialized using the correct deserializer and then forwarded to the buffered channel.
+- A pool of worker go routines works off the buffered channel
+- Each worker iterates over the events' batch, determines the topic based on the type and serializes the bytes to the Kafka producer synchronously.
 
 Note: The internals of each of the components like channel size, buffer sizes, publisher properties etc., are configurable enabling Raccoon to be provisioned according to the system/event characteristics and load.
 
 ## Connections
 
 ### Websockets
+
 Raccoon supports long-running persistent WebSocket connections with the client. Once a client makes an HTTP request with a WebSocket upgrade header, raccoon upgrades the HTTP request to a WebSocket connection end of which a persistent connection is established with the client.
 
 The following sequence outlines the connection handling by Raccoon:
-* Clients make websocket connections to Raccoon by performing a http GET API call, with headers to upgrade to websocket.
-* Raccoon uses [gorilla websocket](https://github.com/gorilla/websocket) handlers and for each websocket connection the handlers spawn a goroutine to handle incoming requests.
-* After the websocket connection has been established, clients can send the events. 
-* Construct connection identifier from the request header. The identifier is constructed from the value of `SERVER_WEBSOCKET_CONN_ID_HEADER` header. For example, Raccoon is configured with `SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID`. Raccoon will check the value of X-User-ID header and make it an identifier. Raccoon then uses this identifier to check if there is already an existing connection with the same identifier. If the same connection already exists, Raccoon will disconnect the connection with an appropriate error message as a response proto.
-  * Optionally, you can also configure `SERVER_WEBSOCKET_CONN_GROUP_HEADER` to support multi-tenancy. For example, you want to use an instance of Raccoon with multiple mobile clients. You can configure raccoon with `SERVER_WEBSOCKET_CONN_GROUP_HEADER=X-Mobile-Client`. Then, Raccoon will use the value of X-Mobile-Client along with X-User-ID as identifier. The uniqueness becomes the combination of X-User-ID value with X-Mobile-Client value. This way, Raccoon can maintain the same X-User-ID within different X-Mobile-Client.
-* Verify if the total connections have reached the configured limit based on `SERVER_WEBSOCKET_MAX_CONN` configuration. On reaching the max connections, Raccoon disconnects the connection with an appropriate error message as a response proto.
-* Upgrade the connection and persist the identifier.
-* Add ping/pong handlers on this connection, read timeout deadline. More about these handlers in the following sections
-* At this point, the connection is completely upgraded and Raccoon is ready to accept SendEventRequest. The handler handles each SendEventRequest by sending it to the events-channel to be asynchronously published by the publisher.
-* When the connection is closed. Raccoon clean up the connection along with the identifier. The same identifier then can be reused on the upcoming connection.
+
+- Clients make websocket connections to Raccoon by performing a http GET API call, with headers to upgrade to websocket.
+- Raccoon uses [gorilla websocket](https://github.com/gorilla/websocket) handlers and for each websocket connection the handlers spawn a goroutine to handle incoming requests.
+- After the websocket connection has been established, clients can send the events.
+- Construct connection identifier from the request header. The identifier is constructed from the value of `SERVER_WEBSOCKET_CONN_ID_HEADER` header. For example, Raccoon is configured with `SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID`. Raccoon will check the value of X-User-ID header and make it an identifier. Raccoon then uses this identifier to check if there is already an existing connection with the same identifier. If the same connection already exists, Raccoon will disconnect the connection with an appropriate error message as a response proto.
+  - Optionally, you can also configure `SERVER_WEBSOCKET_CONN_GROUP_HEADER` to support multi-tenancy. For example, you want to use an instance of Raccoon with multiple mobile clients. You can configure raccoon with `SERVER_WEBSOCKET_CONN_GROUP_HEADER=X-Mobile-Client`. Then, Raccoon will use the value of X-Mobile-Client along with X-User-ID as identifier. The uniqueness becomes the combination of X-User-ID value with X-Mobile-Client value. This way, Raccoon can maintain the same X-User-ID within different X-Mobile-Client.
+- Verify if the total connections have reached the configured limit based on `SERVER_WEBSOCKET_MAX_CONN` configuration. On reaching the max connections, Raccoon disconnects the connection with an appropriate error message as a response proto.
+- Upgrade the connection and persist the identifier.
+- Add ping/pong handlers on this connection, read timeout deadline. More about these handlers in the following sections
+- At this point, the connection is completely upgraded and Raccoon is ready to accept SendEventRequest. The handler handles each SendEventRequest by sending it to the events-channel to be asynchronously published by the publisher.
+- When the connection is closed. Raccoon clean up the connection along with the identifier. The same identifier then can be reused on the upcoming connection.
 
 ### REST
+
 Client connects to the server with the same endpoint but with POST HTTP method. As it is a rest endpoint each request is uniquely handled.
-* Connection identifier is constructed from the values of `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` header here too.
+
+- Connection identifier is constructed from the values of `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` header here too.
+
 ### gRPC
+
 It is recommended to generate the gRPC client for Raccoon's [EventService](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventService.proto) and use that client to do gRPC request. Currently only unary requests are supported.
-* Client's `SendEvent` method is called to send the event. 
-* Connection identifier is constructed from the values of `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` in gRPC metadata.
+
+- Client's `SendEvent` method is called to send the event.
+- Connection identifier is constructed from the values of `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` in gRPC metadata.
 
 Clients can send the request anytime as long as the websocket connection is alive whereas with REST and gRPC requests can be sent only once.
 
@@ -49,8 +57,8 @@ The server for the most times provide at-least-once event delivery gurantee.
 
 Event data loss happens in the following scenarios:
 
-* When the server shutsdown, events in-flight in the kafka buffer or those stored in the internal channels are potentially lost. The server performs, on a best-effort basis, sending all the events to kafka within a configured shutdown time `WORKER_BUFFER_FLUSH_TIMEOUT_MS`. The default time is set to 5000 ms within which it is expected that all the events are sent by then.
-* When the upstream kafka cluster is facing a downtime
+- When the server shutsdown, events in-flight in the kafka buffer or those stored in the internal channels are potentially lost. The server performs, on a best-effort basis, sending all the events to kafka within a configured shutdown time `WORKER_BUFFER_FLUSH_TIMEOUT_MS`. The default time is set to 5000 ms within which it is expected that all the events are sent by then.
+- When the upstream kafka cluster is facing a downtime
 
   Every event sent from the client is stored in-memory in the buffered channels \(explained in the `Acknowledging events` section\). The workers pull the events from this channel and publishes to kafka. The server does not maintain any event peristence. This is a conscious decision to enable a simpler, performant ingestion design for the server. The buffer/retries of failed events is relied upon Kafka's internal buffer/retries respectively. In future: Server can be augmented for zero-data loss or at-least-once guarantees through intermediate event persitence.
 
@@ -58,15 +66,15 @@ Event data loss happens in the following scenarios:
 
 Event acknowledgements was designed to signify if the events batch is received and sent to Kafka successfully. This will enable the clients to retry on failed event delivery. However Raccoon chooses to send the acknowledgments as soon as it receives and deserializes the events successfully using the proto `SendEventRequest`. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
 
-![](../.gitbook/assets/raccoon_ack.png)
+![](/assets/raccoon_ack.png)
 
 Pros:
 
-* Performant as it does not wait for kafka/network round trip for each batch of events.
+- Performant as it does not wait for kafka/network round trip for each batch of events.
 
 Cons:
 
-* Potential data-loss and the clients do not get a chance to retry/resend the events. The possiblity of data-loss occurs when the kafka borker cluster is facing a downtime. 
+- Potential data-loss and the clients do not get a chance to retry/resend the events. The possiblity of data-loss occurs when the kafka borker cluster is facing a downtime.
 
 Considering that kafka is set up in a clustered, cross-region, cross-zone environment, the chances of it going down are mostly unlikely. In case if it does, the amount of events lost is negligible considering it is a streaming system and is expected to forward millions of events/sec.
 
@@ -75,15 +83,17 @@ When an SendEventRequest is sent to Raccoon over any connection be it Websocket/
 ## Supported Protocols and Data formats
 
 | Protocol  | Data Format | Version |
-|:---------:|:-----------:|:-------:|
-| WebSocket | Protobufs   | v0.1.0  |
-| WebSocket | JSON        | v0.1.2  |
-| REST API  | JSON        | v0.1.2  |
-| REST API  | Protobufs   | v0.1.2  |
-| gRPC      | Protobufs   | v0.1.2  |
+| :-------: | :---------: | :-----: |
+| WebSocket |  Protobufs  | v0.1.0  |
+| WebSocket |    JSON     | v0.1.2  |
+| REST API  |    JSON     | v0.1.2  |
+| REST API  |  Protobufs  | v0.1.2  |
+|   gRPC    |  Protobufs  | v0.1.2  |
 
 ## Request and Response Models
+
 ### Protobufs
+
 When an [SendEventRequest](https://github.com/odpf/proton/blob/main/odpf/raccoon/v1beta1/raccoon.proto) proto below containing events are sent over the wire
 
 ```text
@@ -92,7 +102,7 @@ message SendEventRequest {
   string req_guid = 1;
   // time probably when the client sent it
   google.protobuf.Timestamp sent_time = 2;
-  // actual events 
+  // actual events
   repeated Event events = 3;
 }
 ```
@@ -117,36 +127,35 @@ message SendEventResponse {
 When a JSON event like the one metoined below is sent a corresponding JSON response is sent by the server.
 
 **Request**
+
 ```json
 {
-    "req_guid": "1234abcd",
-    "sent_time": {
-        "seconds": 1638154927,
-        "nanos": 376499000
-    },
-    "events": [
-        {
-            "eventBytes": "Cg4KCHNlcnZpY2UxEgJBMRACIAEyiQEKJDczZTU3ZDlhLTAzMjQtNDI3Yy1hYTc5LWE4MzJjMWZkY2U5ZiISCcix9QzhsChAEekGEi1cMlNAKgwKAmlkEgJpZBjazUsyFwoDaU9zEgQxMi4zGgVBcHBsZSIDaTEwOiYKJDczZTU3ZDlhLTAzMjQtNDI3Yy1hYTc5LWE4MzJjMWZkY2U5Zg==",
-            "type": "booking"
-        }
-    ]
+  "req_guid": "1234abcd",
+  "sent_time": {
+    "seconds": 1638154927,
+    "nanos": 376499000
+  },
+  "events": [
+    {
+      "eventBytes": "Cg4KCHNlcnZpY2UxEgJBMRACIAEyiQEKJDczZTU3ZDlhLTAzMjQtNDI3Yy1hYTc5LWE4MzJjMWZkY2U5ZiISCcix9QzhsChAEekGEi1cMlNAKgwKAmlkEgJpZBjazUsyFwoDaU9zEgQxMi4zGgVBcHBsZSIDaTEwOiYKJDczZTU3ZDlhLTAzMjQtNDI3Yy1hYTc5LWE4MzJjMWZkY2U5Zg==",
+      "type": "booking"
+    }
+  ]
 }
 ```
-
 
 **Response**
+
 ```json
 {
-    "status": 1,
-    "code": 1,
-    "sent_time": 1638155915,
-    "data": {
-        "req_guid": "1234abcd"
-    }
+  "status": 1,
+  "code": 1,
+  "sent_time": 1638155915,
+  "data": {
+    "req_guid": "1234abcd"
+  }
 }
 ```
-
-
 
 ### Event Distribution
 
@@ -215,4 +224,3 @@ Raccoon internally checks for these delivery reports before pulling the next bat
 ### Observability Stack
 
 Raccoon internally uses [statsd](https://gopkg.in/alexcesaro/statsd.v2) go module client to export metrics in StatsD line protocol format. A recommended choice for observability stack would be to host [telegraf](https://www.influxdata.com/time-series-platform/telegraf/) as the receiver of these measurements and expoert it to [influx](https://www.influxdata.com/get-influxdb/), influx to store the metrics, [grafana](https://grafana.com/) to build dashboards using Influx as the source.
-

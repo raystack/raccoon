@@ -99,7 +99,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		if err := d(message, payload); err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed for %s: %v", conn.Identifier, err))
 			metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_group=%s", conn.Identifier.Group))
-			writeBadRequestResponse(conn, s, messageType, err)
+			writeBadRequestResponse(conn, s, messageType, payload.ReqGuid, err)
 			continue
 		}
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
@@ -109,8 +109,28 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 			ConnectionIdentifier: conn.Identifier,
 			TimeConsumed:         timeConsumed,
 			SendEventRequest:     payload,
+			AckFunc:              h.Ack(conn, s, messageType, payload.ReqGuid),
 		})
-		writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
+	}
+}
+
+func (h *Handler) Ack(conn connection.Conn, s serialization.SerializeFunc, messageType int, reqGuid string) collection.AckFunc {
+	switch config.Event.Ack {
+	case 0:
+		writeSuccessResponse(conn, s, messageType, reqGuid)
+		return nil
+	case 1:
+		return func(err error) {
+			if err != nil {
+				logger.Error(fmt.Sprintf("[websocket.Ack] publish message failed for %s: %v", conn.Identifier.Group, err))
+				writeFailedResponse(conn, s, messageType, reqGuid, err)
+				return
+			}
+			writeSuccessResponse(conn, s, messageType, reqGuid)
+		}
+	default:
+		writeSuccessResponse(conn, s, messageType, reqGuid)
+		return nil
 	}
 }
 
@@ -135,15 +155,31 @@ func writeSuccessResponse(conn connection.Conn, serialize serialization.Serializ
 	conn.WriteMessage(messageType, success)
 }
 
-func writeBadRequestResponse(conn connection.Conn, serialize serialization.SerializeFunc, messageType int, err error) {
+func writeBadRequestResponse(conn connection.Conn, serialize serialization.SerializeFunc, messageType int, reqGuid string, err error) {
 	response := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_ERROR,
 		Code:     pb.Code_CODE_BAD_REQUEST,
 		SentTime: time.Now().Unix(),
 		Reason:   fmt.Sprintf("cannot deserialize request: %s", err),
-		Data:     nil,
+		Data: map[string]string{
+			"req_guid": reqGuid,
+		},
 	}
 
+	failure, _ := serialize(response)
+	conn.WriteMessage(messageType, failure)
+}
+
+func writeFailedResponse(conn connection.Conn, serialize serialization.SerializeFunc, messageType int, reqGuid string, err error) {
+	response := &pb.SendEventResponse{
+		Status:   pb.Status_STATUS_ERROR,
+		Code:     pb.Code_CODE_UNSPECIFIED,
+		SentTime: time.Now().Unix(),
+		Reason:   fmt.Sprintf("cannot publish events: %s", err),
+		Data: map[string]string{
+			"req_guid": reqGuid,
+		},
+	}
 	failure, _ := serialize(response)
 	conn.WriteMessage(messageType, failure)
 }

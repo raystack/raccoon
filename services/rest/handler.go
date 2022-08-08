@@ -127,16 +127,60 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", identifier.Group))
 	h.sendEventCounters(req.Events, identifier.Group)
 
+	resChannel := make(chan struct{}, 1)
 	h.collector.Collect(r.Context(), &collection.CollectRequest{
 		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
 		SendEventRequest:     req,
+		AckFunc:              h.Ack(rw, resChannel, s, req.ReqGuid, identifier.Group),
 	})
+	<-resChannel
+}
 
-	_, err = res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).
-		SetDataMap(map[string]string{"req_guid": req.ReqGuid}).Write(rw, s)
-	if err != nil {
-		logger.Errorf("[restGetRESTAPIHandler] %s error sending error response: %v", identifier, err)
+func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serialization.SerializeFunc, reqGuid string, connGroup string) collection.AckFunc {
+	res := &Response{
+		SendEventResponse: &pb.SendEventResponse{},
+	}
+	switch config.Event.Ack {
+	case 0:
+
+		rw.WriteHeader(http.StatusOK)
+		_, err := res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).
+			SetDataMap(map[string]string{"req_guid": reqGuid}).Write(rw, s)
+		if err != nil {
+			logger.Errorf("[RESTAPIHandler.Ack] %s error sending error response: %v", connGroup, err)
+		}
+		resChannel <- struct{}{}
+		return nil
+	case 1:
+		return func(err error) {
+			if err != nil {
+				rw.WriteHeader(http.StatusInternalServerError)
+				logger.Error(fmt.Sprintf("[RESTAPIHandler.Ack] publish message failed for %s: %v", connGroup, err))
+				_, err := res.SetCode(pb.Code_CODE_UNSPECIFIED).SetStatus(pb.Status_STATUS_ERROR).SetReason(fmt.Sprintf("cannot publish events: %s", err)).
+					SetSentTime(time.Now().Unix()).SetDataMap(map[string]string{"req_guid": reqGuid}).Write(rw, s)
+				if err != nil {
+					logger.Errorf("[RESTAPIHandler] %s error sending error response: %v", connGroup, err)
+				}
+				return
+			}
+			rw.WriteHeader(http.StatusOK)
+			_, err = res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).
+				SetDataMap(map[string]string{"req_guid": reqGuid}).Write(rw, s)
+			if err != nil {
+				logger.Errorf("[RESTAPIHandler] %s error sending error response: %v", connGroup, err)
+			}
+			resChannel <- struct{}{}
+		}
+	default:
+		rw.WriteHeader(http.StatusOK)
+		_, err := res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).
+			SetDataMap(map[string]string{"req_guid": reqGuid}).Write(rw, s)
+		if err != nil {
+			logger.Errorf("[RESTAPIHandler.Ack] %s error sending error response: %v", connGroup, err)
+		}
+		resChannel <- struct{}{}
+		return nil
 	}
 }
 

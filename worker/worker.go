@@ -45,8 +45,12 @@ func (w *Pool) StartWorkers() {
 				//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 
 				err := w.kafkaProducer.ProduceBulk(request.GetEvents(), request.ConnectionIdentifier.Group, deliveryChan)
-				totalErr := 0
 
+				if request.AckFunc != nil {
+					request.AckFunc(err)
+				}
+
+				totalErr := 0
 				if err != nil {
 					for _, err := range err.(publisher.BulkError).Errors {
 						if err != nil {

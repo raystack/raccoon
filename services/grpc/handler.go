@@ -62,7 +62,7 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.
 
 func (h *Handler) Ack(responseChannel chan *pb.SendEventResponse, reqGuid, connGroup string) collection.AckFunc {
 	switch config.Event.Ack {
-	case 0:
+	case config.Asynchronous:
 		responseChannel <- &pb.SendEventResponse{
 			Status:   pb.Status_STATUS_SUCCESS,
 			Code:     pb.Code_CODE_OK,
@@ -72,13 +72,13 @@ func (h *Handler) Ack(responseChannel chan *pb.SendEventResponse, reqGuid, connG
 			},
 		}
 		return nil
-	case 1:
+	case config.Synchronous:
 		return func(err error) {
 			if err != nil {
-				logger.Error(fmt.Sprintf("[grpc.Ack] publish message failed for %s: %v", connGroup, err))
+				logger.Errorf("[grpc.Ack] publish message failed for %s: %v", connGroup, err)
 				responseChannel <- &pb.SendEventResponse{
 					Status:   pb.Status_STATUS_ERROR,
-					Code:     pb.Code_CODE_UNSPECIFIED,
+					Code:     pb.Code_CODE_INTERNAL_ERROR,
 					SentTime: time.Now().Unix(),
 					Data: map[string]string{
 						"req_guid": reqGuid,

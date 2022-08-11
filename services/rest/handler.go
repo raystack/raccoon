@@ -142,7 +142,7 @@ func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serial
 		SendEventResponse: &pb.SendEventResponse{},
 	}
 	switch config.Event.Ack {
-	case 0:
+	case config.Asynchronous:
 
 		rw.WriteHeader(http.StatusOK)
 		_, err := res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).
@@ -152,12 +152,12 @@ func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serial
 		}
 		resChannel <- struct{}{}
 		return nil
-	case 1:
+	case config.Synchronous:
 		return func(err error) {
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
-				logger.Error(fmt.Sprintf("[RESTAPIHandler.Ack] publish message failed for %s: %v", connGroup, err))
-				_, err := res.SetCode(pb.Code_CODE_UNSPECIFIED).SetStatus(pb.Status_STATUS_ERROR).SetReason(fmt.Sprintf("cannot publish events: %s", err)).
+				logger.Errorf("[RESTAPIHandler.Ack] publish message failed for %s: %v", connGroup, err)
+				_, err := res.SetCode(pb.Code_CODE_INTERNAL_ERROR).SetStatus(pb.Status_STATUS_ERROR).SetReason(fmt.Sprintf("cannot publish events: %s", err)).
 					SetSentTime(time.Now().Unix()).SetDataMap(map[string]string{"req_guid": reqGuid}).Write(rw, s)
 				if err != nil {
 					logger.Errorf("[RESTAPIHandler] %s error sending error response: %v", connGroup, err)

@@ -116,13 +116,13 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Ack(conn connection.Conn, s serialization.SerializeFunc, messageType int, reqGuid string) collection.AckFunc {
 	switch config.Event.Ack {
-	case 0:
+	case config.Asynchronous:
 		writeSuccessResponse(conn, s, messageType, reqGuid)
 		return nil
-	case 1:
+	case config.Synchronous:
 		return func(err error) {
 			if err != nil {
-				logger.Error(fmt.Sprintf("[websocket.Ack] publish message failed for %s: %v", conn.Identifier.Group, err))
+				logger.Errorf("[websocket.Ack] publish message failed for %s: %v", conn.Identifier.Group, err)
 				writeFailedResponse(conn, s, messageType, reqGuid, err)
 				return
 			}
@@ -173,7 +173,7 @@ func writeBadRequestResponse(conn connection.Conn, serialize serialization.Seria
 func writeFailedResponse(conn connection.Conn, serialize serialization.SerializeFunc, messageType int, reqGuid string, err error) {
 	response := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_ERROR,
-		Code:     pb.Code_CODE_UNSPECIFIED,
+		Code:     pb.Code_CODE_INTERNAL_ERROR,
 		SentTime: time.Now().Unix(),
 		Reason:   fmt.Sprintf("cannot publish events: %s", err),
 		Data: map[string]string{

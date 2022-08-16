@@ -70,7 +70,7 @@ Event acknowledgements was designed to signify if the events batch is received a
 
 Raccoon sends the acknowledgments as soon as it receives and deserializes the events successfully using the proto `SendEventRequest`. This configuration is recommended when low latency takes precedence over end to end acknoledment. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
 
-![](/assets/raccoon_ack.png)
+![](/assets/raccoon_sync.png)
 
 Pros:
 
@@ -83,6 +83,8 @@ Cons:
 ### EVENT_ACK = 1
 
 Raccoon sends the acknowledgments after the events are acknowledged successfully from the Kafka brokers. This configuration is recommended when reliable end-to-end acknowledgements are required. Here the underlying publisher acknowledgement is leveraged.
+
+![](/assets/raccoon_async.png)
 
 Pros: 
 

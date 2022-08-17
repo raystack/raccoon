@@ -121,6 +121,8 @@ func (h *Handler) Ack(conn connection.Conn, s serialization.SerializeFunc, messa
 		return nil
 	case config.Synchronous:
 		return func(err error) {
+			conn.Lock()
+			defer conn.Unlock()
 			if err != nil {
 				logger.Errorf("[websocket.Ack] publish message failed for %s: %v", conn.Identifier.Group, err)
 				writeFailedResponse(conn, s, messageType, reqGuid, err)

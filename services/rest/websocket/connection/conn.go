@@ -2,6 +2,7 @@ package connection
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -15,6 +16,7 @@ type Conn struct {
 	conn        *websocket.Conn
 	connectedAt time.Time
 	closeHook   func(c Conn)
+	*sync.Mutex
 }
 
 func (c *Conn) ReadMessage() (messageType int, p []byte, err error) {

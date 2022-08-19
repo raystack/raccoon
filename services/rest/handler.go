@@ -162,6 +162,7 @@ func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serial
 				if err != nil {
 					logger.Errorf("[RESTAPIHandler] %s error sending error response: %v", connGroup, err)
 				}
+				resChannel <- struct{}{}
 				return
 			}
 			rw.WriteHeader(http.StatusOK)

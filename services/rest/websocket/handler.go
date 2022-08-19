@@ -104,34 +104,37 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
 		h.sendEventCounters(payload.Events, conn.Identifier.Group)
-
+		resChannel := make(chan struct{}, 1)
 		h.collector.Collect(r.Context(), &collection.CollectRequest{
 			ConnectionIdentifier: conn.Identifier,
 			TimeConsumed:         timeConsumed,
 			SendEventRequest:     payload,
-			AckFunc:              h.Ack(conn, s, messageType, payload.ReqGuid),
+			AckFunc:              h.Ack(conn, resChannel, s, messageType, payload.ReqGuid),
 		})
+		<-resChannel
 	}
 }
 
-func (h *Handler) Ack(conn connection.Conn, s serialization.SerializeFunc, messageType int, reqGuid string) collection.AckFunc {
+func (h *Handler) Ack(conn connection.Conn, resChannel chan struct{}, s serialization.SerializeFunc, messageType int, reqGuid string) collection.AckFunc {
 	switch config.Event.Ack {
 	case config.Asynchronous:
 		writeSuccessResponse(conn, s, messageType, reqGuid)
+		resChannel <- struct{}{}
 		return nil
 	case config.Synchronous:
 		return func(err error) {
-			conn.Lock()
-			defer conn.Unlock()
 			if err != nil {
 				logger.Errorf("[websocket.Ack] publish message failed for %s: %v", conn.Identifier.Group, err)
 				writeFailedResponse(conn, s, messageType, reqGuid, err)
+				resChannel <- struct{}{}
 				return
 			}
 			writeSuccessResponse(conn, s, messageType, reqGuid)
+			resChannel <- struct{}{}
 		}
 	default:
 		writeSuccessResponse(conn, s, messageType, reqGuid)
+		resChannel <- struct{}{}
 		return nil
 	}
 }

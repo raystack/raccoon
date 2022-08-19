@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -95,7 +94,6 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 		Identifier:  identifier,
 		conn:        conn,
 		connectedAt: time.Now(),
-		Mutex:       &sync.Mutex{},
 		closeHook: func(c Conn) {
 			u.Table.Remove(c.Identifier)
 		}}, nil

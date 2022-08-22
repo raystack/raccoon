@@ -223,3 +223,12 @@ Level available are `info` `panic` `fatal` `error` `warn` `info` `debug` `trace`
 * Type `Optional`
 * Default value: `info`
 
+## Event
+
+### `EVENT_ACK`
+
+Based on this parameter the server decides when to send the acknowledgement to the client. Supported values are `0` and `1`.
+
+* Type `Optional`
+* Default value: `0`
+

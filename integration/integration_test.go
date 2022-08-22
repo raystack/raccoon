@@ -65,7 +65,7 @@ func TestIntegration(t *testing.T) {
 		assert.Equal(t, pb.Status_STATUS_ERROR, r.Status)
 		assert.Equal(t, pb.Code_CODE_BAD_REQUEST, r.Code)
 		assert.NotEmpty(t, r.Reason)
-		assert.Empty(t, r.Data)
+		assert.Equal(t, r.Data, map[string]string{"req_guid": ""})
 
 		wss.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Now().Add(100*time.Millisecond))
 	})
@@ -105,7 +105,7 @@ func TestIntegration(t *testing.T) {
 		assert.Equal(t, pb.Status_STATUS_ERROR, r.Status)
 		assert.Equal(t, pb.Code_CODE_BAD_REQUEST, r.Code)
 		assert.NotEmpty(t, r.Reason)
-		assert.Empty(t, r.Data)
+		assert.Equal(t, r.Data, map[string]string{"req_guid": ""})
 
 		wss.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Now().Add(100*time.Millisecond))
 	})

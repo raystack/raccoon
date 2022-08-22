@@ -33,7 +33,7 @@ The following sequence outlines the connection handling by Raccoon:
 - Verify if the total connections have reached the configured limit based on `SERVER_WEBSOCKET_MAX_CONN` configuration. On reaching the max connections, Raccoon disconnects the connection with an appropriate error message as a response proto.
 - Upgrade the connection and persist the identifier.
 - Add ping/pong handlers on this connection, read timeout deadline. More about these handlers in the following sections
-- At this point, the connection is completely upgraded and Raccoon is ready to accept SendEventRequest. The handler handles each SendEventRequest by sending it to the events-channel to be asynchronously published by the publisher.
+- At this point, the connection is completely upgraded and Raccoon is ready to accept SendEventRequest. The handler handles each SendEventRequest by sending it to the events-channel. The events can be published by the publisher either synchronously or asynchronous based on the configuration.
 - When the connection is closed. Raccoon clean up the connection along with the identifier. The same identifier then can be reused on the upcoming connection.
 
 ### REST
@@ -64,9 +64,13 @@ Event data loss happens in the following scenarios:
 
 ## Acknowledging events
 
-Event acknowledgements was designed to signify if the events batch is received and sent to Kafka successfully. This will enable the clients to retry on failed event delivery. However Raccoon chooses to send the acknowledgments as soon as it receives and deserializes the events successfully using the proto `SendEventRequest`. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
+Event acknowledgements was designed to signify if the events batch is received and sent to Kafka successfully. This will enable the clients to retry on failed event delivery. Raccoon chooses when to send event acknoledgements based on the configuration parameter `EVENT_ACK`.  
 
-![](/assets/raccoon_ack.png)
+### EVENT_ACK = 0
+
+Raccoon sends the acknowledgments as soon as it receives and deserializes the events successfully using the proto `SendEventRequest`. This configuration is recommended when low latency takes precedence over end to end acknoledment. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
+
+![](/assets/raccoon_sync.png)
 
 Pros:
 
@@ -75,6 +79,20 @@ Pros:
 Cons:
 
 - Potential data-loss and the clients do not get a chance to retry/resend the events. The possiblity of data-loss occurs when the kafka borker cluster is facing a downtime.
+
+### EVENT_ACK = 1
+
+Raccoon sends the acknowledgments after the events are acknowledged successfully from the Kafka brokers. This configuration is recommended when reliable end-to-end acknowledgements are required. Here the underlying publisher acknowledgement is leveraged.
+
+![](/assets/raccoon_async.png)
+
+Pros: 
+
+- Minimal data loss, clients can retry/resend events in case of downtime/broker failures.
+
+Cons:
+
+- Increased end to end latency as clients need to wait for the event to be published.
 
 Considering that kafka is set up in a clustered, cross-region, cross-zone environment, the chances of it going down are mostly unlikely. In case if it does, the amount of events lost is negligible considering it is a streaming system and is expected to forward millions of events/sec.
 
@@ -205,7 +223,7 @@ The top level wrapper `SendEventRequest` is deserialized which provides a list o
 
 ### Channels
 
-Buffered Channels are used to store the incoming events' batch. The server acknowledges the client's receiving message. The channel sizes can be configured based on the load & capacity.
+Buffered Channels are used to store the incoming events' batch. The channel sizes can be configured based on the load & capacity.
 
 ### Keeping connections alive
 

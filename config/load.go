@@ -27,4 +27,5 @@ func Load() {
 	workerConfigLoader()
 	metricStatsdConfigLoader()
 	eventDistributionConfigLoader()
+	eventConfigLoader()
 }

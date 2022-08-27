@@ -71,7 +71,7 @@ func (h *Handler) Table() *connection.Table {
 func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.upgrader.Upgrade(w, r)
 	if err != nil {
-		logger.Debugf("[websocket.Handler] %v", err)
+		logger.Errorf("[websocket.Handler] %v", err)
 		return
 	}
 	defer conn.Close()

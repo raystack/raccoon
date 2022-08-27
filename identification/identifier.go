@@ -10,5 +10,5 @@ type Identifier struct {
 }
 
 func (i Identifier) String() string {
-	return fmt.Sprintf("connection [%s] %s", i.Group, i.ID)
+	return fmt.Sprintf("[%s] %s", i.Group, i.ID)
 }

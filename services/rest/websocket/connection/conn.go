@@ -30,7 +30,10 @@ func (c *Conn) Ping(writeWaitInterval time.Duration) error {
 }
 
 func (c *Conn) Close() {
-	c.conn.Close()
+	if err := c.conn.Close(); err != nil {
+		logger.Errorf("[Connection Error] %v", err)
+		metrics.Increment("conn_close_err_count", "")
+	}
 	c.calculateSessionTime()
 	c.closeHook(*c)
 }

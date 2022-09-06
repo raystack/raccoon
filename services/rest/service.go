@@ -26,6 +26,8 @@ func NewRestService(c collection.Collector) *Service {
 
 	go reportConnectionMetrics(*wh.Table())
 
+	go websocket.AckHandler(websocket.AckChan)
+
 	restHandler := NewHandler(c)
 	router := mux.NewRouter()
 	router.Path("/ping").HandlerFunc(pingHandler).Methods(http.MethodGet)

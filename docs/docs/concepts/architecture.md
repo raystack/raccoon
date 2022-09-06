@@ -64,11 +64,11 @@ Event data loss happens in the following scenarios:
 
 ## Acknowledging events
 
-Event acknowledgements was designed to signify if the events batch is received and sent to Kafka successfully. This will enable the clients to retry on failed event delivery. Raccoon chooses when to send event acknoledgements based on the configuration parameter `EVENT_ACK`.  
+Event acknowledgements was designed to signify if the events batch is received and sent to Kafka successfully. This will enable the clients to retry on failed event delivery. Raccoon chooses when to send event acknowledgement based on the configuration parameter `EVENT_ACK`.  
 
 ### EVENT_ACK = 0
 
-Raccoon sends the acknowledgments as soon as it receives and deserializes the events successfully using the proto `SendEventRequest`. This configuration is recommended when low latency takes precedence over end to end acknoledment. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
+Raccoon sends the acknowledgments as soon as it receives and deserializes the events successfully using the proto `SendEventRequest`. This configuration is recommended when low latency takes precedence over end to end acknowledgement. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
 
 ![](/assets/raccoon_sync.png)
 

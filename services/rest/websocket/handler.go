@@ -67,7 +67,7 @@ func (h *Handler) Table() *connection.Table {
 	return h.upgrader.Table
 }
 
-//HandlerWSEvents handles the upgrade and the events sent by the peers
+// HandlerWSEvents handles the upgrade and the events sent by the peers
 func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 	conn, err := h.upgrader.Upgrade(w, r)
 	if err != nil {
@@ -104,37 +104,35 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
 		h.sendEventCounters(payload.Events, conn.Identifier.Group)
-		resChannel := make(chan struct{}, 1)
+
 		h.collector.Collect(r.Context(), &collection.CollectRequest{
 			ConnectionIdentifier: conn.Identifier,
 			TimeConsumed:         timeConsumed,
 			SendEventRequest:     payload,
-			AckFunc:              h.Ack(conn, resChannel, s, messageType, payload.ReqGuid),
+			AckFunc:              h.Ack(conn, AckChan, s, messageType, payload.ReqGuid, timeConsumed),
 		})
-		<-resChannel
 	}
 }
 
-func (h *Handler) Ack(conn connection.Conn, resChannel chan struct{}, s serialization.SerializeFunc, messageType int, reqGuid string) collection.AckFunc {
+func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serialization.SerializeFunc, messageType int, reqGuid string, timeConsumed time.Time) collection.AckFunc {
 	switch config.Event.Ack {
 	case config.Asynchronous:
 		writeSuccessResponse(conn, s, messageType, reqGuid)
-		resChannel <- struct{}{}
 		return nil
 	case config.Synchronous:
 		return func(err error) {
-			if err != nil {
-				logger.Errorf("[websocket.Ack] publish message failed for %s: %v", conn.Identifier.Group, err)
-				writeFailedResponse(conn, s, messageType, reqGuid, err)
-				resChannel <- struct{}{}
-				return
+			AckChan <- AckInfo{
+				MessageType:     messageType,
+				RequestGuid:     reqGuid,
+				Err:             err,
+				Conn:            conn,
+				serializer:      h.serdeMap[messageType].serializer,
+				TimeConsumed:    timeConsumed,
+				AckTimeConsumed: time.Now(),
 			}
-			writeSuccessResponse(conn, s, messageType, reqGuid)
-			resChannel <- struct{}{}
 		}
 	default:
 		writeSuccessResponse(conn, s, messageType, reqGuid)
-		resChannel <- struct{}{}
 		return nil
 	}
 }

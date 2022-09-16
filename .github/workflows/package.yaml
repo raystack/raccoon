@@ -35,13 +35,3 @@ jobs:
             docker.pkg.github.com/${{ github.repository }}/raccoon:${{ steps.get_version.outputs.version-without-v }}
             odpf/raccoon:latest
             odpf/raccoon:${{ steps.get_version.outputs.version-without-v }}
-  create-gh-release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          body_path: CHANGELOG.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

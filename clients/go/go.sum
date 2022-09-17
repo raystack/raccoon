@@ -22,8 +22,6 @@ github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.m
 github.com/envoyproxy/go-control-plane v0.9.9-0.20210512163311-63b5d3c536b0/go.mod h1:hliV/p42l8fGbc6Y9bQ70uLwIvmJyVE5k4iMKlh8wCQ=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
-github.com/go-playground/assert/v2 v2.2.0 h1:JvknZsQTYeFEAhQwI4qEt9cyV5ONwRHC+lYKSsYSR8s=
-github.com/go-playground/assert/v2 v2.2.0/go.mod h1:VDjEfimB/XKnb+ZQfWdccd7VUvScMdVu0Titje2rxJ4=
 github.com/gojek/heimdall/v7 v7.0.2 h1:+YutGXZ8oEWbCJIwjRnkKmoTl+Oxt1Urs3hc/FR0sxU=
 github.com/gojek/heimdall/v7 v7.0.2/go.mod h1:Z43HtMid7ysSjmsedPTXAki6jcdcNVnjn5pmsTyiMic=
 github.com/gojek/valkyrie v0.0.0-20180215180059-6aee720afcdf h1:5xRGbUdOmZKoDXkGx5evVLehuCMpuO1hl701bEQqXOM=

@@ -20,7 +20,6 @@ require (
 require (
 	github.com/BurntSushi/toml v0.4.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-playground/assert/v2 v2.2.0
 	github.com/gojek/heimdall/v7 v7.0.2
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0

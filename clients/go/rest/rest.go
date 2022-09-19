@@ -1,4 +1,4 @@
-package raccoon
+package rest
 
 import (
 	"bytes"
@@ -7,15 +7,20 @@ import (
 	"net/http"
 
 	pb "go.buf.build/odpf/gw/odpf/proton/odpf/raccoon/v1beta1"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gojek/heimdall/v7/httpclient"
 	"github.com/google/uuid"
+	raccoon "github.com/odpf/raccoon/clients/go"
+	"github.com/odpf/raccoon/clients/go/serializer"
+	"github.com/odpf/raccoon/clients/go/wire"
 )
 
 // NewRest creates the new rest client with provided options.
-func NewRest(options ...RestOption) *RestClient {
+func NewRest(options ...RestOption) (*RestClient, error) {
 	rc := &RestClient{
-		Wire:       &JsonWire{}, // default
+		Serialize:  serializer.JSON,
+		Wire:       &wire.JsonWire{},
 		httpclient: httpclient.NewClient(),
 		headers:    http.Header{},
 	}
@@ -24,17 +29,17 @@ func NewRest(options ...RestOption) *RestClient {
 		opt(rc)
 	}
 
-	return rc
+	return rc, nil
 }
 
 // Send sends the events to the raccoon service
-func (c *RestClient) Send(events []*Event) (string, *Response, error) {
+func (c *RestClient) Send(events []*raccoon.Event) (string, *raccoon.Response, error) {
 	reqId := uuid.NewString()
 
 	e := []*pb.Event{}
 	for _, ev := range events {
 		// serialize the bytes based on the config
-		b, err := c.Marshal(ev.Data)
+		b, err := c.Serialize(ev.Data)
 		if err != nil {
 			return reqId, nil, err
 		}
@@ -45,8 +50,9 @@ func (c *RestClient) Send(events []*Event) (string, *Response, error) {
 	}
 
 	racReq, err := c.Wire.Marshal(&pb.SendEventRequest{
-		ReqGuid: reqId,
-		Events:  e,
+		ReqGuid:  reqId,
+		Events:   e,
+		SentTime: timestamppb.Now(),
 	})
 	if err != nil {
 		return reqId, nil, err
@@ -62,7 +68,7 @@ func (c *RestClient) Send(events []*Event) (string, *Response, error) {
 		return reqId, nil, err
 	}
 
-	return reqId, &Response{
+	return reqId, &raccoon.Response{
 		Status:   int32(resp.Status),
 		Code:     int32(resp.Code),
 		SentTime: resp.SentTime,
@@ -76,7 +82,7 @@ func (c *RestClient) executeRequest(body []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err

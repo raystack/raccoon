@@ -1,4 +1,4 @@
-package raccoon
+package wire
 
 import (
 	"errors"

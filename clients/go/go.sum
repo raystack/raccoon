@@ -75,8 +75,8 @@ github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PK
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 go.buf.build/odpf/gw/envoyproxy/protoc-gen-validate v1.1.7/go.mod h1:Z+auCoGBL8lg1aQQgGe7R3HLnYKf6nbtTawTt0WmFCo=
 go.buf.build/odpf/gw/grpc-ecosystem/grpc-gateway v1.1.46/go.mod h1:/LuddrGPi0fwj7ay6Orutt8oFfPz8Y3c8qdBkacJq1A=
-go.buf.build/odpf/gw/odpf/proton v1.1.129 h1:aCM/B7Lmpnz00AzIPeigzWgne888teFFFWptT8FiUjI=
-go.buf.build/odpf/gw/odpf/proton v1.1.129/go.mod h1:/TrDvy+6bIydxZAEliK+Wo3JuMRYFz1L+d9UsYZT44w=
+go.buf.build/odpf/gw/odpf/proton v1.1.131 h1:ufVq/8R9zkYjLPUq2xKqi/InJPTmh7MjPfNtdb5U8nE=
+go.buf.build/odpf/gw/odpf/proton v1.1.131/go.mod h1:/TrDvy+6bIydxZAEliK+Wo3JuMRYFz1L+d9UsYZT44w=
 go.opentelemetry.io/proto/otlp v0.7.0/go.mod h1:PqfVotwruBrMGOCsRd/89rSnXhoiJIqeYNgFYFoEGnI=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=

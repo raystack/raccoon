@@ -1,4 +1,4 @@
-package raccoon
+package serializer
 
 import (
 	"testing"
@@ -24,7 +24,7 @@ func TestJsonMarshal(t *testing.T) {
 		},
 	}
 
-	buf, err := MarshalFunc(JSON).Marshal(msg)
+	buf, err := JSON(msg)
 	if err != nil {
 		t.Errorf("json.Marshal (%v) failed with %v; want success", msg, err)
 	}
@@ -53,7 +53,7 @@ func TestProtoMarshal(t *testing.T) {
 		},
 	}
 
-	buf, err := MarshalFunc(PROTO).Marshal(msg)
+	buf, err := PROTO(msg)
 	if err != nil {
 		t.Errorf("proto.Marshal (%v) failed with %v; want success", msg, err)
 	}

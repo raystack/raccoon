@@ -1,4 +1,4 @@
-package raccoon
+package rest
 
 import (
 	"io"
@@ -11,6 +11,8 @@ import (
 
 	pb "go.buf.build/odpf/gw/odpf/proton/odpf/raccoon/v1beta1"
 
+	raccoon "github.com/odpf/raccoon/clients/go"
+	"github.com/odpf/raccoon/clients/go/serializer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,7 +46,7 @@ func TestRestClientSend(t *testing.T) {
 			Reason:   "",
 			SentTime: time.Now().UTC().Unix(),
 			Data: map[string]string{
-				"req_guid": "test-guid",
+				"req_guid": req.ReqGuid,
 			},
 		}
 		b, _ := json.Marshal(res)
@@ -54,12 +56,14 @@ func TestRestClientSend(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(mockHandler))
 	defer server.Close()
 
-	rc := NewRest(
+	rc, err := NewRest(
 		WithUrl(server.URL),
-		WithMarshaler(JSON),
+		WithSerializer(serializer.JSON),
 		WithHeader("admin", "admin"))
 
-	reqGuid, resp, err := rc.Send([]*Event{
+	assert.NoError(err)
+
+	reqGuid, resp, err := rc.Send([]*raccoon.Event{
 		{
 			Type: "page",
 			Data: `{ "name": "raccoon" }`,

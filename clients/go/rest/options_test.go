@@ -1,8 +1,9 @@
-package raccoon
+package rest
 
 import (
 	"testing"
 
+	"github.com/odpf/raccoon/clients/go/serializer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,12 +14,13 @@ func TestRestOptionsSet(t *testing.T) {
 	key := "authorization"
 	val := "123"
 
-	rc := NewRest(
+	rc, err := NewRest(
 		WithUrl(url),
 		WithHeader(key, val),
-		WithMarshaler(JSON))
+		WithSerializer(serializer.JSON))
 
-	assert.NotNil(rc.Marshal)
+	assert.NoError(err)
+	assert.NotNil(rc.Serialize)
 	assert.Equal(url, rc.Url)
 	assert.Equal(val, rc.headers.Get(key))
 }

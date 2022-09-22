@@ -3,11 +3,13 @@ package grpc
 import (
 	"google.golang.org/grpc"
 
+	raccoon "github.com/odpf/raccoon/clients/go"
 	"github.com/odpf/raccoon/clients/go/serializer"
 )
 
 // GrpcClient is the http implementation
 type GrpcClient struct {
+	raccoon.Client
 	Addr        string
 	client      *grpc.ClientConn
 	Serialize   serializer.SerializerFunc

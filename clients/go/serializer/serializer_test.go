@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestJsonMarshal(t *testing.T) {
+func TestJsonSerializer(t *testing.T) {
 	assert := assert.New(t)
 
 	msg := &pb.SendEventRequest{
@@ -26,7 +26,7 @@ func TestJsonMarshal(t *testing.T) {
 
 	buf, err := JSON(msg)
 	if err != nil {
-		t.Errorf("json.Marshal (%v) failed with %v; want success", msg, err)
+		t.Errorf("json.Serializer (%v) failed with %v; want success", msg, err)
 	}
 
 	got := &pb.SendEventRequest{}
@@ -40,7 +40,7 @@ func TestJsonMarshal(t *testing.T) {
 	assert.Equal(msg.Events[0].EventBytes, got.Events[0].EventBytes)
 }
 
-func TestProtoMarshal(t *testing.T) {
+func TestProtoSerializer(t *testing.T) {
 	assert := assert.New(t)
 
 	msg := &pb.SendEventRequest{
@@ -55,7 +55,7 @@ func TestProtoMarshal(t *testing.T) {
 
 	buf, err := PROTO(msg)
 	if err != nil {
-		t.Errorf("proto.Marshal (%v) failed with %v; want success", msg, err)
+		t.Errorf("proto.Serializer (%v) failed with %v; want success", msg, err)
 	}
 
 	got := &pb.SendEventRequest{}

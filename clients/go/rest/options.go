@@ -4,12 +4,15 @@ import (
 	"net/http"
 
 	"github.com/gojek/heimdall/v7"
+
+	raccoon "github.com/odpf/raccoon/clients/go"
 	"github.com/odpf/raccoon/clients/go/serializer"
 	"github.com/odpf/raccoon/clients/go/wire"
 )
 
 // RestClient is the http implementation
 type RestClient struct {
+	raccoon.Client
 	Url        string
 	Serialize  serializer.SerializerFunc
 	Wire       wire.WireMarshaler

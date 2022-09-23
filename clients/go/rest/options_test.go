@@ -20,7 +20,7 @@ func TestRestOptionsSet(t *testing.T) {
 		WithSerializer(serializer.JSON))
 
 	assert.NoError(err)
-	assert.NotNil(rc.Serialize)
-	assert.Equal(url, rc.Url)
+	assert.NotNil(rc.serialize)
+	assert.Equal(url, rc.url)
 	assert.Equal(val, rc.headers.Get(key))
 }

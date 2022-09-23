@@ -13,9 +13,9 @@ import (
 // RestClient is the http implementation
 type RestClient struct {
 	raccoon.Client
-	Url        string
-	Serialize  serializer.SerializerFunc
-	Wire       wire.WireMarshaler
+	url        string
+	serialize  serializer.SerializerFunc
+	wire       wire.WireMarshaler
 	httpclient heimdall.Client
 	headers    http.Header
 }
@@ -26,14 +26,14 @@ type RestOption func(*RestClient)
 // WithUrl sets the service address
 func WithUrl(url string) RestOption {
 	return func(rc *RestClient) {
-		rc.Url = url
+		rc.url = url
 	}
 }
 
 // WithSerializer sets the serializer for the raccoon message.
 func WithSerializer(s serializer.SerializerFunc) RestOption {
 	return func(rc *RestClient) {
-		rc.Serialize = s
+		rc.serialize = s
 	}
 }
 

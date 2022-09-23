@@ -19,8 +19,8 @@ import (
 // NewRest creates the new rest client with provided options.
 func NewRest(options ...RestOption) (*RestClient, error) {
 	rc := &RestClient{
-		Serialize:  serializer.JSON,
-		Wire:       &wire.JsonWire{},
+		serialize:  serializer.JSON,
+		wire:       &wire.JsonWire{},
 		httpclient: httpclient.NewClient(),
 		headers:    http.Header{},
 	}
@@ -39,7 +39,7 @@ func (c *RestClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 	e := []*pb.Event{}
 	for _, ev := range events {
 		// serialize the bytes based on the config
-		b, err := c.Serialize(ev.Data)
+		b, err := c.serialize(ev.Data)
 		if err != nil {
 			return reqId, nil, err
 		}
@@ -49,7 +49,7 @@ func (c *RestClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 		})
 	}
 
-	racReq, err := c.Wire.Marshal(&pb.SendEventRequest{
+	racReq, err := c.wire.Marshal(&pb.SendEventRequest{
 		ReqGuid:  reqId,
 		Events:   e,
 		SentTime: timestamppb.Now(),
@@ -64,7 +64,7 @@ func (c *RestClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 	}
 
 	resp := pb.SendEventResponse{}
-	if err := c.Wire.Unmarshal(res, &resp); err != nil {
+	if err := c.wire.Unmarshal(res, &resp); err != nil {
 		return reqId, nil, err
 	}
 
@@ -77,8 +77,8 @@ func (c *RestClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 }
 
 func (c *RestClient) executeRequest(body []byte) ([]byte, error) {
-	c.headers.Set("Content-Type", c.Wire.ContentType())
-	resp, err := c.httpclient.Post(c.Url, bytes.NewReader(body), c.headers)
+	c.headers.Set("Content-Type", c.wire.ContentType())
+	resp, err := c.httpclient.Post(c.url, bytes.NewReader(body), c.headers)
 	if err != nil {
 		return nil, err
 	}

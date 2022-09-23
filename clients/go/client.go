@@ -16,6 +16,7 @@ type (
 )
 
 type Client interface {
-	// Send sends a request to raccoon with the message provided.
+	// Send sends a request to raccoon with the message provided
+	// and returns the request guid, response and error.
 	Send([]*Event) (string, *Response, error)
 }

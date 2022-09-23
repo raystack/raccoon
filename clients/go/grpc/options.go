@@ -10,9 +10,9 @@ import (
 // GrpcClient is the http implementation
 type GrpcClient struct {
 	raccoon.Client
-	Addr        string
+	addr        string
 	client      *grpc.ClientConn
-	Serialize   serializer.SerializerFunc
+	serialize   serializer.SerializerFunc
 	headers     map[string]string
 	dialOptions []grpc.DialOption
 }
@@ -23,14 +23,14 @@ type GrpcOption func(*GrpcClient)
 // WithAddr sets the service address
 func WithAddr(addr string) GrpcOption {
 	return func(gc *GrpcClient) {
-		gc.Addr = addr
+		gc.addr = addr
 	}
 }
 
 // WithSerializer sets the serializer for the raccoon message.
 func WithSerializer(s serializer.SerializerFunc) GrpcOption {
 	return func(gc *GrpcClient) {
-		gc.Serialize = s
+		gc.serialize = s
 	}
 }
 

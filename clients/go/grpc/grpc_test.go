@@ -17,6 +17,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	raccoon "github.com/odpf/raccoon/clients/go"
+	"github.com/odpf/raccoon/clients/go/testdata"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,7 +34,7 @@ func (*mockEventServiceServer) SendEvent(ctx context.Context, req *pb.SendEventR
 		return nil, errors.New("conn id header is missing")
 	}
 
-	pe := &PageEvent{}
+	pe := &testdata.PageEvent{}
 	if err := proto.Unmarshal(req.Events[0].EventBytes, pe); err != nil {
 		return nil, err
 	}
@@ -79,7 +80,7 @@ func TestGrpcClientSend(t *testing.T) {
 	reqGuid, resp, err := gc.Send([]*raccoon.Event{
 		{
 			Type: "page",
-			Data: &PageEvent{
+			Data: &testdata.PageEvent{
 				EventGuid: "guid-123",
 				EventName: "page",
 				SentTime:  timestamppb.Now(),

@@ -23,7 +23,7 @@ func TestGrpcOptionsSet(t *testing.T) {
 		WithDialOptions(opts...))
 
 	assert.NoError(err)
-	assert.Equal(addr, gc.Addr)
+	assert.Equal(addr, gc.addr)
 	assert.Equal(1, len(gc.dialOptions))
 	assert.Equal("123", gc.headers[key])
 }
@@ -45,6 +45,6 @@ func TestGrpcDialOptionsSet(t *testing.T) {
 	)
 
 	assert.NoError(err)
-	assert.Equal(addr, gc.Addr)
+	assert.Equal(addr, gc.addr)
 	assert.Equal(len(opts), len(gc.dialOptions))
 }

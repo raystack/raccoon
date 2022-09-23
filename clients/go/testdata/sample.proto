@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/odpf/raccoon/clients/go/grpc";
+option go_package = "github.com/odpf/raccoon/clients/go/testdata";
 
 message PageEvent {
     string event_guid = 1;

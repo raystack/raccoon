@@ -17,7 +17,7 @@ import (
 // NewGrpc creates the new grpc client with provided options.
 func NewGrpc(options ...GrpcOption) (*GrpcClient, error) {
 	gc := &GrpcClient{
-		Serialize:   serializer.PROTO,
+		serialize:   serializer.PROTO,
 		headers:     make(map[string]string),
 		dialOptions: []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock()},
 	}
@@ -26,7 +26,7 @@ func NewGrpc(options ...GrpcOption) (*GrpcClient, error) {
 		opt(gc)
 	}
 
-	client, err := grpc.Dial(gc.Addr, gc.dialOptions...)
+	client, err := grpc.Dial(gc.addr, gc.dialOptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (g *GrpcClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 
 	e := []*pb.Event{}
 	for _, ev := range events {
-		b, err := g.Serialize(ev.Data)
+		b, err := g.serialize(ev.Data)
 		if err != nil {
 			return reqId, nil, err
 		}

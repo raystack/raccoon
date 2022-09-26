@@ -6,7 +6,7 @@
 go 1.16 or above
 
 ## Install
-```shell
+```bash
 go get github.com/odpf/raccoon/clients/go
 ```
 ## Usage
@@ -14,14 +14,23 @@ go get github.com/odpf/raccoon/clients/go
 #### Construct a new REST client, then use the various options on the client.
 For example:
 ```go
+import "github.com/odpf/raccoon/clients/go/rest"
+```
+```go
 	client, err := rest.NewRest(
 		rest.WithUrl("http://localhost:8080/api/v1/events"),
 		rest.WithHeader("x-user-id", "123"),
 		rest.WithSerializer(serializer.PROTO), // default is JSON
 	)
 ```
+
+see example: [examples/rest](examples/rest/main.go)
+
 #### Construct a new GRPC client, then use the various options on the client.
 For example:
+```go
+import "github.com/odpf/raccoon/clients/go/grpc"
+```
 ```go
 	client, err := grpc.NewGrpc(
 		grpc.WithAddr("http://localhost:8080"),
@@ -34,6 +43,8 @@ For example:
 		// default serializer is proto.
 	)
 ```
+
+see example: [examples/grpc](examples/grpc/main.go)
 
 #### Sending the request to raccoon
 ```go

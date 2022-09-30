@@ -66,7 +66,7 @@ func dialer() func(context.Context, string) (net.Conn, error) {
 func TestGrpcClientSend(t *testing.T) {
 	assert := assert.New(t)
 
-	gc, err := NewGrpc(
+	gc, err := New(
 		WithAddr(""),
 		WithHeader(connId, "123"),
 		WithDialOptions(

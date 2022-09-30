@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -15,10 +16,11 @@ import (
 
 func main() {
 
-	client, err := rest.NewRest(
+	client, err := rest.New(
 		rest.WithUrl("http://localhost:8080/api/v1/events"),
 		rest.WithHeader("x-user-id", "123"),
 		rest.WithSerializer(serializer.PROTO), // default is JSON
+		rest.WithRetry(time.Second*2, 5),
 	)
 
 	if err != nil {

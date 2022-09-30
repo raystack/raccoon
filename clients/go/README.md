@@ -17,11 +17,11 @@ For example:
 import "github.com/odpf/raccoon/clients/go/rest"
 ```
 ```go
-	client, err := rest.NewRest(
-		rest.WithUrl("http://localhost:8080/api/v1/events"),
-		rest.WithHeader("x-user-id", "123"),
-		rest.WithSerializer(serializer.PROTO), // default is JSON
-	)
+client, err := rest.NewRest(
+	rest.WithUrl("http://localhost:8080/api/v1/events"),
+	rest.WithHeader("x-user-id", "123"),
+	rest.WithSerializer(serializer.PROTO), // default is JSON
+)
 ```
 
 see example: [examples/rest](examples/rest/main.go)
@@ -32,30 +32,59 @@ For example:
 import "github.com/odpf/raccoon/clients/go/grpc"
 ```
 ```go
-	client, err := grpc.NewGrpc(
-		grpc.WithAddr("http://localhost:8080"),
-		grpc.WithHeader("x-user-id", "123"),
-
-		grpc.WithDialOptions(
-			g.WithTransportCredentials(credentials.NewServerTLSFromCert(&tls.Certificate{})),
-		), // default is insecure
-
-		// default serializer is proto.
-	)
+client, err := grpc.NewGrpc(
+	grpc.WithAddr("http://localhost:8080"),
+	grpc.WithHeader("x-user-id", "123"),
+	grpc.WithDialOptions(
+		g.WithTransportCredentials(credentials.NewServerTLSFromCert(&tls.Certificate{})),
+	), // default is insecure
+	// default serializer is proto.
+)
 ```
 
 see example: [examples/grpc](examples/grpc/main.go)
 
 #### Sending the request to raccoon
 ```go
-    reqGuid, resp, err := client.Send([]*raccoon.Event{
-            {
-                Type: "page",
-                Data: &testdata.PageEvent{
-                    EventGuid: uuid.NewString(),
-                    EventName: "clicked",
-                    SentTime:  timestamppb.Now(),
-                },
+reqGuid, resp, err := client.Send([]*raccoon.Event{
+        {
+            Type: "page",
+            Data: &testdata.PageEvent{
+                EventGuid: uuid.NewString(),
+                EventName: "clicked",
+                SentTime:  timestamppb.Now(),
             },
-        })
+        },
+    })
+```
+
+#### Retry Configuration
+Default settings, wait = `1 second`, and maximum attempts = `3`. The following options can override it.
+
+```go
+rest.WithRetry(time.Second*2, 5)
+
+grpc.WithRetry(time.Second*2, 5)
+```
+
+### Custom Logging Configuration
+The default logger logs the information to the standard output,
+and the default logger can be diabled by the following settings
+```go
+rest.WithLogger(nil)
+grpc.WithLogger(nil)
+```
+
+The client provide the logger interface that can be implemented by any logger.
+```go
+type Logger interface {
+	Infof(msg string, keysAndValues ...interface{})
+	Errorf(msg string, keysAndValues ...interface{})
+}
+```
+And cutomer logger can set for the client with the following options.
+
+```go
+rest.WithLogger(&CustomLogger{})
+grpc.WithLogger(&CustomLogger{})
 ```

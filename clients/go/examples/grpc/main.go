@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"crypto/tls"
 
@@ -17,8 +18,8 @@ import (
 )
 
 func main() {
-	client, err := grpc.NewGrpc(
-		grpc.WithAddr("http://localhost:8080"),
+	client, err := grpc.New(
+		grpc.WithAddr("localhost:8080"),
 		grpc.WithHeader("x-user-id", "123"),
 
 		grpc.WithDialOptions(
@@ -26,6 +27,8 @@ func main() {
 		), // default is insecure
 
 		// default serializer is proto.
+
+		grpc.WithRetry(time.Second*2, 5),
 	)
 
 	if err != nil {

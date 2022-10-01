@@ -17,7 +17,7 @@ For example:
 import "github.com/odpf/raccoon/clients/go/rest"
 ```
 ```go
-client, err := rest.NewRest(
+client, err := rest.New(
 	rest.WithUrl("http://localhost:8080/api/v1/events"),
 	rest.WithHeader("x-user-id", "123"),
 	rest.WithSerializer(serializer.PROTO), // default is JSON
@@ -32,7 +32,7 @@ For example:
 import "github.com/odpf/raccoon/clients/go/grpc"
 ```
 ```go
-client, err := grpc.NewGrpc(
+client, err := grpc.New(
 	grpc.WithAddr("http://localhost:8080"),
 	grpc.WithHeader("x-user-id", "123"),
 	grpc.WithDialOptions(

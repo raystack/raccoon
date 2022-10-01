@@ -37,7 +37,7 @@ func Default() Logger {
 func SetLogger(logger Logger) {
 	logInit.Do(func() {
 		if logger == nil {
-			defaultLogger = &NopLogger{}
+			defaultLogger = &nopLogger{}
 			return
 		}
 
@@ -78,9 +78,9 @@ func (c *consoleLogger) Errorf(msg string, keysAndValues ...interface{}) {
 	}
 }
 
-// NopLogger is the empty logger.
-type NopLogger struct{}
+// nopLogger is the empty logger.
+type nopLogger struct{}
 
-func (*NopLogger) Infof(msg string, keysAndValues ...interface{}) {}
+func (*nopLogger) Infof(msg string, keysAndValues ...interface{}) {}
 
-func (*NopLogger) Errorf(msg string, keysAndValues ...interface{}) {}
+func (*nopLogger) Errorf(msg string, keysAndValues ...interface{}) {}

@@ -44,6 +44,24 @@ client, err := grpc.New(
 
 see example: [examples/grpc](examples/grpc/main.go)
 
+#### Construct a new Websocket client, then use the various options on the client.
+For example:
+```go
+import "github.com/odpf/raccoon/clients/go/ws"
+```
+```go
+client, err := ws.New(
+	ws.WithUrl("ws://localhost:8080/api/v1/events"),
+	ws.WithHeader("x-user-id", "123"),
+	ws.WithHeader("x-user-type", "gojek"))
+	// default serializer is proto.
+```
+Reading the message acknowledgements
+```go
+resp := <-client.EventAcks()
+```
+see example: [examples/grpc](examples/ws/main.go)
+
 #### Sending the request to raccoon
 ```go
 reqGuid, resp, err := client.Send([]*raccoon.Event{
@@ -57,6 +75,8 @@ reqGuid, resp, err := client.Send([]*raccoon.Event{
         },
     })
 ```
+
+
 
 #### Retry Configuration
 Default settings, wait = `1 second`, and maximum attempts = `3`. The following options can override it.

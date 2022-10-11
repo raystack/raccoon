@@ -60,7 +60,7 @@ Reading the message acknowledgements
 ```go
 resp := <-client.EventAcks()
 ```
-see example: [examples/grpc](examples/ws/main.go)
+see example: [examples/websocket](examples/ws/main.go)
 
 #### Sending the request to raccoon
 ```go

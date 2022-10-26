@@ -49,18 +49,18 @@ func (t *Table) Store(c identification.Identifier) error {
 	return nil
 }
 
-func (t *Table) StoreEvent(c identification.Identifier, eventId string) {
+func (t *Table) StoreEvent(c identification.Identifier, reqId string) {
 	t.m.Lock()
 	defer t.m.Unlock()
 	if _, ok := t.connMap[c]; ok {
-		t.connMap[c][eventId] = struct{}{}
+		t.connMap[c][reqId] = struct{}{}
 	}
 }
 
-func (t *Table) HasEvent(c identification.Identifier, eventId string) bool {
+func (t *Table) HasEvent(c identification.Identifier, reqId string) bool {
 	t.m.Lock()
 	defer t.m.Unlock()
-	_, ok := t.connMap[c][eventId]
+	_, ok := t.connMap[c][reqId]
 	return ok
 }
 

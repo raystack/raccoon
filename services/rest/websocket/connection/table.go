@@ -58,8 +58,8 @@ func (t *Table) StoreBatch(c identification.Identifier, id string) {
 }
 
 func (t *Table) HasBatch(c identification.Identifier, id string) bool {
-	t.m.Lock()
-	defer t.m.Unlock()
+	t.m.RLock()
+	defer t.m.RUnlock()
 	_, ok := t.connMap[c][id]
 	return ok
 }

@@ -104,12 +104,12 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// avoiding processing the same active connection's duplicate events.
-		if h.upgrader.Table.HasEvent(conn.Identifier, payload.ReqGuid) {
+		if h.upgrader.Table.HasBatch(conn.Identifier, payload.ReqGuid) {
 			metrics.Increment("events_duplicate_total", fmt.Sprintf("request_guid=%s,reason=duplicate,conn_group=%s", payload.ReqGuid, conn.Identifier.Group))
 			writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
 			continue
 		}
-		h.upgrader.Table.StoreEvent(conn.Identifier, payload.ReqGuid)
+		h.upgrader.Table.StoreBatch(conn.Identifier, payload.ReqGuid)
 
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
 		h.sendEventCounters(payload.Events, conn.Identifier.Group)

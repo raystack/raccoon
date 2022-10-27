@@ -49,18 +49,18 @@ func (t *Table) Store(c identification.Identifier) error {
 	return nil
 }
 
-func (t *Table) StoreEvent(c identification.Identifier, reqId string) {
+func (t *Table) StoreBatch(c identification.Identifier, id string) {
 	t.m.Lock()
 	defer t.m.Unlock()
 	if _, ok := t.connMap[c]; ok {
-		t.connMap[c][reqId] = struct{}{}
+		t.connMap[c][id] = struct{}{}
 	}
 }
 
-func (t *Table) HasEvent(c identification.Identifier, reqId string) bool {
+func (t *Table) HasBatch(c identification.Identifier, id string) bool {
 	t.m.Lock()
 	defer t.m.Unlock()
-	_, ok := t.connMap[c][reqId]
+	_, ok := t.connMap[c][id]
 	return ok
 }
 

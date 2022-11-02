@@ -1,0 +1,157 @@
+syntax = "proto3";
+
+package odpf.raccoon.v1beta1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/odpf/proton/raccoon/v1;raccoonv1";
+option java_multiple_files = true;
+option java_outer_classname = "EventProto";
+option java_package = "io.odpf.proton.raccoon";
+
+service EventService {
+  rpc SendEvent(SendEventRequest) returns (SendEventResponse);
+}
+
+/*
+ `EventRequest` defines the contract to push events to Raccoon
+
+ An `EventRequest` allows you to push more than one events(batch). The events
+ are wrapped inside `events` repeated field. All of the fields on `EventRequest`
+ are required.
+*/
+message SendEventRequest {
+  /*
+  `req_guid` is unique identifier of the request the client is making.
+
+  Raccoon uses the identifier to send response of the request. The client can handle the
+  response accordingly. For example, the client can retry the request in case the response is
+  giving `INTERNAL_ERROR` code with "publisher failed" reason.
+
+  This identifier is necessary because on event-based protocols like WebSocket the response is
+  returned asynchronously. If there is no identifier, no way the client can tell which response
+  belongs to which request.
+
+  Apart from sending response, `req_guid` is used to log some informations on 'debug' level. You can search the
+  debug logs with `ReqGUID` keyword.
+  */
+  string req_guid = 1;
+  /*
+  `sent_time` defines the time the request is sent.
+
+  `sent_time` is used to calculate various metrics. The main metric uses `sent_time` is duration from the
+  request is sent until the events are published.
+  */
+  google.protobuf.Timestamp sent_time = 2;
+  /*
+  `events` is where the client put all the events wrapped in `Event`.
+
+  As mentioned above, the request allows the client to push more than one event. Normally you want to batch
+  the events to optimize the network call.
+  */
+  repeated Event events = 3;
+}
+
+/*
+ `Event` defines wrapper of the event you want to push to Raccoon
+
+ The event populated here is in form of bytes. It means you can use any data format or schema
+ you want for your event. You can structure your event on protobuf as you like. The data then
+ needs to be serialized to bytes and populate it in `event_bytes` field. Single `Event` contains one event.
+*/
+
+message Event {
+  /*
+  `event_bytes` is where you put bytes serialized event.
+  */
+  bytes event_bytes = 1;
+  /*
+  `type` denotes an event type that the producer of this proto message may set.
+
+  It is currently used by raccoon to distribute events to respective Kafka topics. However the
+  users of this proto can use this type to set strings which can be processed in their
+  ingestion systems to distribute or perform other functions.
+  */
+  string type = 2;
+}
+
+/*
+ `EventResponse` defines the response contract from Raccoon
+
+ Raccoon sends `EventResponse` for each `EventRequest` received. For WebSocket,
+ `EventResponse` is also used to send the final message in case connection is failed to
+ established.
+*/
+
+message SendEventResponse {
+  /*
+  `status` denotes status of the request.
+
+  Only 3 values are valid. `SUCCESS` means the the request is processed
+  successfully. `ERROR` means the request failed to be processed. `UNKNOWN_STATUS`
+  means Raccoon unable to determine whether the request is success or not.
+  */
+  Status status = 1;
+  /*
+  `code` gives more detail of what happened to the request.
+
+  Details of available `code` can be seen below.
+  */
+  Code code = 2;
+  /*
+  `sent_time` is UNIX timestamp populated by Raccoon by the time the response is sent.
+  */
+  int64 sent_time = 3;
+  /*
+  `reason` is additional-human readable information to provide more context to `status` and `code`.
+
+  There is no predefined structure for this. The value is arbitrary.
+  */
+  string reason = 4;
+  /*
+  `data` is arbitrary extra metadata.
+
+  Arbitrary key-value makes the field flexible for future changes. `req_guid` is also sent as part
+  of `data`. The client may fetch req_guid as key to get the `req_guid` value.
+  */
+  map<string, string> data = 5;
+}
+
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_SUCCESS = 1;
+  STATUS_ERROR = 2;
+}
+
+enum Code {
+  /*
+  `CODE_UNSPECIFIED` indicates no appropriate/existing code can describe it.
+  */
+  CODE_UNSPECIFIED = 0;
+  /*
+  `OK` indicates the request is processed successfully.
+  */
+  CODE_OK = 1;
+  /*
+  `BAD_REQUEST` indicates there is something wrong with the request.
+  */
+  CODE_BAD_REQUEST = 2;
+  /*
+  `INTERNAL_ERROR` indicates that Raccoon encountered an unexpected condition that prevented it from fulfilling the request.
+  */
+  CODE_INTERNAL_ERROR = 3;
+  /*
+  `MAX_CONNECTION_LIMIT_REACHED` indicates that Raccoon is unable to accepts new connection due to max connection is reached.
+
+  To prevent Raccoon from eating up resources, connection limit needs to be set. The limit is configurable on Raccoon by setting `SERVER_WEBSOCKET_MAX_CONN`
+  */
+  CODE_MAX_CONNECTION_LIMIT_REACHED = 4;
+  /*
+  `MAX_USER_LIMIT_REACHED` indicates that existing connection with the same ID.
+
+  Raccoon ensures unique connection using unique identifier passed from the header
+  the first time Websocket connection is established. The header key that
+  contains unique identifier is configurable on Raccoon by setting `SERVER_WEBSOCKET_CONN_UNIQ_ID_HEADER`
+  */
+  CODE_MAX_USER_LIMIT_REACHED = 5;
+}

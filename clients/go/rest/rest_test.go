@@ -56,7 +56,7 @@ func TestRestClientSend(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(mockHandler))
 	defer server.Close()
 
-	rc, err := NewRest(
+	rc, err := New(
 		WithUrl(server.URL),
 		WithSerializer(serializer.JSON),
 		WithHeader("admin", "admin"))

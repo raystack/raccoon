@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"net/http"
@@ -12,17 +13,22 @@ import (
 	"github.com/gojek/heimdall/v7/httpclient"
 	"github.com/google/uuid"
 	raccoon "github.com/odpf/raccoon/clients/go"
+	"github.com/odpf/raccoon/clients/go/log"
+	"github.com/odpf/raccoon/clients/go/retry"
 	"github.com/odpf/raccoon/clients/go/serializer"
 	"github.com/odpf/raccoon/clients/go/wire"
 )
 
-// NewRest creates the new rest client with provided options.
-func NewRest(options ...RestOption) (*RestClient, error) {
-	rc := &RestClient{
+// New creates the new rest client with provided options.
+func New(options ...Option) (*Rest, error) {
+	rc := &Rest{
 		serialize:  serializer.JSON,
 		wire:       &wire.JsonWire{},
 		httpclient: httpclient.NewClient(),
 		headers:    http.Header{},
+		retryMax:   retry.DefaultRetryMax,
+		retryWait:  retry.DefaultRetryWait,
+		logger:     log.Default(),
 	}
 
 	for _, opt := range options {
@@ -33,14 +39,17 @@ func NewRest(options ...RestOption) (*RestClient, error) {
 }
 
 // Send sends the events to the raccoon service
-func (c *RestClient) Send(events []*raccoon.Event) (string, *raccoon.Response, error) {
+func (rc *Rest) Send(events []*raccoon.Event) (string, *raccoon.Response, error) {
 	reqId := uuid.NewString()
+	rc.logger.Infof("started request, url: %s, req-id: %s", rc.url, reqId)
+	defer rc.logger.Infof("ended request, url: %s, req-id: %s", rc.url, reqId)
 
 	e := []*pb.Event{}
 	for _, ev := range events {
 		// serialize the bytes based on the config
-		b, err := c.serialize(ev.Data)
+		b, err := rc.serialize(ev.Data)
 		if err != nil {
+			rc.logger.Errorf("serialize, url: %s, req-id: %s, %+v", rc.url, reqId, err)
 			return reqId, nil, err
 		}
 		e = append(e, &pb.Event{
@@ -49,7 +58,7 @@ func (c *RestClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 		})
 	}
 
-	racReq, err := c.wire.Marshal(&pb.SendEventRequest{
+	racReq, err := rc.wire.Marshal(&pb.SendEventRequest{
 		ReqGuid:  reqId,
 		Events:   e,
 		SentTime: timestamppb.Now(),
@@ -58,13 +67,25 @@ func (c *RestClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 		return reqId, nil, err
 	}
 
-	res, err := c.executeRequest(racReq)
-	if err != nil {
-		return reqId, nil, err
-	}
-
 	resp := pb.SendEventResponse{}
-	if err := c.wire.Unmarshal(res, &resp); err != nil {
+	err = retry.Do(rc.retryWait, rc.retryMax, func() error {
+		b, err := rc.executeRequest(racReq)
+		if err != nil {
+			return err
+		}
+
+		if err := rc.wire.Unmarshal(b, &resp); err != nil {
+			rc.logger.Errorf("wire:unmarshal, url: %s, req-id: %s, content-type: %s, %+v", rc.url, reqId, rc.wire.ContentType(), err)
+			return err
+		}
+
+		if resp.Status != pb.Status_STATUS_SUCCESS {
+			return fmt.Errorf("error from raccoon url: %s, req-id: %s, status: %d, code: %d, data: %+v", rc.url, reqId, resp.Status, resp.Code, resp.Data)
+		}
+		return nil
+	})
+	if err != nil {
+		rc.logger.Errorf("send, url: %s, req-id: %s, %+v", rc.url, reqId, err)
 		return reqId, nil, err
 	}
 
@@ -76,9 +97,9 @@ func (c *RestClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 	}, nil
 }
 
-func (c *RestClient) executeRequest(body []byte) ([]byte, error) {
-	c.headers.Set("Content-Type", c.wire.ContentType())
-	resp, err := c.httpclient.Post(c.url, bytes.NewReader(body), c.headers)
+func (rc *Rest) executeRequest(body []byte) ([]byte, error) {
+	rc.headers.Set("Content-Type", rc.wire.ContentType())
+	resp, err := rc.httpclient.Post(rc.url, bytes.NewReader(body), rc.headers)
 	if err != nil {
 		return nil, err
 	}

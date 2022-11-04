@@ -14,7 +14,7 @@ func TestRestOptionsSet(t *testing.T) {
 	key := "authorization"
 	val := "123"
 
-	rc, err := NewRest(
+	rc, err := New(
 		WithUrl(url),
 		WithHeader(key, val),
 		WithSerializer(serializer.JSON))

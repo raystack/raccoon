@@ -17,7 +17,7 @@ func TestGrpcOptionsSet(t *testing.T) {
 	val := "123"
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-	gc, err := NewGrpc(
+	gc, err := New(
 		WithAddr(addr),
 		WithHeader(key, val),
 		WithDialOptions(opts...))
@@ -38,7 +38,7 @@ func TestGrpcDialOptionsSet(t *testing.T) {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	gc, err := NewGrpc(
+	gc, err := New(
 		WithAddr(addr),
 		WithHeader(key, val),
 		WithDialOptions(opts...),

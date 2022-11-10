@@ -49,6 +49,22 @@ checkstyleTest {
     source = 'src/test/java'
 }
 
+test {
+    beforeTest {
+        descriptor -> logger.lifecycle("Running test: " + descriptor)
+    }
+    testLogging {
+        exceptionFormat "full" // default is "short"
+        events "passed", "skipped", "failed"
+    }
+    useJUnit {
+    }
+    doLast {
+        delete "$projectDir/src/test/resources/__files"
+    }
+
+}
+
 clean {
     delete "$projectDir/src/test/resources/__files"
 }

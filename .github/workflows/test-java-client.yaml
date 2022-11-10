@@ -1,4 +1,4 @@
-name: Test raccoon clients
+name: Test Raccoon Java Clients
 on:
   push:
     paths:

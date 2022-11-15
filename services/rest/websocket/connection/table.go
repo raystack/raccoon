@@ -64,6 +64,12 @@ func (t *Table) HasBatch(c identification.Identifier, id string) bool {
 	return ok
 }
 
+func (t *Table) RemoveBatch(c identification.Identifier, id string) {
+	t.m.RLock()
+	defer t.m.RUnlock()
+	delete(t.connMap[c], id)
+}
+
 func (t *Table) Remove(c identification.Identifier) {
 	t.m.Lock()
 	defer t.m.Unlock()

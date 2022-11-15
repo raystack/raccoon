@@ -115,6 +115,35 @@ func TestStoreBatch(t *testing.T) {
 		table.StoreBatch(identification.Identifier{ID: "user1", Group: ""}, "request-id-1")
 		assert.True(t, table.HasBatch(identification.Identifier{ID: "user1", Group: ""}, "request-id-1"))
 	})
+
+	t.Run("Should be able to remove the batch ", func(t *testing.T) {
+		table := NewTable(10)
+
+		table.Store(identification.Identifier{ID: "user1", Group: ""})
+		table.Store(identification.Identifier{ID: "user2", Group: ""})
+
+		table.StoreBatch(identification.Identifier{ID: "user1", Group: ""}, "request-id-1")
+		table.StoreBatch(identification.Identifier{ID: "user1", Group: ""}, "request-id-2")
+		table.StoreBatch(identification.Identifier{ID: "user2", Group: ""}, "request-id-1")
+		table.StoreBatch(identification.Identifier{ID: "user2", Group: ""}, "request-id-2")
+
+		table.RemoveBatch(identification.Identifier{ID: "user1", Group: ""}, "request-id-1")
+		table.RemoveBatch(identification.Identifier{ID: "user2", Group: ""}, "request-id-1")
+
+		assert.False(t, table.HasBatch(identification.Identifier{ID: "user1", Group: ""}, "request-id-1"))
+		assert.False(t, table.HasBatch(identification.Identifier{ID: "user2", Group: ""}, "request-id-1"))
+
+		assert.True(t, table.HasBatch(identification.Identifier{ID: "user1", Group: ""}, "request-id-2"))
+		assert.True(t, table.HasBatch(identification.Identifier{ID: "user2", Group: ""}, "request-id-2"))
+
+		table.RemoveBatch(identification.Identifier{ID: "user1", Group: ""}, "request-id-2")
+		table.RemoveBatch(identification.Identifier{ID: "user2", Group: ""}, "request-id-2")
+
+		assert.False(t, table.HasBatch(identification.Identifier{ID: "user1", Group: ""}, "request-id-2"))
+		assert.False(t, table.HasBatch(identification.Identifier{ID: "user2", Group: ""}, "request-id-2"))
+
+		table.RemoveBatch(identification.Identifier{ID: "user1", Group: ""}, "")
+	})
 }
 
 func BenchmarkStoreBatch(b *testing.B) {
@@ -126,6 +155,8 @@ func BenchmarkStoreBatch(b *testing.B) {
 			table.Store(identification.Identifier{ID: userId, Group: ""})
 			table.StoreBatch(identification.Identifier{ID: userId, Group: ""}, batchId)
 			assert.True(b, table.HasBatch(identification.Identifier{ID: userId, Group: ""}, batchId))
+			table.RemoveBatch(identification.Identifier{ID: userId, Group: ""}, batchId)
+			assert.False(b, table.HasBatch(identification.Identifier{ID: userId, Group: ""}, batchId))
 		}(i)
 	}
 }

@@ -130,6 +130,9 @@ func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serializa
 		return nil
 	case config.Synchronous:
 		return func(err error) {
+			if err != nil {
+				h.upgrader.Table.RemoveBatch(conn.Identifier, reqGuid)
+			}
 			AckChan <- AckInfo{
 				MessageType:     messageType,
 				RequestGuid:     reqGuid,

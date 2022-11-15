@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+option java_outer_classname = "PageEventProto";
+option java_package = "sample";
+
+message PageEvent {
+  string event_guid = 1;
+  string event_name = 2;
+  google.protobuf.Timestamp sent_time = 3;
+}

@@ -21,6 +21,8 @@ jobs:
         run: make install-protoc; make setup
       - name: Invoking go test
         run: make test
+      - name: Invoking go bench test
+        run: make test-bench
   build:
     runs-on: ubuntu-latest
 

@@ -97,6 +97,13 @@ Toggle CORS check function. Set `true` to check each request origin. Set `false`
 * Type: `Optional`
 * Default value: `true`
 
+### `SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED`
+
+The server decides whether or not to handle duplicate batches for the active connection. If a batch is sent with a duplicate ReqGUID, the server uses best attempts to discard the duplicate batches. Set `true` to enable the setting.
+
+* Type `Optional`
+* Default value: `false`
+
 ## Worker
 
 ### `WORKER_BUFFER_CHANNEL_SIZE`
@@ -231,4 +238,3 @@ Based on this parameter the server decides when to send the acknowledgement to t
 
 * Type `Optional`
 * Default value: `0`
-

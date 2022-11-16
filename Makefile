@@ -64,7 +64,7 @@ lint:
 # Tests
 
 test: lint
-	ENVIRONMENT=test go test $(shell go list ./... | grep -v "vendor" | grep -v "integration") -v
+	ENVIRONMENT=test go test $(shell go list ./... | grep -v "vendor" | grep -v "integration") -v -tags dynamic
 	@go list ./... | grep -v "vendor" | grep -v "integration" | xargs go test -count 1 -cover -short -race -timeout 1m -coverprofile ${COVER_FILE}
 	@go tool cover -func ${COVER_FILE} | tail -1 | xargs echo test coverage:
 

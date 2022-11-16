@@ -35,9 +35,9 @@ type serverGRPC struct {
 }
 
 func serverConfigLoader() {
-	viper.SetDefault("SERVER_DEDUP_ENABLED", "true")
+	viper.SetDefault("SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED", "false")
 	Server = server{
-		DedupEnabled: util.MustGetBool("SERVER_DEDUP_ENABLED"),
+		DedupEnabled: util.MustGetBool("SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED"),
 	}
 }
 

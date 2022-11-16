@@ -7,8 +7,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+var Server server
 var ServerWs serverWs
 var ServerGRPC serverGRPC
+
+type server struct {
+	DedupEnabled bool
+}
 
 type serverWs struct {
 	AppPort           string
@@ -27,6 +32,13 @@ type serverWs struct {
 
 type serverGRPC struct {
 	Port string
+}
+
+func serverConfigLoader() {
+	viper.SetDefault("SERVER_DEDUP_ENABLED", "true")
+	Server = server{
+		DedupEnabled: util.MustGetBool("SERVER_DEDUP_ENABLED"),
+	}
 }
 
 func serverWsConfigLoader() {

@@ -69,7 +69,7 @@ test: lint
 	@go tool cover -func ${COVER_FILE} | tail -1 | xargs echo test coverage:
 
 test-bench: # run benchmark tests
-	@go test -bench ./...
+	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./...
 
 test_ci: install-protoc setup test
 

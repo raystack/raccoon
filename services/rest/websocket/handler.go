@@ -102,14 +102,15 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 			writeBadRequestResponse(conn, s, messageType, payload.ReqGuid, err)
 			continue
 		}
-
-		// avoiding processing the same active connection's duplicate events.
-		if h.upgrader.Table.HasBatch(conn.Identifier, payload.ReqGuid) {
-			metrics.Increment("events_duplicate_total", fmt.Sprintf("request_guid=%s,reason=duplicate,conn_group=%s", payload.ReqGuid, conn.Identifier.Group))
-			writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
-			continue
+		if config.Server.DedupEnabled {
+			// avoiding processing the same active connection's duplicate events.
+			if h.upgrader.Table.HasBatch(conn.Identifier, payload.ReqGuid) {
+				metrics.Increment("events_duplicate_total", fmt.Sprintf("request_guid=%s,reason=duplicate,conn_group=%s", payload.ReqGuid, conn.Identifier.Group))
+				writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
+				continue
+			}
+			h.upgrader.Table.StoreBatch(conn.Identifier, payload.ReqGuid)
 		}
-		h.upgrader.Table.StoreBatch(conn.Identifier, payload.ReqGuid)
 
 		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
 		h.sendEventCounters(payload.Events, conn.Identifier.Group)
@@ -130,8 +131,10 @@ func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serializa
 		return nil
 	case config.Synchronous:
 		return func(err error) {
-			if err != nil {
-				h.upgrader.Table.RemoveBatch(conn.Identifier, reqGuid)
+			if config.Server.DedupEnabled {
+				if err != nil {
+					h.upgrader.Table.RemoveBatch(conn.Identifier, reqGuid)
+				}
 			}
 			AckChan <- AckInfo{
 				MessageType:     messageType,

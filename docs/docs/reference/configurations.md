@@ -97,6 +97,13 @@ Toggle CORS check function. Set `true` to check each request origin. Set `false`
 * Type: `Optional`
 * Default value: `true`
 
+### `SERVER_DEDUP_ENABLED`
+
+The server decides whether or not to handle the duplicate requests for the active connection based on this parameter. Set `false` to disbale the setting.
+
+* Type `Optional`
+* Default value: `true`
+
 ## Worker
 
 ### `WORKER_BUFFER_CHANNEL_SIZE`
@@ -231,4 +238,3 @@ Based on this parameter the server decides when to send the acknowledgement to t
 
 * Type `Optional`
 * Default value: `0`
-

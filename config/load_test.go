@@ -23,6 +23,17 @@ func TestLogLevel(t *testing.T) {
 }
 
 func TestServerConfig(t *testing.T) {
+	// default value test
+	serverConfigLoader()
+	assert.Equal(t, true, Server.DedupEnabled)
+
+	// override value test
+	os.Setenv("SERVER_DEDUP_ENABLED", "false")
+	serverConfigLoader()
+	assert.Equal(t, false, Server.DedupEnabled)
+}
+
+func TestServerWsConfig(t *testing.T) {
 	os.Setenv("SERVER_WEBSOCKET_PORT", "8080")
 	os.Setenv("SERVER_WEBSOCKET_PING_INTERVAL_MS", "1")
 	os.Setenv("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", "1")
@@ -32,6 +43,7 @@ func TestServerConfig(t *testing.T) {
 	assert.Equal(t, "8080", ServerWs.AppPort)
 	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PingInterval)
 	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PongWaitInterval)
+
 }
 
 func TestGRPCServerConfig(t *testing.T) {

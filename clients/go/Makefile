@@ -6,6 +6,7 @@ setup:
 	go get go.buf.build/odpf/gw/odpf/proton
 	go get golang.org/x/lint
 	go get google.golang.org/protobuf
+	go get github.com/gorilla/websocket
 	go get github.com/stretchr/testify
 	go get github.com/stretchr/testify
 	go get honnef.co/go/tools

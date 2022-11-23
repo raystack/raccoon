@@ -2,6 +2,9 @@ package grpc
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/odpf/raccoon/clients/go/log"
 
 	pb "go.buf.build/odpf/gw/odpf/proton/odpf/raccoon/v1beta1"
 	"google.golang.org/grpc"
@@ -11,15 +14,19 @@ import (
 
 	"github.com/google/uuid"
 	raccoon "github.com/odpf/raccoon/clients/go"
+	"github.com/odpf/raccoon/clients/go/retry"
 	"github.com/odpf/raccoon/clients/go/serializer"
 )
 
-// NewGrpc creates the new grpc client with provided options.
-func NewGrpc(options ...GrpcOption) (*GrpcClient, error) {
-	gc := &GrpcClient{
+// New creates the new grpc client with provided options.
+func New(options ...Option) (*Grpc, error) {
+	gc := &Grpc{
 		serialize:   serializer.PROTO,
 		headers:     make(map[string]string),
 		dialOptions: []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock()},
+		retryMax:    retry.DefaultRetryMax,
+		retryWait:   retry.DefaultRetryWait,
+		logger:      log.Default(),
 	}
 
 	for _, opt := range options {
@@ -35,13 +42,16 @@ func NewGrpc(options ...GrpcOption) (*GrpcClient, error) {
 }
 
 // Send sends the events to the raccoon service
-func (g *GrpcClient) Send(events []*raccoon.Event) (string, *raccoon.Response, error) {
+func (gc *Grpc) Send(events []*raccoon.Event) (string, *raccoon.Response, error) {
 	reqId := uuid.NewString()
+	gc.logger.Infof("started request, addr: %s, req-id: %s", gc.addr, reqId)
+	defer gc.logger.Infof("ended request, addr: %s, req-id: %s", gc.addr, reqId)
 
 	e := []*pb.Event{}
 	for _, ev := range events {
-		b, err := g.serialize(ev.Data)
+		b, err := gc.serialize(ev.Data)
 		if err != nil {
+			gc.logger.Errorf("serialize, addr: %s, req-id: %s, %+v", gc.addr, reqId, err)
 			return reqId, nil, err
 		}
 		e = append(e, &pb.Event{
@@ -50,14 +60,30 @@ func (g *GrpcClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 		})
 	}
 
-	svc := pb.NewEventServiceClient(g.client)
-	meta := metadata.New(g.headers)
-	resp, err := svc.SendEvent(metadata.NewOutgoingContext(context.Background(), meta), &pb.SendEventRequest{
+	svc := pb.NewEventServiceClient(gc.client)
+	meta := metadata.New(gc.headers)
+	racReq := &pb.SendEventRequest{
 		ReqGuid:  reqId,
 		Events:   e,
 		SentTime: timestamppb.Now(),
+	}
+
+	var resp *pb.SendEventResponse
+	err := retry.Do(gc.retryWait, gc.retryMax, func() error {
+		res, err := svc.SendEvent(metadata.NewOutgoingContext(context.Background(), meta), racReq)
+		if err != nil {
+			return nil
+		}
+
+		if res.Status != pb.Status_STATUS_SUCCESS {
+			return fmt.Errorf("error from raccoon addr: %s, req-id: %s, status: %d, code: %d, data: %+v", gc.addr, reqId, res.Status, res.Code, res.Data)
+		}
+
+		resp = res
+		return nil
 	})
 	if err != nil {
+		gc.logger.Errorf("send, addr: %s, req-id: %s, %+v", gc.addr, reqId, err)
 		return reqId, nil, err
 	}
 
@@ -70,6 +96,6 @@ func (g *GrpcClient) Send(events []*raccoon.Event) (string, *raccoon.Response, e
 }
 
 // Close closes the grpc connection.
-func (g *GrpcClient) Close() {
-	g.client.Close()
+func (gc *Grpc) Close() {
+	gc.client.Close()
 }

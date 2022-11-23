@@ -3,31 +3,27 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
+	raccoon "github.com/odpf/raccoon/clients/go"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/rest"
-	"github.com/odpf/raccoon/clients/go/serializer"
 	"github.com/odpf/raccoon/clients/go/testdata"
+	"github.com/odpf/raccoon/clients/go/ws"
 )
 
 func main() {
-
-	client, err := rest.New(
-		rest.WithUrl("http://localhost:8080/api/v1/events"),
-		rest.WithHeader("x-user-id", "123"),
-		rest.WithSerializer(serializer.PROTO), // default is JSON
-		rest.WithRetry(time.Second*2, 5),
-	)
+	client, err := ws.New(
+		ws.WithUrl("ws://localhost:8080/api/v1/events"),
+		ws.WithHeader("x-user-id", "123"),
+		ws.WithHeader("x-user-type", "gojek"))
 
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer client.Close()
 
-	reqGuid, resp, err := client.Send([]*raccoon.Event{
+	reqGuid, err := client.Send([]*raccoon.Event{
 		{
 			Type: "page",
 			Data: &testdata.PageEvent{
@@ -43,5 +39,7 @@ func main() {
 	}
 
 	fmt.Println(reqGuid)
+	resp := <-client.EventAcks()
 	fmt.Println(resp.Status)
+	fmt.Println(resp.Data["req_guid"])
 }

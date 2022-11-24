@@ -10,11 +10,7 @@ plugins {
 }
 
 group 'io.odpf'
-version '1.0.0'
-
-tasks.withType(JavaCompile) {
-    options.release = 8
-}
+version '1.0.0-SNAPSHOT'
 
 repositories {
     mavenCentral()

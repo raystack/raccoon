@@ -1,6 +1,7 @@
 package io.odpf.raccoon;
 
 import com.google.api.client.http.HttpStatusCodes;
+import com.google.common.io.ByteStreams;
 import com.google.protobuf.ByteString;
 import io.odpf.proton.raccoon.Event.Builder;
 import io.odpf.proton.raccoon.SendEventRequest;
@@ -74,9 +75,8 @@ public class RestClient implements RaccoonClient {
         try {
             if (response.getStatusLine().getStatusCode() == HttpStatusCodes.STATUS_CODE_OK) {
                 SendEventResponse eventResponse = (SendEventResponse) this.restConfig.getMarshaler().unmarshal(
-                        response.getEntity()
-                                .getContent()
-                                .readAllBytes(),
+                        ByteStreams.toByteArray(response.getEntity()
+                                .getContent()),
                         this.restConfig.getMarshaler() instanceof JsonWire ? SendEventResponse.newBuilder()
                                 : SendEventResponse.parser());
 

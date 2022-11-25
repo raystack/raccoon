@@ -14,7 +14,7 @@ public class Result<T> {
     /**
      * The status of the raccoon request.
      */
-    public boolean isSuccess;
+    private boolean isSuccess;
 
     /**
      * The request guid of the request.
@@ -24,10 +24,10 @@ public class Result<T> {
     /**
      * The raccoon response.
      */
-    public T response;
+    private T response;
 
     /**
      * The error message which gets populated on the failed requests.
      */
-    public String errorMessage;
+    private String errorMessage;
 }

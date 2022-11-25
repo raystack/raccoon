@@ -1,7 +1,6 @@
 package io.odpf.raccoon;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.JsonFormat;
 import io.odpf.proton.raccoon.Code;

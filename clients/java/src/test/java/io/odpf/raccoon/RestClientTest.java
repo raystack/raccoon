@@ -1,26 +1,34 @@
 package io.odpf.raccoon;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.util.JsonFormat;
-import io.odpf.proton.raccoon.Code;
-import io.odpf.proton.raccoon.SendEventResponse;
-import io.odpf.proton.raccoon.Status;
-import sample.PageEventProto;
-import io.odpf.raccoon.serializer.JsonSerializer;
-import io.odpf.raccoon.serializer.ProtoSerializer;
-import io.odpf.raccoon.wire.JsonWire;
-import io.odpf.raccoon.wire.ProtoWire;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.JsonFormat;
+
+import io.odpf.proton.raccoon.Code;
+import io.odpf.proton.raccoon.SendEventResponse;
+import io.odpf.proton.raccoon.Status;
+import io.odpf.raccoon.client.RaccoonClient;
+import io.odpf.raccoon.client.RestConfig;
+import io.odpf.raccoon.model.Event;
+import io.odpf.raccoon.model.Response;
+import io.odpf.raccoon.serializer.JsonSerializer;
+import io.odpf.raccoon.serializer.ProtoSerializer;
+import io.odpf.raccoon.wire.JsonWire;
+import io.odpf.raccoon.wire.ProtoWire;
+import sample.PageEventProto;
 
 public class RestClientTest {
 

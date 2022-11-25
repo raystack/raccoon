@@ -1,5 +1,8 @@
 package io.odpf.raccoon;
 
+import io.odpf.raccoon.client.RaccoonClient;
+import io.odpf.raccoon.client.RestClient;
+import io.odpf.raccoon.client.RestConfig;
 import lombok.NonNull;
 
 /**

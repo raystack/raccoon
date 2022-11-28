@@ -3,14 +3,14 @@ package io.odpf.raccoon;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.JsonFormat;
-import io.odpf.proton.raccoon.Code;
 import io.odpf.proton.raccoon.SendEventResponse;
-import io.odpf.proton.raccoon.Status;
 import io.odpf.raccoon.client.RaccoonClient;
-import io.odpf.raccoon.client.rest.RestConfig;
+import io.odpf.raccoon.client.RaccoonClientFactory;
+import io.odpf.raccoon.client.RestConfig;
 import io.odpf.raccoon.model.Event;
 import io.odpf.raccoon.model.Response;
-import io.odpf.raccoon.model.Result;
+import io.odpf.raccoon.model.ResponseCode;
+import io.odpf.raccoon.model.ResponseStatus;
 import io.odpf.raccoon.serializer.JsonSerializer;
 import io.odpf.raccoon.serializer.ProtoSerializer;
 import io.odpf.raccoon.wire.JsonWire;
@@ -33,6 +33,7 @@ public class RestClientTest {
 
         @Test
         public void testProtoSend() throws Exception {
+
                 String reqGuid = UUID.randomUUID().toString();
                 service.stubFor(
                                 post("/api/v1/events")
@@ -41,24 +42,25 @@ public class RestClientTest {
                                                                 .withHeader("Content-Type", "application/proto")
                                                                 .withBody(getProtoResponse(reqGuid))));
 
-                RestConfig.RestConfigBuilder builder = RestConfig.builder()
+                RestConfig config = RestConfig.builder()
                                 .url(service.url("/api/v1/events"))
                                 .header("x-connection-id", "123")
                                 .serializer(new ProtoSerializer())
-                                .marshaler(new ProtoWire());
+                                .marshaler(new ProtoWire()).build();
 
-                RestConfig config = builder.build();
                 RaccoonClient restClient = RaccoonClientFactory.getRestClient(config);
 
                 PageEventProto.PageEvent pageEvent = getPageEvent(reqGuid);
 
-                Result<Response> response = restClient.send(
+                Response response = restClient.send(
                                 new Event[] {
                                                 new Event("page", pageEvent)
                                 });
 
                 Assert.assertTrue(response.isSuccess());
-                Assert.assertNotNull(response.getResponse());
+                Assert.assertEquals(response.getCode(), ResponseCode.CODE_OK);
+                Assert.assertEquals(response.getStatus(), ResponseStatus.STATUS_SUCCESS);
+                Assert.assertTrue(response.getData().containsKey("req_guid"));
                 Assert.assertNull(response.getErrorMessage());
                 Assert.assertNotNull(response.getReqGuid());
         }
@@ -73,24 +75,25 @@ public class RestClientTest {
                                                                 .withHeader("Content-Type", "application/json")
                                                                 .withBody(getJsonResponse(reqGuid))));
 
-                RestConfig.RestConfigBuilder builder = RestConfig.builder()
+                RestConfig config = RestConfig.builder()
                                 .url(service.url("/api/v1/events"))
                                 .header("x-connection-id", "123")
                                 .serializer(new JsonSerializer())
-                                .marshaler(new JsonWire());
+                                .marshaler(new JsonWire()).build();
 
-                RestConfig config = builder.build();
                 RaccoonClient restClient = RaccoonClientFactory.getRestClient(config);
 
                 PageEventProto.PageEvent pageEvent = getPageEvent(reqGuid);
 
-                Result<Response> response = restClient.send(
+                Response response = restClient.send(
                                 new Event[] {
                                                 new Event("page", pageEvent)
                                 });
 
                 Assert.assertTrue(response.isSuccess());
-                Assert.assertNotNull(response.getResponse());
+                Assert.assertEquals(response.getCode(), ResponseCode.CODE_OK);
+                Assert.assertEquals(response.getStatus(), ResponseStatus.STATUS_SUCCESS);
+                Assert.assertTrue(response.getData().containsKey("req_guid"));
                 Assert.assertNull(response.getErrorMessage());
                 Assert.assertNotNull(response.getReqGuid());
         }
@@ -104,24 +107,23 @@ public class RestClientTest {
                                                 .willReturn(serviceUnavailable()
                                                                 .withHeader("Content-Type", "application/json")));
 
-                RestConfig.RestConfigBuilder builder = RestConfig.builder()
+                RestConfig config = RestConfig.builder()
                                 .url(service.url("/api/v1/events"))
                                 .header("x-connection-id", "123")
                                 .serializer(new JsonSerializer())
-                                .marshaler(new JsonWire());
+                                .marshaler(new JsonWire()).build();
 
-                RestConfig config = builder.build();
                 RaccoonClient restClient = RaccoonClientFactory.getRestClient(config);
 
                 PageEventProto.PageEvent pageEvent = getPageEvent(reqGuid);
 
-                Result<Response> response = restClient.send(
+                Response response = restClient.send(
                                 new Event[] {
                                                 new Event("page", pageEvent)
                                 });
 
                 Assert.assertFalse(response.isSuccess());
-                Assert.assertNull(response.getResponse());
+                Assert.assertNull(response.getData());
                 Assert.assertNotNull(response.getErrorMessage());
                 Assert.assertNotNull(response.getReqGuid());
         }
@@ -139,8 +141,8 @@ public class RestClientTest {
                 data.put("req_guid", reqGuid);
 
                 SendEventResponse sendEventResponse = SendEventResponse.newBuilder()
-                                .setStatus(Status.STATUS_SUCCESS)
-                                .setCode(Code.CODE_OK)
+                                .setStatus(io.odpf.proton.raccoon.Status.STATUS_SUCCESS)
+                                .setCode(io.odpf.proton.raccoon.Code.CODE_OK)
                                 .setSentTime(TimeUnit.DAYS.toDays(1))
                                 .putAllData(data)
                                 .build();
@@ -156,8 +158,8 @@ public class RestClientTest {
                 data.put("req_guid", reqGuid);
 
                 SendEventResponse sendEventResponse = SendEventResponse.newBuilder()
-                                .setStatus(Status.STATUS_SUCCESS)
-                                .setCode(Code.CODE_OK)
+                                .setStatus(io.odpf.proton.raccoon.Status.STATUS_SUCCESS)
+                                .setCode(io.odpf.proton.raccoon.Code.CODE_OK)
                                 .setSentTime(TimeUnit.DAYS.toDays(1))
                                 .putAllData(data)
                                 .build();

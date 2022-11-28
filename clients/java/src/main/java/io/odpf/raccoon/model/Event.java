@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 
 /*
- * Class holds the raccoon event and it's type name.
+ * Class holds the raccoon event, and it's type name.
  */
 public class Event {
 

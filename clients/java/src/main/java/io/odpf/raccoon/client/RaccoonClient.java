@@ -10,7 +10,7 @@ public interface RaccoonClient {
     /**
      * Sends a request to raccoon with the message provided.
      *
-     * @param <T>
+     * @param <T> The response type of the raccoon request.
      *
      * @param events The raccoon event message array.
      * @return The raccoon response.

@@ -114,6 +114,11 @@ public class RestClient implements RaccoonClient {
                 .build();
     }
 
+    /**
+     * Creates the new HTTP client and set the retry handler with the provided settings.
+     *
+     * @return The new HTTP client.
+     */
     private CloseableHttpClient getHttpClient() {
 
         return HttpClients

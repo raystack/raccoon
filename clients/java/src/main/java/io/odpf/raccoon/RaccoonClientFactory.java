@@ -10,7 +10,7 @@ import lombok.NonNull;
  */
 public class RaccoonClientFactory {
     /**
-     * Creates the raccoon Rest client.
+     * Creates the new Rest client for the raccoon.
      *
      * @param restConfig The rest config options.
      * @return RestClient The rest client.

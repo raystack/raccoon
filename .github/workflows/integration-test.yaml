@@ -1,4 +1,4 @@
-name: Integration Test
+name: Raccoon Integration Test
 
 on:
   - push

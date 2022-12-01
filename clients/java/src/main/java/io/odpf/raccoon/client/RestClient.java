@@ -125,10 +125,12 @@ import java.util.UUID;
 
                     @Override
                     public boolean retryRequest(HttpResponse response, int executionCount, HttpContext context) {
-                        LOGGER.warn("Retrying the http request, retry-count:{}, response-code:{}", executionCount,
-                                response.getStatusLine().getStatusCode());
-                        return executionCount < restConfig.getRetryMax()
-                                && response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK;
+                        if (executionCount < restConfig.getRetryMax() && response.getStatusLine().getStatusCode() != HttpStatusCodes.STATUS_CODE_OK) {
+                            LOGGER.warn("Retrying the http request, retry-count:{}, response-code:{}", executionCount, response.getStatusLine().getStatusCode());
+                            return true;
+                        }
+
+                        return false;
                     }
 
                     @Override

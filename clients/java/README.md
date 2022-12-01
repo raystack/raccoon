@@ -3,7 +3,7 @@
 
 ## Requirements
 
-- [Gradle v5+](https://gradle.org/)
+- [Gradle v7+](https://gradle.org/)
 - [JDK 8+](https://openjdk.java.net/projects/jdk8/)
 
 
@@ -12,7 +12,7 @@
 #### Gradle
 
 ```groovy
-  implementation group: 'io.odpf', name: 'raccoon', version: '0.1.5-rc'
+  implementation group: 'io.odpf', name: 'raccoon', version: '0.1.5'
 ```
 
 #### Maven
@@ -21,7 +21,7 @@
 <dependency>
   <groupId>io.odpf</groupId>
   <artifactId>racoon</artifactId>
-  <version>0.1.5-rc</version>
+  <version>0.1.5</version>
 </dependency>
 ```
 

@@ -12,7 +12,7 @@
 #### Gradle
 
 ```groovy
-  implementation group: 'io.odpf', name: 'raccoon', version: '0.1.0'
+  implementation group: 'io.odpf', name: 'raccoon', version: '0.1.5-rc'
 ```
 
 #### Maven
@@ -21,7 +21,7 @@
 <dependency>
   <groupId>io.odpf</groupId>
   <artifactId>racoon</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.5-rc</version>
 </dependency>
 ```
 

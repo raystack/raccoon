@@ -105,7 +105,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		if config.Server.DedupEnabled {
 			// avoiding processing the same active connection's duplicate events.
 			if h.upgrader.Table.HasBatch(conn.Identifier, payload.ReqGuid) {
-				metrics.Increment("events_duplicate_total", fmt.Sprintf("request_guid=%s,reason=duplicate,conn_group=%s", payload.ReqGuid, conn.Identifier.Group))
+				metrics.Increment("events_duplicate_total", fmt.Sprintf("reason=duplicate,conn_group=%s", conn.Identifier.Group))
 				writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
 				continue
 			}

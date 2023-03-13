@@ -13,9 +13,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/serializer"
-	"github.com/odpf/raccoon/clients/go/testdata"
+	raccoon "github.com/goto/raccoon/clients/go"
+	"github.com/goto/raccoon/clients/go/serializer"
+	"github.com/goto/raccoon/clients/go/testdata"
 	"github.com/stretchr/testify/assert"
 )
 

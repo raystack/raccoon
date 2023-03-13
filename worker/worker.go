@@ -5,10 +5,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	"github.com/odpf/raccoon/publisher"
+	"github.com/goto/raccoon/collection"
+	"github.com/goto/raccoon/logger"
+	"github.com/goto/raccoon/metrics"
+	"github.com/goto/raccoon/publisher"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 

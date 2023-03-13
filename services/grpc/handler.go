@@ -6,18 +6,19 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/config"
-	"github.com/odpf/raccoon/identification"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	pb "github.com/odpf/raccoon/proto"
+	pbgrpc "buf.build/gen/go/gotocompany/proton/grpc/go/gotocompany/raccoon/v1beta1/raccoonv1beta1grpc"
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
+	"github.com/goto/raccoon/collection"
+	"github.com/goto/raccoon/config"
+	"github.com/goto/raccoon/identification"
+	"github.com/goto/raccoon/logger"
+	"github.com/goto/raccoon/metrics"
 	"google.golang.org/grpc/metadata"
 )
 
 type Handler struct {
 	C collection.Collector
-	pb.UnimplementedEventServiceServer
+	pbgrpc.UnimplementedEventServiceServer
 }
 
 func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.SendEventResponse, error) {

@@ -7,14 +7,14 @@ go 1.16 or above
 
 ## Install
 ```bash
-go get github.com/odpf/raccoon/clients/go
+go get github.com/goto/raccoon/clients/go
 ```
 ## Usage
 
 #### Construct a new REST client, then use the various options on the client.
 For example:
 ```go
-import "github.com/odpf/raccoon/clients/go/rest"
+import "github.com/goto/raccoon/clients/go/rest"
 ```
 ```go
 client, err := rest.New(
@@ -29,7 +29,7 @@ see example: [examples/rest](examples/rest/main.go)
 #### Construct a new GRPC client, then use the various options on the client.
 For example:
 ```go
-import "github.com/odpf/raccoon/clients/go/grpc"
+import "github.com/goto/raccoon/clients/go/grpc"
 ```
 ```go
 client, err := grpc.New(
@@ -47,7 +47,7 @@ see example: [examples/grpc](examples/grpc/main.go)
 #### Construct a new Websocket client, then use the various options on the client.
 For example:
 ```go
-import "github.com/odpf/raccoon/clients/go/ws"
+import "github.com/goto/raccoon/clients/go/ws"
 ```
 ```go
 client, err := ws.New(

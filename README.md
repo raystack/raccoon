@@ -1,7 +1,7 @@
 # Raccoon
 
-![build workflow](https://github.com/odpf/raccoon/actions/workflows/build.yaml/badge.svg)
-![package workflow](https://github.com/odpf/raccoon/actions/workflows/package.yaml/badge.svg)
+![build workflow](https://github.com/goto/raccoon/actions/workflows/build.yaml/badge.svg)
+![package workflow](https://github.com/goto/raccoon/actions/workflows/package.yaml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
 [![Version](https://img.shields.io/github/v/release/odpf/raccoon?logo=semantic-release)](Version)
 
@@ -82,7 +82,7 @@ Prerequisite:
 
 ```sh
 # Clone the repo
-$ git clone https://github.com/odpf/raccoon.git
+$ git clone https://github.com/goto/raccoon.git
 
 # Build the executable
 $ make
@@ -114,9 +114,9 @@ Development of Raccoon happens in the open on GitHub, and we are grateful to the
 
 Read our [contributing guide](https://odpf.github.io/raccoon/contribute/contribution) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Raccoon.
 
-To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odpf/raccoon/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
+To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/goto/raccoon/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
 
-This project exists thanks to all the [contributors](https://github.com/odpf/raccoon/graphs/contributors).
+This project exists thanks to all the [contributors](https://github.com/goto/raccoon/graphs/contributors).
 
 ## License
 

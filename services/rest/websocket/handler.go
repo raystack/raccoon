@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"time"
 
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
 	"github.com/gorilla/websocket"
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/config"
-	"github.com/odpf/raccoon/deserialization"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	pb "github.com/odpf/raccoon/proto"
-	"github.com/odpf/raccoon/serialization"
-	"github.com/odpf/raccoon/services/rest/websocket/connection"
+	"github.com/goto/raccoon/collection"
+	"github.com/goto/raccoon/config"
+	"github.com/goto/raccoon/deserialization"
+	"github.com/goto/raccoon/logger"
+	"github.com/goto/raccoon/metrics"
+	"github.com/goto/raccoon/serialization"
+	"github.com/goto/raccoon/services/rest/websocket/connection"
 )
 
 type serDe struct {

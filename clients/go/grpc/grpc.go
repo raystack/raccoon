@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/odpf/raccoon/clients/go/log"
+	"github.com/goto/raccoon/clients/go/log"
 
 	pb "go.buf.build/odpf/gw/odpf/proton/odpf/raccoon/v1beta1"
 	"google.golang.org/grpc"
@@ -13,9 +13,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/retry"
-	"github.com/odpf/raccoon/clients/go/serializer"
+	raccoon "github.com/goto/raccoon/clients/go"
+	"github.com/goto/raccoon/clients/go/retry"
+	"github.com/goto/raccoon/clients/go/serializer"
 )
 
 // New creates the new grpc client with provided options.

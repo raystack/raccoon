@@ -8,10 +8,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/rest"
-	"github.com/odpf/raccoon/clients/go/serializer"
-	"github.com/odpf/raccoon/clients/go/testdata"
+	raccoon "github.com/goto/raccoon/clients/go"
+	"github.com/goto/raccoon/clients/go/rest"
+	"github.com/goto/raccoon/clients/go/serializer"
+	"github.com/goto/raccoon/clients/go/testdata"
 )
 
 func main() {

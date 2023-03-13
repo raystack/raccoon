@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/config"
-	"github.com/odpf/raccoon/metrics"
-	"github.com/odpf/raccoon/services/rest/websocket"
-	"github.com/odpf/raccoon/services/rest/websocket/connection"
+	"github.com/goto/raccoon/collection"
+	"github.com/goto/raccoon/config"
+	"github.com/goto/raccoon/metrics"
+	"github.com/goto/raccoon/services/rest/websocket"
+	"github.com/goto/raccoon/services/rest/websocket/connection"
 )
 
 type Service struct {

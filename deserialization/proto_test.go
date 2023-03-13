@@ -3,7 +3,7 @@ package deserialization
 import (
 	"testing"
 
-	pb "github.com/odpf/raccoon/proto"
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
 )
 
 func TestProtoDeserilizer_Deserialize(t *testing.T) {

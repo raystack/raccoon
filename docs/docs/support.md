@@ -10,7 +10,7 @@ The Raccoon team has an open source slack workspace to discuss development and s
 ### Issues
 
 Have a general issue or bug that you've found? We'd love to hear about it in our GitHub issues. This can be feature requests too!
-[Go to issues](https://github.com/odpf/raccoon/issues)
+[Go to issues](https://github.com/goto/raccoon/issues)
 
 ### Discussions
 

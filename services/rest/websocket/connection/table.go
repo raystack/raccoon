@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/odpf/raccoon/identification"
+	"github.com/goto/raccoon/identification"
 )
 
 var (

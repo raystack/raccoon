@@ -4,11 +4,11 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/services/grpc"
-	"github.com/odpf/raccoon/services/pprof"
-	"github.com/odpf/raccoon/services/rest"
+	"github.com/goto/raccoon/collection"
+	"github.com/goto/raccoon/logger"
+	"github.com/goto/raccoon/services/grpc"
+	"github.com/goto/raccoon/services/pprof"
+	"github.com/goto/raccoon/services/rest"
 )
 
 type bootstrapper interface {

@@ -13,8 +13,9 @@ import (
 	"testing"
 	"time"
 
+	pbgrpc "buf.build/gen/go/gotocompany/proton/grpc/go/gotocompany/raccoon/v1beta1/raccoonv1beta1grpc"
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
 	"github.com/gorilla/websocket"
-	pb "github.com/odpf/raccoon/proto"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -79,7 +80,7 @@ func TestIntegration(t *testing.T) {
 		}
 		defer conn.Close()
 
-		client := pb.NewEventServiceClient(conn)
+		client := pbgrpc.NewEventServiceClient(conn)
 		r, err := client.SendEvent(context.Background(), &pb.SendEventRequest{})
 
 		assert.NotEmpty(t, err)
@@ -254,7 +255,7 @@ func TestIntegration(t *testing.T) {
 		}
 		defer conn.Close()
 
-		client := pb.NewEventServiceClient(conn)
+		client := pbgrpc.NewEventServiceClient(conn)
 		var events []*pb.Event
 
 		eEvent1 := &pb.Event{

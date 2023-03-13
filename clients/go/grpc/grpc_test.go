@@ -16,8 +16,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/testdata"
+	raccoon "github.com/goto/raccoon/clients/go"
+	"github.com/goto/raccoon/clients/go/testdata"
 	"github.com/stretchr/testify/assert"
 )
 

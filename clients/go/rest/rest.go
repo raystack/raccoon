@@ -12,11 +12,11 @@ import (
 
 	"github.com/gojek/heimdall/v7/httpclient"
 	"github.com/google/uuid"
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/log"
-	"github.com/odpf/raccoon/clients/go/retry"
-	"github.com/odpf/raccoon/clients/go/serializer"
-	"github.com/odpf/raccoon/clients/go/wire"
+	raccoon "github.com/goto/raccoon/clients/go"
+	"github.com/goto/raccoon/clients/go/log"
+	"github.com/goto/raccoon/clients/go/retry"
+	"github.com/goto/raccoon/clients/go/serializer"
+	"github.com/goto/raccoon/clients/go/wire"
 )
 
 // New creates the new rest client with provided options.

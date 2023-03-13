@@ -1,4 +1,4 @@
-module github.com/odpf/raccoon/clients/go
+module github.com/goto/raccoon/clients/go
 
 go 1.16
 

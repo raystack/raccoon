@@ -24,7 +24,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
         docs: {
           routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/odpf/raccoon/edit/master/docs/',
+          editUrl: 'https://github.com/goto/raccoon/edit/master/docs/',
           sidebarCollapsed: false,
           breadcrumbs: false,
         },
@@ -63,7 +63,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
             className: 'header-slack-link',
           },
           {
-            href: 'https://github.com/odpf/raccoon',
+            href: 'https://github.com/goto/raccoon',
             className: 'navbar-item-github',
             position: 'right',
           },
@@ -78,7 +78,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
       },
       announcementBar: {
         id: 'star-repo',
-        content: '⭐️ If you like Raccoon, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/odpf/raccoon">GitHub</a>! ⭐',
+        content: '⭐️ If you like Raccoon, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/goto/raccoon">GitHub</a>! ⭐',
         backgroundColor: '#222',
         textColor: '#eee',
         isCloseable: true,

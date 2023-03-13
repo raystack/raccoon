@@ -1,20 +1,14 @@
 .PHONY: all
 
 ALL_PACKAGES=$(shell go list ./... | grep -v "vendor")
-APP_EXECUTABLE="out/raccoon"
+APP_EXECUTABLE="raccoon"
 COVER_FILE="/tmp/coverage.out"
 
-all: install-protoc setup compile
+all: setup compile
 
 # Setups
-setup: generate-proto copy-config
+setup: copy-config
 	make update-deps
-
-install-protoc:
-	@echo "> installing dependencies"
-	go get -u github.com/golang/protobuf/proto@v1.4.3
-	go get -u github.com/golang/protobuf/protoc-gen-go@v1.4.3
-	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
 
 update-deps:
 	go mod tidy -v
@@ -23,17 +17,8 @@ update-deps:
 copy-config:
 	cp .env.sample .env
 
-PROTO_PACKAGE=/proto
-generate-proto:
-	rm -rf .temp
-	mkdir -p .temp
-	curl -o .temp/proton.tar.gz -L http://api.github.com/repos/odpf/proton/tarball/main; tar xvf .temp/proton.tar.gz -C .temp/ --strip-components 1
-	protoc --proto_path=.temp/ .temp/odpf/raccoon/v1beta1/raccoon.proto --go_out=./ --go_opt=paths=import --go_opt=Modpf/raccoon/v1beta1/raccoon.proto=$(PROTO_PACKAGE)
-	protoc --proto_path=.temp/ .temp/odpf/raccoon/v1beta1/raccoon.proto  --go-grpc_opt=paths=import --go-grpc_opt=Modpf/raccoon/v1beta1/raccoon.proto=$(PROTO_PACKAGE) --go-grpc_out=./
-
 # Build Lifecycle
 compile:
-	mkdir -p out/
 	go build -o $(APP_EXECUTABLE)
 
 build: copy-config update-deps compile
@@ -43,9 +28,6 @@ install:
 
 start: build
 	./$(APP_EXECUTABLE)
-
-clean: ## Clean the builds
-	rm -rf out/
 
 # Utility
 
@@ -71,7 +53,7 @@ test: lint
 test-bench: # run benchmark tests
 	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./... -run=^Benchmark
 
-test_ci: install-protoc setup test
+test_ci: setup test
 
 # Docker Run
 

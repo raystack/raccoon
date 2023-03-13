@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/odpf/raccoon/identification"
-	pb "github.com/odpf/raccoon/proto"
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
+	"github.com/goto/raccoon/identification"
 )
 
 type AckFunc func(err error)

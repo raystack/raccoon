@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/odpf/raccoon/logger"
+	"github.com/goto/raccoon/logger"
 )
 
 type void struct{}

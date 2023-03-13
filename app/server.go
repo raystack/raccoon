@@ -9,13 +9,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/config"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	"github.com/odpf/raccoon/publisher"
-	"github.com/odpf/raccoon/services"
-	"github.com/odpf/raccoon/worker"
+	"github.com/goto/raccoon/collection"
+	"github.com/goto/raccoon/config"
+	"github.com/goto/raccoon/logger"
+	"github.com/goto/raccoon/metrics"
+	"github.com/goto/raccoon/publisher"
+	"github.com/goto/raccoon/services"
+	"github.com/goto/raccoon/worker"
 )
 
 // StartServer starts the server

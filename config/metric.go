@@ -3,7 +3,7 @@ package config
 import (
 	"time"
 
-	"github.com/odpf/raccoon/config/util"
+	"github.com/goto/raccoon/config/util"
 
 	"github.com/spf13/viper"
 )

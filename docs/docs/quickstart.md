@@ -22,7 +22,7 @@ $ curl http://localhost:8080/ping
 
 ## Publishing Your First Event
 
-Currently, Raccoon doesn't come with a library client. To start publishing events to Raccoon, we provide you an [example of a go client](https://github.com/odpf/raccoon/tree/main/docs/example) that you can refer to. You can also run the example right away if you have Go installed on your machine.
+Currently, Raccoon doesn't come with a library client. To start publishing events to Raccoon, we provide you an [example of a go client](https://github.com/goto/raccoon/tree/main/docs/example) that you can refer to. You can also run the example right away if you have Go installed on your machine.
 
 ```bash
 # `cd` on the client example directory and run the following

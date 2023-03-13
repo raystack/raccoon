@@ -31,7 +31,7 @@ Raccoon can be used as an event collector, event distributor, and forwarder of e
 
 Explore the following resources to get started with Raccoon:
 
-- [Guides](https://github.com/odpf/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/guides/README.md) provide information on deployment and client samples.
-- [Concepts](https://github.com/odpf/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/concepts/README.md) describe all important Raccoon concepts.
-- [Reference](https://github.com/odpf/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/reference/README.md) contains details about configurations, metrics, and other aspects of Raccoon.
-- [Contribute](https://github.com/odpf/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Raccoon.
+- [Guides](https://github.com/goto/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/guides/README.md) provide information on deployment and client samples.
+- [Concepts](https://github.com/goto/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/concepts/README.md) describe all important Raccoon concepts.
+- [Reference](https://github.com/goto/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/reference/README.md) contains details about configurations, metrics, and other aspects of Raccoon.
+- [Contribute](https://github.com/goto/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Raccoon.

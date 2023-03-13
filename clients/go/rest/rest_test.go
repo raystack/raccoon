@@ -11,8 +11,8 @@ import (
 
 	pb "go.buf.build/odpf/gw/odpf/proton/odpf/raccoon/v1beta1"
 
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/serializer"
+	raccoon "github.com/goto/raccoon/clients/go"
+	"github.com/goto/raccoon/clients/go/serializer"
 	"github.com/stretchr/testify/assert"
 )
 

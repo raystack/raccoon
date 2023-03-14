@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/odpf/raccoon/app"
-	"github.com/odpf/raccoon/config"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
+	"github.com/goto/raccoon/app"
+	"github.com/goto/raccoon/config"
+	"github.com/goto/raccoon/logger"
+	"github.com/goto/raccoon/metrics"
 )
 
 func main() {

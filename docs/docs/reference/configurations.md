@@ -138,7 +138,7 @@ Delivery channel is implementation detail where the kafka client asks for channe
 
 ### `EVENT_DISTRIBUTION_PUBLISHER_PATTERN`
 
-Routes events based on given pattern and [type](https://github.com/odpf/proton/blob/main/odpf/raccoon/Event.proto#L31). The pattern is following [go string format](https://golang.org/pkg/fmt/) with event `type` as second argument. The result of the string format will be the kafka topic target of the event.
+Routes events based on given pattern and [type](https://github.com/goto/proton/blob/main/goto/raccoon/Event.proto#L31). The pattern is following [go string format](https://golang.org/pkg/fmt/) with event `type` as second argument. The result of the string format will be the kafka topic target of the event.
 
 For example, you pass `%s-event` as `EVENT_DISTRIBUTION_PUBLISHER_PATTERN`. If you send event with `click` type, your event will be forwareded to `click-event` kafka topic on the configured broker. If you send event with `buy` type, your event will be forwarded to `buy-event`.
 

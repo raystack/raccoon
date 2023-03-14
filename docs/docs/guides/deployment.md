@@ -4,7 +4,7 @@ This section contains guides and suggestions related to Raccoon deployment.
 
 ## Kubernetes
 
-Using [Raccoon docker image](https://hub.docker.com/r/odpf/raccoon), you can deploy Raccoon on [Kubernetes](https://kubernetes.io/) by specifying the image on the [manifest](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment). We also provide [Helm chart](https://github.com/odpf/charts/tree/main/stable/raccoon) to ease Kubernetes deployment. In this section we will cover simple deployment on Kubernetes using manifest and Helm.
+Using [Raccoon docker image](https://hub.docker.com/r/goto/raccoon), you can deploy Raccoon on [Kubernetes](https://kubernetes.io/) by specifying the image on the [manifest](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment). We also provide [Helm chart](https://github.com/goto/charts/tree/main/stable/raccoon) to ease Kubernetes deployment. In this section we will cover simple deployment on Kubernetes using manifest and Helm.
 
 ### Manifest
 
@@ -53,7 +53,7 @@ spec:
     spec:
       containers:
       - name: raccoon
-        image: "odpf/raccoon:latest"
+        image: "gotocompany/raccoon:latest"
         imagePullPolicy: IfNotPresent
         resources:
             limits:
@@ -179,7 +179,7 @@ data:
 * Kubernetes cluster setup
 * Helm installed
 
-Raccoon has a Helm chart maintained on [different repository](https://github.com/odpf/charts/tree/main/stable/raccoon). Refer to the repository for a complete deployment guide.
+Raccoon has a Helm chart maintained on [different repository](https://github.com/goto/charts/tree/main/stable/raccoon). Refer to the repository for a complete deployment guide.
 
 ## Production Checklist
 
@@ -189,11 +189,11 @@ Before going to production, we recommend the following setup tips.
 
 Followings are main configurations closely related to deployment that you need to pay attention:
 
-* [`SERVER_WEBSOCKET_PORT`](https://odpf.gitbook.io/raccoon/reference/configurations#server_websocket_port)
-* [`EVENT_DISTRIBUTION_PUBLISHER_PATTERN`](https://odpf.gitbook.io/raccoon/reference/configurations#event_distribution_publisher_pattern)
-* [`PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`](https://odpf.gitbook.io/raccoon/reference/configurations#publisher_kafka_client_bootstrap_servers)
-* [`METRIC_STATSD_ADDRESS`](https://odpf.gitbook.io/raccoon/reference/configurations#metric_statsd_address)
-* [`SERVER_WEBSOCKET_CONN_ID_HEADER`](https://odpf.gitbook.io/raccoon/reference/configurations#server_websocket_conn_id_header)
+* [`SERVER_WEBSOCKET_PORT`](https://goto.gitbook.io/raccoon/reference/configurations#server_websocket_port)
+* [`EVENT_DISTRIBUTION_PUBLISHER_PATTERN`](https://goto.gitbook.io/raccoon/reference/configurations#event_distribution_publisher_pattern)
+* [`PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`](https://goto.gitbook.io/raccoon/reference/configurations#publisher_kafka_client_bootstrap_servers)
+* [`METRIC_STATSD_ADDRESS`](https://goto.gitbook.io/raccoon/reference/configurations#metric_statsd_address)
+* [`SERVER_WEBSOCKET_CONN_ID_HEADER`](https://goto.gitbook.io/raccoon/reference/configurations#server_websocket_conn_id_header)
 
   **TLS/HTTPS**
 
@@ -205,5 +205,5 @@ Followings are main configurations closely related to deployment that you need t
 
   **Test The Setup**
 
-  To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find a guide on how to publish events [here](https://odpf.gitbook.io/raccoon/guides/publishing). You can also check example client [here](https://github.com/odpf/raccoon/tree/main/docs/example). If there is something wrong with Raccon, you can check the [troubleshooting](https://odpf.gitbook.io/raccoon/guides/troubleshooting) section.
+  To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find a guide on how to publish events [here](https://goto.gitbook.io/raccoon/guides/publishing). You can also check example client [here](https://github.com/goto/raccoon/tree/main/docs/example). If there is something wrong with Raccon, you can check the [troubleshooting](https://goto.gitbook.io/raccoon/guides/troubleshooting) section.
 

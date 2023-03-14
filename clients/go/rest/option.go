@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/gojek/heimdall/v7"
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/log"
-	"github.com/odpf/raccoon/clients/go/serializer"
-	"github.com/odpf/raccoon/clients/go/wire"
+	raccoon "github.com/goto/raccoon/clients/go"
+	"github.com/goto/raccoon/clients/go/log"
+	"github.com/goto/raccoon/clients/go/serializer"
+	"github.com/goto/raccoon/clients/go/wire"
 )
 
 // Rest is the http implementation

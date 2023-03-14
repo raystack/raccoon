@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/odpf/raccoon/logger"
-	pb "github.com/odpf/raccoon/proto"
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
+	"github.com/goto/raccoon/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"

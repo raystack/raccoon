@@ -5,16 +5,16 @@ import (
 
 	"net/http"
 
-	raccoon "github.com/odpf/raccoon/clients/go"
-	pb "go.buf.build/odpf/gw/odpf/proton/odpf/raccoon/v1beta1"
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
+	raccoon "github.com/goto/raccoon/clients/go"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/odpf/raccoon/clients/go/log"
-	"github.com/odpf/raccoon/clients/go/retry"
-	"github.com/odpf/raccoon/clients/go/serializer"
-	"github.com/odpf/raccoon/clients/go/wire"
+	"github.com/goto/raccoon/clients/go/log"
+	"github.com/goto/raccoon/clients/go/retry"
+	"github.com/goto/raccoon/clients/go/serializer"
+	"github.com/goto/raccoon/clients/go/wire"
 )
 
 // New creates the new websocket client with provided options.

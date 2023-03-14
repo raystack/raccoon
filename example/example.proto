@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package odpf.raccoon;
+package goto.raccoon;
 
 message SampleEvent {
   string description = 1;

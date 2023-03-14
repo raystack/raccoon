@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/config"
-	pb "github.com/odpf/raccoon/proto"
+	pbgrpc "buf.build/gen/go/gotocompany/proton/grpc/go/gotocompany/raccoon/v1beta1/raccoonv1beta1grpc"
+	"github.com/goto/raccoon/collection"
+	"github.com/goto/raccoon/config"
 	"google.golang.org/grpc"
 )
 
@@ -18,7 +18,7 @@ type Service struct {
 
 func NewGRPCService(c collection.Collector) *Service {
 	server := grpc.NewServer()
-	pb.RegisterEventServiceServer(server, &Handler{C: c})
+	pbgrpc.RegisterEventServiceServer(server, &Handler{C: c})
 	return &Service{
 		s:         server,
 		Collector: c,

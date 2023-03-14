@@ -58,4 +58,4 @@ Contains the code for connection identification.
 
 ### Request, Response, and Events Proto
 
-Raccoon depends on [Proton](https://github.com/odpf/proton/tree/main/odpf/raccoon) repository. Proton is a repository to store all ODPF Protobuf files. Code to serde the request and response are generated using Protobuf. You can check how the code is generated on `Makefile`.
+Raccoon depends on [Proton](https://github.com/goto/proton/tree/main/goto/raccoon) repository. Proton is a repository to store all gotocompany Protobuf files. Code to serde the request and response are generated using Protobuf. You can check how the code is generated on `Makefile`.

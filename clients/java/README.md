@@ -12,14 +12,14 @@
 #### Gradle
 
 ```groovy
-  implementation group: 'io.odpf', name: 'raccoon', version: '0.1.5'
+  implementation group: 'com.gotocompany', name: 'raccoon', version: '0.1.5'
 ```
 
 #### Maven
 
 ```xml
 <dependency>
-  <groupId>io.odpf</groupId>
+  <groupId>com.gotocompany</groupId>
   <artifactId>racoon</artifactId>
   <version>0.1.5</version>
 </dependency>

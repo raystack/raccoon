@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/odpf/raccoon/identification"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	"github.com/odpf/raccoon/services/rest/websocket/connection"
+	"github.com/goto/raccoon/identification"
+	"github.com/goto/raccoon/logger"
+	"github.com/goto/raccoon/metrics"
+	"github.com/goto/raccoon/services/rest/websocket/connection"
 )
 
-//Pinger is worker that pings the connected peers based on ping interval.
+// Pinger is worker that pings the connected peers based on ping interval.
 func Pinger(c chan connection.Conn, size int, PingInterval time.Duration, WriteWaitInterval time.Duration) {
 	for i := 0; i < size; i++ {
 		go func() {

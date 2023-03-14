@@ -48,7 +48,7 @@ This section will cover a setup example using [Telegraf](https://www.influxdata.
   timeout = "5s"
 ```
 
-**Configure Raccoon To Send To The Metric Collector** After you have the collector with the port configured, you need to set [METRIC\_STATSD\_ADDRESS](https://odpf.gitbook.io/raccoon/reference/configurations#metric_statsd_address) to match the metric collector address. Suppose you deploy the telegraf using the default configuration above as sidecar or in localhost, you need to set the value to `:8125`.
+**Configure Raccoon To Send To The Metric Collector** After you have the collector with the port configured, you need to set [METRIC\_STATSD\_ADDRESS](https://goto.gitbook.io/raccoon/reference/configurations#metric_statsd_address) to match the metric collector address. Suppose you deploy the telegraf using the default configuration above as sidecar or in localhost, you need to set the value to `:8125`.
 
 **Visualize And Create Alerting From The Collected Metrics** Now that you have Raccoon and Telegraf as metric collector set, next is to use the metrics reported. You may notice that the Telegraf config above contains `outputs.influxdb`. That config will send the metric received to Influxdb. Make sure you have influx service accessible from the configured URL. You can visualize the metrics using Grafana. To do that, you need to [add influx datasource](https://www.influxdata.com/blog/how-grafana-dashboard-influxdb-flux-influxql/) to make the data available on Grafana. After that, you can use the data to You can visualize the metrics using Grafana. To do that, you need to [add influx datasource](https://www.influxdata.com/blog/how-grafana-dashboard-influxdb-flux-influxql/) to make the data available on Grafana. After that, you can use the data to [make dashboard](https://grafana.com/docs/grafana/latest/datasources/influxdb/#influxql-query-editor).
 
@@ -58,7 +58,7 @@ Following are key monitoring statistics that you can infer from Raccoon metrics.
 
 ### Data Loss
 
-To infer data loss, you can count [`kafka_messages_delivered_total`](https://odpf.gitbook.io/raccoon/reference/metrics#kafka_messages_delivered_total) with tag `success=false`. You can also infer the loss rate by calculating the following.
+To infer data loss, you can count [`kafka_messages_delivered_total`](https://goto.gitbook.io/raccoon/reference/metrics#kafka_messages_delivered_total) with tag `success=false`. You can also infer the loss rate by calculating the following.
 
 `count(kafka_messages_delivered_total success=false)/count(kafka_messages_delivered_total)`
 
@@ -66,7 +66,7 @@ To infer data loss, you can count [`kafka_messages_delivered_total`](https://odp
 
 Raccoon provides fine-grained metrics that denote latency. That gives clues as to where to look in case something goes wrong. In summary, these are key metrics for latency:
 
-* [`event_processing_duration_milliseconds`](https://odpf.gitbook.io/raccoon/reference/metrics#event_processing_duration_milliseconds) This metrics denotes overall latency. You need to look at other latency metrics to find the root cause when this metric is high.
-* [`server_processing_latency_milliseconds`](https://odpf.gitbook.io/raccoon/reference/metrics#server_processing_latency_milliseconds) Correlate this metric with `event_processing_duration_milliseconds` to infer whether the issue is with Raccoon itself, or something wrong with the network, or the way [sent\_time](https://github.com/odpf/proton/blob/main/odpf/raccoon/v1beta1/raccoon.proto#L47) is generated.-
-* [`worker_processing_duration_milliseconds`](https://odpf.gitbook.io/raccoon/reference/metrics#worker_processing_duration_milliseconds) High value of this metric indicates that the publisher is slow or can't keep up.
+* [`event_processing_duration_milliseconds`](https://goto.gitbook.io/raccoon/reference/metrics#event_processing_duration_milliseconds) This metrics denotes overall latency. You need to look at other latency metrics to find the root cause when this metric is high.
+* [`server_processing_latency_milliseconds`](https://goto.gitbook.io/raccoon/reference/metrics#server_processing_latency_milliseconds) Correlate this metric with `event_processing_duration_milliseconds` to infer whether the issue is with Raccoon itself, or something wrong with the network, or the way [sent\_time](https://github.com/goto/proton/blob/main/goto/raccoon/v1beta1/raccoon.proto#L47) is generated.-
+* [`worker_processing_duration_milliseconds`](https://goto.gitbook.io/raccoon/reference/metrics#worker_processing_duration_milliseconds) High value of this metric indicates that the publisher is slow or can't keep up.
 

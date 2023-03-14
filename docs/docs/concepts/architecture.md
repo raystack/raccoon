@@ -1,6 +1,6 @@
 # Architecture
 
-Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon supports websockets, REST and gRPC protocols for clients to send events. With wesockets it provides long persistent connections, with no overhead of additional headers sizes as in http protocol. Racoon supports protocol buffers and JSON as serialization formats. Websockets and REST API support both whereas with gRPC only protocol buffers are supported. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](https://odpf.gitbook.io/raccoon/guides/publishing#data-formatters) for data definitions format that Raccoon accepts.
+Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon supports websockets, REST and gRPC protocols for clients to send events. With wesockets it provides long persistent connections, with no overhead of additional headers sizes as in http protocol. Racoon supports protocol buffers and JSON as serialization formats. Websockets and REST API support both whereas with gRPC only protocol buffers are supported. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](https://goto.gitbook.io/raccoon/guides/publishing#data-formatters) for data definitions format that Raccoon accepts.
 
 Raccoon was built with a primary purpose to source or collect user behaviour data in near-real time. User behaviour data is a stream of events that occur when users traverse through a mobile app or website. Raccoon powers analytics systems, big data pipelines and other disparate consumers by providing high volume, high throughput ingestion APIs consuming real time data. Raccoon’s key architecture principle is a realization of an event agnostic backend \(accepts events of any type without the type awareness\). It is this capability that enables Raccoon to evolve into a strong player in the ingestion/collector ecosystem that has real time streaming/analytical needs.
 
@@ -44,7 +44,7 @@ Client connects to the server with the same endpoint but with POST HTTP method. 
 
 ### gRPC
 
-It is recommended to generate the gRPC client for Raccoon's [EventService](https://github.com/odpf/proton/blob/main/odpf/raccoon/EventService.proto) and use that client to do gRPC request. Currently only unary requests are supported.
+It is recommended to generate the gRPC client for Raccoon's [EventService](https://github.com/goto/proton/blob/main/goto/raccoon/EventService.proto) and use that client to do gRPC request. Currently only unary requests are supported.
 
 - Client's `SendEvent` method is called to send the event.
 - Connection identifier is constructed from the values of `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` in gRPC metadata.
@@ -112,7 +112,7 @@ When an SendEventRequest is sent to Raccoon over any connection be it Websocket/
 
 ### Protobufs
 
-When an [SendEventRequest](https://github.com/odpf/proton/blob/main/odpf/raccoon/v1beta1/raccoon.proto) proto below containing events are sent over the wire
+When an [SendEventRequest](https://github.com/goto/proton/blob/main/goto/raccoon/v1beta1/raccoon.proto) proto below containing events are sent over the wire
 
 ```text
 message SendEventRequest {
@@ -125,7 +125,7 @@ message SendEventRequest {
 }
 ```
 
-a corresponding [SendEventResponse](https://github.com/odpf/proton/blob/main/odpf/raccoon/v1beta1/raccoon.proto) is sent by the server.
+a corresponding [SendEventResponse](https://github.com/goto/proton/blob/main/goto/raccoon/v1beta1/raccoon.proto) is sent by the server.
 
 ```text
 message SendEventResponse {
@@ -191,7 +191,7 @@ For eg. setting the
 EVENT_DISTRIBUTION_PUBLISHER_PATTERN=topic-%s-log
 ```
 
-and a type such as `type=viewed` in the [event](https://github.com/odpf/proton/blob/main/odpf/raccoon/Event.proto) format
+and a type such as `type=viewed` in the [event](https://github.com/goto/proton/blob/main/goto/raccoon/Event.proto) format
 
 and a type such as `type=viewed` in the event format
 

@@ -92,7 +92,7 @@ func file_example_proto_rawDescGZIP() []byte {
 
 var file_example_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_example_proto_goTypes = []interface{}{
-	(*SampleEvent)(nil), // 0: odpf.raccoon.SampleEvent
+	(*SampleEvent)(nil), // 0: goto.raccoon.SampleEvent
 }
 var file_example_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type

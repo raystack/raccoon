@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
 	"github.com/gorilla/websocket"
-	pb "github.com/odpf/raccoon/proto"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )

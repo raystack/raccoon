@@ -1,8 +1,8 @@
 # Roadmap
 
-In the following section, you can learn what features we're working on, what stage they're in, and when we expect to bring them to you. Have any questions or comments about items on the roadmap? Join the [discussions](https://github.com/odpf/raccoon/discussions) on the Raccoon Github forum.
+In the following section, you can learn what features we're working on, what stage they're in, and when we expect to bring them to you. Have any questions or comments about items on the roadmap? Join the [discussions](https://github.com/goto/raccoon/discussions) on the Raccoon Github forum.
 
-We’re planning to iterate on the format of the roadmap itself, and we see the potential to engage more in discussions about the future of Raccoon features. If you have feedback about this roadmap section itself, such as how the issues are presented, let us know through [discussions](https://github.com/odpf/raccoon/discussions).
+We’re planning to iterate on the format of the roadmap itself, and we see the potential to engage more in discussions about the future of Raccoon features. If you have feedback about this roadmap section itself, such as how the issues are presented, let us know through [discussions](https://github.com/goto/raccoon/discussions).
 
 ## Vision
 

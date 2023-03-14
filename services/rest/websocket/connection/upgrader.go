@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
 	"github.com/gorilla/websocket"
-	"github.com/odpf/raccoon/identification"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	pb "github.com/odpf/raccoon/proto"
+	"github.com/goto/raccoon/identification"
+	"github.com/goto/raccoon/logger"
+	"github.com/goto/raccoon/metrics"
 	"google.golang.org/protobuf/proto"
 )
 

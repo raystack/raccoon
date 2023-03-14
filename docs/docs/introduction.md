@@ -5,7 +5,7 @@ slug: /
 
 # Introduction
 
-Raccoon is high throughput, low-latency service that provides an API to ingest clickstream data from mobile apps; and sites and publish it to Kafka. Raccoon uses the WebSocket protocol for peer-to-peer communication and protobuf as the serialization format. It provides an event-type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](https://github.com/odpf/proton/tree/main/odpf/raccoon) for the protobuf definition format that Raccoon accepts.
+Raccoon is high throughput, low-latency service that provides an API to ingest clickstream data from mobile apps; and sites and publish it to Kafka. Raccoon uses the WebSocket protocol for peer-to-peer communication and protobuf as the serialization format. It provides an event-type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](https://github.com/goto/proton/tree/main/goto/raccoon) for the protobuf definition format that Raccoon accepts.
 
 ![Overiew](/assets/overview.svg)
 
@@ -31,7 +31,7 @@ Raccoon can be used as an event collector, event distributor, and forwarder of e
 
 Explore the following resources to get started with Raccoon:
 
-- [Guides](https://github.com/odpf/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/guides/README.md) provide information on deployment and client samples.
-- [Concepts](https://github.com/odpf/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/concepts/README.md) describe all important Raccoon concepts.
-- [Reference](https://github.com/odpf/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/reference/README.md) contains details about configurations, metrics, and other aspects of Raccoon.
-- [Contribute](https://github.com/odpf/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Raccoon.
+- [Guides](https://github.com/goto/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/guides/README.md) provide information on deployment and client samples.
+- [Concepts](https://github.com/goto/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/concepts/README.md) describe all important Raccoon concepts.
+- [Reference](https://github.com/goto/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/reference/README.md) contains details about configurations, metrics, and other aspects of Raccoon.
+- [Contribute](https://github.com/goto/raccoon/tree/48f454ac63a94d7c462d2146f115ba9a1789e1dc/docs/docs/contribute/contribution.md) contains resources for anyone who wants to contribute to Raccoon.

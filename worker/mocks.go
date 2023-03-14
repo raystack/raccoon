@@ -1,7 +1,7 @@
 package worker
 
 import (
-	pb "github.com/odpf/raccoon/proto"
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
 	mock "github.com/stretchr/testify/mock"
 	kafka "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )

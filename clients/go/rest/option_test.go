@@ -3,7 +3,7 @@ package rest
 import (
 	"testing"
 
-	"github.com/odpf/raccoon/clients/go/serializer"
+	"github.com/goto/raccoon/clients/go/serializer"
 	"github.com/stretchr/testify/assert"
 )
 

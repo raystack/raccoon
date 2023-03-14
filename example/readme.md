@@ -6,7 +6,7 @@ There are couple of things the client to handle to start send events to Raccoon.
 - [Send The Batch](#send-the-batch)
 - [Handle The Response](#handle-the-response)
 
-Below are the explanation of sample client in [main.go](https://github.com/odpf/raccoon/tree/main/docs/example/main.go)
+Below are the explanation of sample client in [main.go](https://github.com/goto/raccoon/tree/main/docs/example/main.go)
 
 ## Establish Websocket Connection
 You are free to use any websocket client as long as it supports passing header. You can connect to `/api/v1/events` endpoint with uniq id header set. You'll also need to handle retry in case Raccon reject the connection because [max connection is reached]().
@@ -80,7 +80,7 @@ Now you have websocket connection and batch of event ready, all you need is send
 ```
 
 ## Handle The Response
-Raccoon sends SendEventResponse for every batch of events sent from the client. The ReqGuid in the response identifies the batch that the client sent. The response object could be used for client's telemetry in terms of how may batches succeeded, failed etc., The clients can retry based on failures however server side kafka send failures are not sent as failures due to the [acknowledgement design as explained here](https://github.com/odpf/raccoon/blob/main/docs/concepts/architecture.md#acknowledging-events).
+Raccoon sends SendEventResponse for every batch of events sent from the client. The ReqGuid in the response identifies the batch that the client sent. The response object could be used for client's telemetry in terms of how may batches succeeded, failed etc., The clients can retry based on failures however server side kafka send failures are not sent as failures due to the [acknowledgement design as explained here](https://github.com/goto/raccoon/blob/main/docs/concepts/architecture.md#acknowledging-events).
 ```go
 	_, response, _ := ws.ReadMessage()
 	SendEventResponse := &pb.SendEventResponse{}

@@ -8,7 +8,8 @@ import (
 	"testing"
 	"time"
 
-	pb "go.buf.build/odpf/gw/odpf/proton/odpf/raccoon/v1beta1"
+	pbgrpc "buf.build/gen/go/gotocompany/proton/grpc/go/gotocompany/raccoon/v1beta1/raccoonv1beta1grpc"
+	pb "buf.build/gen/go/gotocompany/proton/protocolbuffers/go/gotocompany/raccoon/v1beta1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -16,15 +17,15 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/testdata"
+	raccoon "github.com/goto/raccoon/clients/go"
+	"github.com/goto/raccoon/clients/go/testdata"
 	"github.com/stretchr/testify/assert"
 )
 
 const connId string = "X-UniqueId"
 
 type mockEventServiceServer struct {
-	pb.UnimplementedEventServiceServer
+	pbgrpc.UnimplementedEventServiceServer
 }
 
 func (*mockEventServiceServer) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.SendEventResponse, error) {
@@ -52,7 +53,7 @@ func (*mockEventServiceServer) SendEvent(ctx context.Context, req *pb.SendEventR
 func dialer() func(context.Context, string) (net.Conn, error) {
 	listener := bufconn.Listen(1024 * 1024)
 	server := grpc.NewServer()
-	pb.RegisterEventServiceServer(server, &mockEventServiceServer{})
+	pbgrpc.RegisterEventServiceServer(server, &mockEventServiceServer{})
 	go func() {
 		if err := server.Serve(listener); err != nil {
 			log.Fatal(err)

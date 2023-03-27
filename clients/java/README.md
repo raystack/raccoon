@@ -12,7 +12,7 @@
 #### Gradle
 
 ```groovy
-  implementation group: 'com.gotocompany', name: 'raccoon', version: '0.1.5'
+  implementation group: 'com.gotocompany', name: 'raccoon', version: '0.2.0'
 ```
 
 #### Maven
@@ -21,7 +21,7 @@
 <dependency>
   <groupId>com.gotocompany</groupId>
   <artifactId>racoon</artifactId>
-  <version>0.1.5</version>
+  <version>0.2.0</version>
 </dependency>
 ```
 

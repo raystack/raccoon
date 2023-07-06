@@ -1,4 +1,4 @@
-name: Raccoon Test & Build
+name: Test
 
 on:
   - push

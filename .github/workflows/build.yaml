@@ -1,4 +1,4 @@
-name: Raccoon Test & Build
+name: Test
 
 on:
   - push
@@ -7,32 +7,29 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Setup Go
         uses: actions/setup-go@v2.1.3
         with:
-          go-version: '1.14'
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
+          go-version: "1.14"
       - name: Checkout repo
         uses: actions/checkout@v2
-      - name: Setup Project
-        run: make install-protoc; make setup
+        with:
+          fetch-depth: 0
       - name: Invoking go test
         run: make test
       - name: Invoking go bench test
         run: make test-bench
+
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Setup Go
         uses: actions/setup-go@v2.1.3
         with:
-          go-version: '1.14'
+          go-version: "1.14"
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
       - uses: actions/checkout@v2
       - name: Build
-        run: make all
+        run: make build

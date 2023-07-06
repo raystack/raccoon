@@ -13,8 +13,5 @@ coverage
 .vscode
 *.env
 *.idea/
-clickstream-service
 raccoon
-pkg/proto/*.pb.go
-proto/*.pb.go
 .temp

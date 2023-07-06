@@ -46,8 +46,12 @@ install:
 	@echo "Installing Guardian to ${GOBIN}..."
 	@go install
 
-test:  ## Run the tests
+test:  vendor ## Run the tests
 	go test ./... -race -coverprofile=coverage.out -tags dynamic
 
 test-bench: # run benchmark tests
 	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./... -run=^Benchmark -tags dynamic
+
+vendor: ## Update the vendor directory
+	@echo "Updating vendor directory..."
+	@go mod vendor

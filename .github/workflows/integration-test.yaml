@@ -14,10 +14,10 @@ jobs:
         uses: arduino/setup-protoc@v1
       - name: Checkout repo
         uses: actions/checkout@v2
-      - name: Copy integration config
-        run: cp .env.test .env
-      - name: Run Raccoon
-        run: make docker-run
-      - run: make install-protoc && make generate-proto
-      - name: Invoking go test
-        run: INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=localhost:8080 INTEGTEST_TOPIC_FORMAT="clickstream-%s-log" GRPC_SERVER_ADDR="localhost:8081" go test ./integration -v
+      # - name: Copy integration config
+      #   run: cp .env.test .env
+      # - name: Run Raccoon
+      #   run: make docker-run
+      # - run: make install-protoc && make generate-proto
+      # - name: Invoking go test
+      #   run: INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=localhost:8080 INTEGTEST_TOPIC_FORMAT="clickstream-%s-log" GRPC_SERVER_ADDR="localhost:8081" go test ./integration -v

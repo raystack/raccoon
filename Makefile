@@ -1,86 +1,56 @@
-.PHONY: all
+NAME="github.com/raystack/raccoon"
+COMMIT := $(shell git rev-parse --short HEAD)
+TAG := "$(shell git rev-list --tags --max-count=1)"
+VERSION := "$(shell git describe --tags ${TAG})-next"
+BUILD_DIR=dist
+PROTON_COMMIT := "ccbf219312db35a934361ebad895cb40145ca235"
 
-ALL_PACKAGES=$(shell go list ./... | grep -v "vendor")
-APP_EXECUTABLE="out/raccoon"
-COVER_FILE="/tmp/coverage.out"
+.PHONY: all build clean test tidy vet proto setup format generate
 
-all: install-protoc setup compile
+all: clean test build format lint
 
-# Setups
-setup: generate-proto copy-config
-	make update-deps
+tidy:
+	@echo "Tidy up go.mod..."
+	@go mod tidy -v
 
-install-protoc:
-	@echo "> installing dependencies"
-	go get -u github.com/golang/protobuf/proto@v1.4.3
-	go get -u github.com/golang/protobuf/protoc-gen-go@v1.4.3
-	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+lint: ## Lint checker
+	@echo "Running lint checks using golangci-lint..."
+	@golangci-lint run
 
-update-deps:
-	go mod tidy -v
-	go mod vendor
+clean: tidy ## Clean the build artifacts
+	@echo "Cleaning up build directories..."
+	@rm -rf $coverage.out ${BUILD_DIR}
 
-copy-config:
-	cp .env.sample .env
+proto: ## Generate the protobuf files
+	@echo "Generating protobuf from raystack/proton"
+	@echo " [info] make sure correct version of dependencies are installed using 'make install'"
+	@buf generate https://github.com/raystack/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path raystack/raccoon -v
+	@cp -R proto/raystack/raccoon/v1beta1/* proto/ && rm -Rf proto/raystack
+	@echo "Protobuf compilation finished"
 
-PROTO_PACKAGE=/proto
-generate-proto:
-	rm -rf .temp
-	mkdir -p .temp
-	curl -o .temp/proton.tar.gz -L http://api.github.com/repos/raystack/proton/tarball/main; tar xvf .temp/proton.tar.gz -C .temp/ --strip-components 1
-	protoc --proto_path=.temp/ .temp/raystack/raccoon/v1beta1/raccoon.proto --go_out=./ --go_opt=paths=import --go_opt=Mraystack/raccoon/v1beta1/raccoon.proto=$(PROTO_PACKAGE)
-	protoc --proto_path=.temp/ .temp/raystack/raccoon/v1beta1/raccoon.proto  --go-grpc_opt=paths=import --go-grpc_opt=Mraystack/raccoon/v1beta1/raccoon.proto=$(PROTO_PACKAGE) --go-grpc_out=./
+setup: ## Install required dependencies
+	@echo "> Installing dependencies..."
+	go mod tidy
+	go install github.com/bufbuild/buf/cmd/buf@v1.23.0
 
-# Build Lifecycle
-compile:
-	mkdir -p out/
-	go build -o $(APP_EXECUTABLE)
+config: ## Generate the sample config file
+	@echo "Initializing sample server config..."
+	@cp .env.sample .env
 
-build: copy-config update-deps compile
+build: ## Build the raccoon binary
+	@echo "Building racccoon version ${VERSION}..."
+	go build 
+	@echo "Build complete"
 
 install:
-	go install $(ALL_PACKAGES)
-
-start: build
-	./$(APP_EXECUTABLE)
+	@echo "Installing Guardian to ${GOBIN}..."
+	@go install
 
 clean: ## Clean the builds
 	rm -rf out/
 
-# Utility
-
-fmt:
-	go fmt $(ALL_PACKAGES)
-
-vet:
-	go vet $(ALL_PACKAGES)
-
-lint:
-	@for p in $(ALL_PACKAGES); do \
-		echo "==> Linting $$p"; \
-		golint $$p | { grep -vwE "exported (var|function|method|type|const) \S+ should have comment" || true; } \
-	done
-
-# Tests
-
-test: lint
-	ENVIRONMENT=test go test $(shell go list ./... | grep -v "vendor" | grep -v "integration") -v
-	@go list ./... | grep -v "vendor" | grep -v "integration" | xargs go test -count 1 -cover -short -race -timeout 1m -coverprofile ${COVER_FILE}
-	@go tool cover -func ${COVER_FILE} | tail -1 | xargs echo test coverage:
+test:  ## Run the tests
+	go test ./... -race -coverprofile=coverage.out
 
 test-bench: # run benchmark tests
 	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./... -run=^Benchmark
-
-test_ci: install-protoc setup test
-
-# Docker Run
-
-docker-run:
-	docker-compose build
-	docker-compose up -d
-
-docker-stop:
-	docker-compose stop
-
-docker-start:
-	docker-compose start

@@ -18,3 +18,5 @@ raccoon
 pkg/proto/*.pb.go
 proto/*.pb.go
 .temp
+
+raccoon

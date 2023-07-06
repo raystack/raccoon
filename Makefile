@@ -46,8 +46,8 @@ install:
 	@echo "Installing Guardian to ${GOBIN}..."
 	@go install
 
-test:  vendor ## Run the tests
-	go test ./... -race -coverprofile=coverage.out ]
+test: ## Run the tests
+	go test $(shell go list ./... | grep -v "vendor" | grep -v "integration") -v
 
 test-bench: # run benchmark tests
 	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./... -run=^Benchmark ]

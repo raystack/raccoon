@@ -55,3 +55,7 @@ test-bench: # run benchmark tests
 vendor: ## Update the vendor directory
 	@echo "Updating vendor directory..."
 	@go mod vendor
+
+docker-run:
+	docker-compose build
+	docker-compose up -d

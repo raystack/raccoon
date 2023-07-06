@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	pb "go.buf.build/odpf/gw/odpf/proton/odpf/raccoon/v1beta1"
+	pb "go.buf.build/raystack/gw/raystack/proton/raystack/raccoon/v1beta1"
 
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/serializer"
+	raccoon "github.com/raystack/raccoon/clients/go"
+	"github.com/raystack/raccoon/clients/go/serializer"
 	"github.com/stretchr/testify/assert"
 )
 

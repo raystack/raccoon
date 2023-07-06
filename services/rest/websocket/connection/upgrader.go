@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/odpf/raccoon/identification"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	pb "github.com/odpf/raccoon/proto"
+	"github.com/raystack/raccoon/identification"
+	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/metrics"
+	pb "github.com/raystack/raccoon/proto"
 	"google.golang.org/protobuf/proto"
 )
 

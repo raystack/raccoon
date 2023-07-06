@@ -3,10 +3,10 @@ package app
 import (
 	"context"
 
-	"github.com/odpf/raccoon/logger"
+	"github.com/raystack/raccoon/logger"
 )
 
-//Run the server
+// Run the server
 func Run() error {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)

@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/config"
-	"github.com/odpf/raccoon/deserialization"
-	"github.com/odpf/raccoon/identification"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	pb "github.com/odpf/raccoon/proto"
-	"github.com/odpf/raccoon/serialization"
+	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/config"
+	"github.com/raystack/raccoon/deserialization"
+	"github.com/raystack/raccoon/identification"
+	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/metrics"
+	pb "github.com/raystack/raccoon/proto"
+	"github.com/raystack/raccoon/serialization"
 )
 
 const (

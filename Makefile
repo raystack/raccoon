@@ -27,9 +27,9 @@ PROTO_PACKAGE=/proto
 generate-proto:
 	rm -rf .temp
 	mkdir -p .temp
-	curl -o .temp/proton.tar.gz -L http://api.github.com/repos/odpf/proton/tarball/main; tar xvf .temp/proton.tar.gz -C .temp/ --strip-components 1
-	protoc --proto_path=.temp/ .temp/odpf/raccoon/v1beta1/raccoon.proto --go_out=./ --go_opt=paths=import --go_opt=Modpf/raccoon/v1beta1/raccoon.proto=$(PROTO_PACKAGE)
-	protoc --proto_path=.temp/ .temp/odpf/raccoon/v1beta1/raccoon.proto  --go-grpc_opt=paths=import --go-grpc_opt=Modpf/raccoon/v1beta1/raccoon.proto=$(PROTO_PACKAGE) --go-grpc_out=./
+	curl -o .temp/proton.tar.gz -L http://api.github.com/repos/raystack/proton/tarball/main; tar xvf .temp/proton.tar.gz -C .temp/ --strip-components 1
+	protoc --proto_path=.temp/ .temp/raystack/raccoon/v1beta1/raccoon.proto --go_out=./ --go_opt=paths=import --go_opt=Mraystack/raccoon/v1beta1/raccoon.proto=$(PROTO_PACKAGE)
+	protoc --proto_path=.temp/ .temp/raystack/raccoon/v1beta1/raccoon.proto  --go-grpc_opt=paths=import --go-grpc_opt=Mraystack/raccoon/v1beta1/raccoon.proto=$(PROTO_PACKAGE) --go-grpc_out=./
 
 # Build Lifecycle
 compile:

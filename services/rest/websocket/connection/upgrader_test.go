@@ -11,8 +11,8 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
+	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/metrics"
 	"github.com/stretchr/testify/assert"
 )
 

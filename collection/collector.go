@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/odpf/raccoon/identification"
-	pb "github.com/odpf/raccoon/proto"
+	"github.com/raystack/raccoon/identification"
+	pb "github.com/raystack/raccoon/proto"
 )
 
 type AckFunc func(err error)

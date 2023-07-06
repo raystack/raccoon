@@ -3,8 +3,8 @@ package rest
 import (
 	"io"
 
-	pb "github.com/odpf/raccoon/proto"
-	"github.com/odpf/raccoon/serialization"
+	pb "github.com/raystack/raccoon/proto"
+	"github.com/raystack/raccoon/serialization"
 )
 
 type Response struct {

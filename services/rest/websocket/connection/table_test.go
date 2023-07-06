@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/odpf/raccoon/identification"
+	"github.com/raystack/raccoon/identification"
 	"github.com/stretchr/testify/assert"
 )
 

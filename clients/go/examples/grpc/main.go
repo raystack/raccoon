@@ -12,9 +12,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/grpc"
-	"github.com/odpf/raccoon/clients/go/testdata"
+	raccoon "github.com/raystack/raccoon/clients/go"
+	"github.com/raystack/raccoon/clients/go/grpc"
+	"github.com/raystack/raccoon/clients/go/testdata"
 )
 
 func main() {

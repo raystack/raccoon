@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/odpf/raccoon/identification"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
+	"github.com/raystack/raccoon/identification"
+	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/metrics"
 )
 
 type Conn struct {

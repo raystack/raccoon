@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package odpf.raccoon;
+package raystack.raccoon;
 
 message SampleEvent {
   string description = 1;

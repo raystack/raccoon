@@ -9,10 +9,10 @@ import (
 	// Importing librd to make it work on vendor mode
 	_ "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka/librdkafka"
 
-	"github.com/odpf/raccoon/config"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	pb "github.com/odpf/raccoon/proto"
+	"github.com/raystack/raccoon/config"
+	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/metrics"
+	pb "github.com/raystack/raccoon/proto"
 )
 
 // KafkaProducer Produce data to kafka synchronously

@@ -9,7 +9,7 @@ plugins {
     id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
-group 'io.odpf'
+group 'io.raystack'
 version '0.1.5-rc'
 
 repositories {
@@ -50,11 +50,11 @@ checkstyle {
 }
 
 checkstyleMain {
-    source = 'src/main/java/io/odpf/raccoon'
+    source = 'src/main/java/io/raystack/raccoon'
 }
 
 checkstyleTest {
-    source = 'src/test/java/io/odpf/raccoon'
+    source = 'src/test/java/io/raystack/raccoon'
 }
 
 java {
@@ -82,10 +82,10 @@ publishing {
                 version = project.version
                 name = 'Raccoon'
                 description = 'Java client library for sending events to the Raccoon'
-                url = 'https://github.com/odpf/raccoon'
+                url = 'https://github.com/raystack/raccoon'
 
                 scm {
-                    url = 'https://github.com/odpf/raccoon.git'
+                    url = 'https://github.com/raystack/raccoon.git'
                 }
 
                 licenses {

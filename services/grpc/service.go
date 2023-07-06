@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/config"
-	pb "github.com/odpf/raccoon/proto"
+	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/config"
+	pb "github.com/raystack/raccoon/proto"
 	"google.golang.org/grpc"
 )
 

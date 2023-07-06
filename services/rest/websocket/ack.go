@@ -3,9 +3,9 @@ package websocket
 import (
 	"time"
 
-	"github.com/odpf/raccoon/metrics"
-	"github.com/odpf/raccoon/serialization"
-	"github.com/odpf/raccoon/services/rest/websocket/connection"
+	"github.com/raystack/raccoon/metrics"
+	"github.com/raystack/raccoon/serialization"
+	"github.com/raystack/raccoon/services/rest/websocket/connection"
 )
 
 var AckChan = make(chan AckInfo)

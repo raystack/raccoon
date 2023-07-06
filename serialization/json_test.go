@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	pb "github.com/odpf/raccoon/proto"
+	pb "github.com/raystack/raccoon/proto"
 )
 
 func TestJSONSerializer_Serialize(t *testing.T) {

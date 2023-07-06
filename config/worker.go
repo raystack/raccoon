@@ -3,7 +3,7 @@ package config
 import (
 	"time"
 
-	"github.com/odpf/raccoon/config/util"
+	"github.com/raystack/raccoon/config/util"
 	"github.com/spf13/viper"
 )
 
@@ -22,7 +22,7 @@ type worker struct {
 	WorkerFlushTimeout time.Duration
 }
 
-//workerConfigLoader constructs a singleton instance of the worker pool config
+// workerConfigLoader constructs a singleton instance of the worker pool config
 func workerConfigLoader() {
 	viper.SetDefault("WORKER_POOL_SIZE", 5)
 	viper.SetDefault("WORKER_BUFFER_CHANNEL_SIZE", 100)

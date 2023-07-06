@@ -1,10 +1,10 @@
-module github.com/odpf/raccoon/clients/go
+module github.com/raystack/raccoon/clients/go
 
 go 1.16
 
 require (
 	github.com/stretchr/testify v1.8.0
-	go.buf.build/odpf/gw/odpf/proton v1.1.131
+	go.buf.build/raystack/gw/raystack/proton v1.1.131
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1

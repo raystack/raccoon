@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/config"
-	"github.com/odpf/raccoon/identification"
-	"github.com/odpf/raccoon/logger"
-	"github.com/odpf/raccoon/metrics"
-	pb "github.com/odpf/raccoon/proto"
+	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/config"
+	"github.com/raystack/raccoon/identification"
+	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/metrics"
+	pb "github.com/raystack/raccoon/proto"
 	"google.golang.org/grpc/metadata"
 )
 

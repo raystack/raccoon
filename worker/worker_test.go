@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/odpf/raccoon/collection"
-	"github.com/odpf/raccoon/identification"
-	pb "github.com/odpf/raccoon/proto"
+	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/identification"
+	pb "github.com/raystack/raccoon/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/timestamppb"

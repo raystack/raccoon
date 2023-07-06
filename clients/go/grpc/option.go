@@ -3,12 +3,12 @@ package grpc
 import (
 	"time"
 
-	"github.com/odpf/raccoon/clients/go/log"
+	"github.com/raystack/raccoon/clients/go/log"
 
 	"google.golang.org/grpc"
 
-	raccoon "github.com/odpf/raccoon/clients/go"
-	"github.com/odpf/raccoon/clients/go/serializer"
+	raccoon "github.com/raystack/raccoon/clients/go"
+	"github.com/raystack/raccoon/clients/go/serializer"
 )
 
 // Grpc is the http implementation

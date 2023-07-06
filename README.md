@@ -1,11 +1,11 @@
 # Raccoon
 
-![build workflow](https://github.com/odpf/raccoon/actions/workflows/build.yaml/badge.svg)
-![package workflow](https://github.com/odpf/raccoon/actions/workflows/package.yaml/badge.svg)
+![build workflow](https://github.com/raystack/raccoon/actions/workflows/build.yaml/badge.svg)
+![package workflow](https://github.com/raystack/raccoon/actions/workflows/package.yaml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
-[![Version](https://img.shields.io/github/v/release/odpf/raccoon?logo=semantic-release)](Version)
+[![Version](https://img.shields.io/github/v/release/raystack/raccoon?logo=semantic-release)](Version)
 
-Raccoon is high throughput, low-latency service that provides an API to ingest clickstream data from mobile apps, sites and publish it to Kafka. Raccoon uses the Websocket protocol for peer-to-peer communication and protobuf as the serialization format. It provides an event type agnostic API that accepts a batch (array) of events in protobuf format. Refer [here](https://github.com/odpf/proton/tree/main/odpf/raccoon) for proto definition format that Raccoon accepts.
+Raccoon is high throughput, low-latency service that provides an API to ingest clickstream data from mobile apps, sites and publish it to Kafka. Raccoon uses the Websocket protocol for peer-to-peer communication and protobuf as the serialization format. It provides an event type agnostic API that accepts a batch (array) of events in protobuf format. Refer [here](https://github.com/raystack/proton/tree/main/raystack/raccoon) for proto definition format that Raccoon accepts.
 
 <p align="center"><img src="./docs/static/assets/overview.svg" /></p>
 
@@ -18,7 +18,7 @@ Raccoon is high throughput, low-latency service that provides an API to ingest c
 - **Reduced payload sizes** - Protobuf based
 - **Metrics:** - Built-in monitoring includes latency and active connections.
 
-To know more, follow the detailed [documentation](https://odpf.github.io/raccoon/)
+To know more, follow the detailed [documentation](https://raystack.github.io/raccoon/)
 
 ## Use cases
 
@@ -33,10 +33,10 @@ Raccoon can be used as an event collector, event distributor and as a forwarder 
 
 Explore the following resources to get started with Raccoon:
 
-- [Guides](https://odpf.github.io/raccoon/guides/overview) provides guidance on deployment and client sample.
-- [Concepts](https://odpf.github.io/raccoon/concepts/architecture) describes all important Raccoon concepts.
-- [Reference](https://odpf.github.io/raccoon//reference/configurations) contains details about configurations, metrics and other aspects of Raccoon.
-- [Contribute](https://odpf.github.io/raccoon/contribute/contribution) contains resources for anyone who wants to contribute to Raccoon.
+- [Guides](https://raystack.github.io/raccoon/guides/overview) provides guidance on deployment and client sample.
+- [Concepts](https://raystack.github.io/raccoon/concepts/architecture) describes all important Raccoon concepts.
+- [Reference](https://raystack.github.io/raccoon//reference/configurations) contains details about configurations, metrics and other aspects of Raccoon.
+- [Contribute](https://raystack.github.io/raccoon/contribute/contribution) contains resources for anyone who wants to contribute to Raccoon.
 
 ## Run with Docker
 
@@ -46,11 +46,11 @@ Explore the following resources to get started with Raccoon:
 
 **Run Docker Image**
 
-Raccoon provides Docker [image](https://hub.docker.com/r/odpf/raccoon) as part of the release. Make sure you have Kafka running on your local and run the following.
+Raccoon provides Docker [image](https://hub.docker.com/r/raystack/raccoon) as part of the release. Make sure you have Kafka running on your local and run the following.
 
 ```sh
 # Download docker image from docker hub
-$ docker pull odpf/raccoon
+$ docker pull raystack/raccoon
 
 # Run the following docker command with minimal config.
 $ docker run -p 8080:8080 \
@@ -58,7 +58,7 @@ $ docker run -p 8080:8080 \
   -e SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID \
   -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9093 \
   -e EVENT_DISTRIBUTION_PUBLISHER_PATTERN=clickstream-%s-log \
-  odpf/raccoon
+  raystack/raccoon
 ```
 
 **Run Docker Compose**
@@ -71,7 +71,7 @@ $ make docker-run
 $ make docker-stop
 ```
 
-You can consume the published events from the host machine by using `localhost:9094` as kafka broker server. Mind the [topic routing](https://odpf.github.io/raccoon/concepts/architecture#event-distribution) when you consume the events.
+You can consume the published events from the host machine by using `localhost:9094` as kafka broker server. Mind the [topic routing](https://raystack.github.io/raccoon/concepts/architecture#event-distribution) when you consume the events.
 
 ## Running locally
 
@@ -82,7 +82,7 @@ Prerequisite:
 
 ```sh
 # Clone the repo
-$ git clone https://github.com/odpf/raccoon.git
+$ git clone https://github.com/raystack/raccoon.git
 
 # Build the executable
 $ make
@@ -94,7 +94,7 @@ $ vim .env
 $ ./out/raccoon
 ```
 
-**Note:** Read the detail of each configurations [here](https://odpf.github.io/raccoon/reference/configuration).
+**Note:** Read the detail of each configurations [here](https://raystack.github.io/raccoon/reference/configuration).
 
 ## Running tests
 
@@ -112,11 +112,11 @@ $ INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=localhost:8080 INTEGT
 
 Development of Raccoon happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving Raccoon.
 
-Read our [contributing guide](https://odpf.github.io/raccoon/contribute/contribution) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Raccoon.
+Read our [contributing guide](https://raystack.github.io/raccoon/contribute/contribution) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Raccoon.
 
-To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/odpf/raccoon/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
+To help you get your feet wet and get you familiar with our contribution process, we have a list of [good first issues](https://github.com/raystack/raccoon/labels/good%20first%20issue) that contain bugs which have a relatively limited scope. This is a great place to get started.
 
-This project exists thanks to all the [contributors](https://github.com/odpf/raccoon/graphs/contributors).
+This project exists thanks to all the [contributors](https://github.com/raystack/raccoon/graphs/contributors).
 
 ## License
 

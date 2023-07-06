@@ -3,7 +3,7 @@ package wire
 import (
 	"testing"
 
-	pb "go.buf.build/odpf/gw/odpf/proton/odpf/raccoon/v1beta1"
+	pb "go.buf.build/raystack/gw/raystack/proton/raystack/raccoon/v1beta1"
 
 	"github.com/stretchr/testify/assert"
 )

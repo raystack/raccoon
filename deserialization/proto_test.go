@@ -3,7 +3,7 @@ package deserialization
 import (
 	"testing"
 
-	pb "github.com/odpf/raccoon/proto"
+	pb "github.com/raystack/raccoon/proto"
 )
 
 func TestProtoDeserilizer_Deserialize(t *testing.T) {

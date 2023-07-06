@@ -3,7 +3,7 @@ package retry
 import (
 	"time"
 
-	"github.com/odpf/raccoon/clients/go/log"
+	"github.com/raystack/raccoon/clients/go/log"
 )
 
 var (

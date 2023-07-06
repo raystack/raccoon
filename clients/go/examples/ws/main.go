@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 
-	raccoon "github.com/odpf/raccoon/clients/go"
+	raccoon "github.com/raystack/raccoon/clients/go"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
-	"github.com/odpf/raccoon/clients/go/testdata"
-	"github.com/odpf/raccoon/clients/go/ws"
+	"github.com/raystack/raccoon/clients/go/testdata"
+	"github.com/raystack/raccoon/clients/go/ws"
 )
 
 func main() {

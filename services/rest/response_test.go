@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/odpf/raccoon/proto"
-	"github.com/odpf/raccoon/serialization"
+	pb "github.com/raystack/raccoon/proto"
+	"github.com/raystack/raccoon/serialization"
 )
 
 func TestResponse_SetCode(t *testing.T) {

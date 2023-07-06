@@ -1,25 +1,23 @@
 # Java Client for Raccoon
 
-
 ## Requirements
 
 - [Gradle v7+](https://gradle.org/)
 - [JDK 8+](https://openjdk.java.net/projects/jdk8/)
-
 
 ### Add raccoon as dependency
 
 #### Gradle
 
 ```groovy
-  implementation group: 'io.odpf', name: 'raccoon', version: '0.1.5'
+  implementation group: 'io.raystack', name: 'raccoon', version: '0.1.5'
 ```
 
 #### Maven
 
 ```xml
 <dependency>
-  <groupId>io.odpf</groupId>
+  <groupId>io.raystack</groupId>
   <artifactId>racoon</artifactId>
   <version>0.1.5</version>
 </dependency>
@@ -28,6 +26,7 @@
 ## Usage
 
 #### Construct a new REST client, then use the various options to build the client.
+
 For example:
 
 ```java

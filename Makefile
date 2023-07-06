@@ -50,7 +50,7 @@ clean: ## Clean the builds
 	rm -rf out/
 
 test:  ## Run the tests
-	go test ./... -race -coverprofile=coverage.out
+	go test ./... -race -coverprofile=coverage.out -tags dynamic
 
 test-bench: # run benchmark tests
 	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./... -run=^Benchmark

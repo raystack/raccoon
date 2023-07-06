@@ -47,10 +47,10 @@ install:
 	@go install
 
 test:  vendor ## Run the tests
-	go test ./... -race -coverprofile=coverage.out -tags dynamic
+	go test ./... -race -coverprofile=coverage.out ]
 
 test-bench: # run benchmark tests
-	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./... -run=^Benchmark -tags dynamic
+	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./... -run=^Benchmark ]
 
 vendor: ## Update the vendor directory
 	@echo "Updating vendor directory..."

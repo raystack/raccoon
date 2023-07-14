@@ -5,11 +5,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/raystack/raccoon/logger"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 const (

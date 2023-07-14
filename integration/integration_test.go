@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/gorilla/websocket"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 var uuid string

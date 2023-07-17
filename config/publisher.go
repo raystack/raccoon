@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	confluent "github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	confluent "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/raystack/raccoon/config/util"
 	"github.com/spf13/viper"
 )

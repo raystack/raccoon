@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/raystack/raccoon/collection"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"

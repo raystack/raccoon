@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/raystack/raccoon/logger"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/stretchr/testify/assert"

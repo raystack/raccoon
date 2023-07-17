@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	// Importing librd to make it work on vendor mode
-	// _ "github.com/confluentinc/confluent-kafka-go/kafka/librdkafka"
 
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"

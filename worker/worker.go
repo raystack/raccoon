@@ -5,11 +5,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/raystack/raccoon/collection"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
 	"github.com/raystack/raccoon/publisher"
-	"gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 // Pool spawn goroutine as much as Size that will listen to EventsChannel. On Close, wait for all data in EventsChannel to be processed.

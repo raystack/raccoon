@@ -1,5 +1,4 @@
 const RaccoonClient = require('../lib/rest');
-const axios = require('axios');
 
 const mockHTTPClient = {
     post: jest.fn()

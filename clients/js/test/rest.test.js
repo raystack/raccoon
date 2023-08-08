@@ -1,12 +1,11 @@
-const RaccoonClient = require('../lib/rest');
+import { RaccoonClient } from '../lib/rest.js';
+import { jest } from '@jest/globals'
 
 const mockHTTPClient = {
     post: jest.fn()
 };
 
-jest.mock('uuid', () => ({
-    v4: jest.fn().mockReturnValue('mocked-uuid')
-}));
+const mockUUIDGenerator = (() => 'mocked-uuid');
 
 describe('RaccoonClient', () => {
 
@@ -70,7 +69,7 @@ describe('RaccoonClient', () => {
                 retryWait: 3000,
                 url: 'http://example.com/api',
             };
-            const raccoonClient = new RaccoonClient(config, mockHTTPClient);
+            const raccoonClient = new RaccoonClient(config, mockHTTPClient, mockUUIDGenerator);
 
             const now = new Date('2023-08-07T00:00:00Z');
             Date.now = jest.spyOn(Date, 'now').mockReturnValue(now);
@@ -122,7 +121,7 @@ describe('RaccoonClient', () => {
                 retryWait: 3000,
                 url: 'http://example.com/api',
             };
-            const raccoonClient = new RaccoonClient(config, mockHTTPClient);
+            const raccoonClient = new RaccoonClient(config, mockHTTPClient, mockUUIDGenerator);
 
             const now = new Date('2023-08-07T00:00:00Z');
             Date.now = jest.spyOn(Date, 'now').mockReturnValue(now);
@@ -176,7 +175,7 @@ describe('RaccoonClient', () => {
                 retryWait: 3000,
                 url: 'http://example.com/api',
             };
-            const raccoonClient = new RaccoonClient(config, mockHTTPClient);
+            const raccoonClient = new RaccoonClient(config, mockHTTPClient, mockUUIDGenerator);
 
             const invalidEvents = [
                 { type: 'topic', daa: { key1: 'value' } }
@@ -194,7 +193,7 @@ describe('RaccoonClient', () => {
                 retryWait: 3000,
                 url: 'http://example.com/api',
             };
-            const raccoonClient = new RaccoonClient(config, mockHTTPClient);
+            const raccoonClient = new RaccoonClient(config, mockHTTPClient, mockUUIDGenerator);
 
             const invalidEvents = [
                 { tye: 'topic', data: { key1: 'value' } }
@@ -212,7 +211,7 @@ describe('RaccoonClient', () => {
                 retryWait: 3000,
                 url: 'http://example.com/api',
             };
-            const raccoonClient = new RaccoonClient(config, mockHTTPClient);
+            const raccoonClient = new RaccoonClient(config, mockHTTPClient, mockUUIDGenerator);
 
             await expect(() => raccoonClient.send([])).rejects.toThrow("req-id: mocked-uuid, error: Error: No events provided");
 
@@ -227,7 +226,7 @@ describe('RaccoonClient', () => {
                 retryWait: 3000,
                 url: 'http://example.com/api',
             };
-            const raccoonClient = new RaccoonClient(config, mockHTTPClient);
+            const raccoonClient = new RaccoonClient(config, mockHTTPClient, mockUUIDGenerator);
 
             await expect(() => raccoonClient.send()).rejects.toThrow("req-id: mocked-uuid, error: Error: No events provided");
 
@@ -242,7 +241,7 @@ describe('RaccoonClient', () => {
                 retryWait: 3000,
                 url: 'http://example.com/api',
             };
-            const raccoonClient = new RaccoonClient(config, mockHTTPClient);
+            const raccoonClient = new RaccoonClient(config, mockHTTPClient, mockUUIDGenerator);
 
             await expect(() => raccoonClient.send(null)).rejects.toThrow("req-id: mocked-uuid, error: Error: No events provided");
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
@@ -256,7 +255,7 @@ describe('RaccoonClient', () => {
                 retryWait: 5,
                 url: 'http://example.com/api',
             };
-            const raccoonClient = new RaccoonClient(config, mockHTTPClient);
+            const raccoonClient = new RaccoonClient(config, mockHTTPClient, mockUUIDGenerator);
 
             const now = new Date('2023-08-07T00:00:00Z');
             Date.now = jest.spyOn(Date, 'now').mockReturnValue(now);

@@ -1,9 +1,9 @@
-const axios = require('axios');
-const uuid = require('uuid');
+import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 
-const createJsonSerializer = require('./serializer/json_serializer');
-const createProtobufSerializer = require('./serializer/proto_serializer');
-const retry = require('./retry/retry')
+import { createJsonSerializer } from './serializer/json_serializer.js';
+import { createProtobufSerializer } from './serializer/proto_serializer.js';
+import { retry } from './retry/retry.js';
 
 const NANOSECONDS_PER_MILLISECOND = 1e6;
 
@@ -22,7 +22,7 @@ class RaccoonClient {
      * @param {string} [options.logger=''] - Logger object for logging.
      * @returns {RaccoonClient} A new instance of the RaccoonClient.
      */
-    constructor(options = {}, httpClient) {
+    constructor(options = {}, httpClient, uuidGenerator) {
         this.serialize = options.serializationType === 'protobuf'
             ? createProtobufSerializer()
             : createJsonSerializer();
@@ -33,6 +33,7 @@ class RaccoonClient {
         this.retryWait = options.retryWait || 5000;
         this.url = options.url || '';
         this.logger = options.logger || console
+        this.uuidGenerator = uuidGenerator || (() => uuidv4());
     }
 
 
@@ -45,7 +46,7 @@ class RaccoonClient {
      * @throws {Error} Throws an error if the event is invalid or if there's an issue with the request.
      */
     async send(events) {
-        let requestId = uuid.v4();;
+        const requestId = this.uuidGenerator();
         try {
             if (!events || events.length === 0) {
                 throw new Error('No events provided');
@@ -114,4 +115,4 @@ function getCurrentTimestamp() {
     });
 }
 
-module.exports = RaccoonClient;
+export { RaccoonClient };

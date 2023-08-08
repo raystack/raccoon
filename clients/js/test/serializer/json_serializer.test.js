@@ -1,4 +1,4 @@
-const createJsonSerializer = require('../../lib/serializer/json_serializer');
+import { createJsonSerializer } from '../../lib/serializer/json_serializer.js';
 
 describe('JsonSerializer', () => {
     test('should convert data to JSON', () => {

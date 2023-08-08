@@ -1,4 +1,4 @@
-async function retry(callback, maxAttempts, waitTime) {
+export async function retry(callback, maxAttempts, waitTime) {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
             return await callback();
@@ -12,5 +12,3 @@ async function retry(callback, maxAttempts, waitTime) {
     }
     throw new Error('Retry limit exceeded');
 }
-
-module.exports = retry;

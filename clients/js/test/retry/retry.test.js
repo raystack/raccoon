@@ -1,4 +1,5 @@
-const retry = require('../../lib/retry/retry');
+import { retry } from '../../lib/retry/retry.js';
+import { jest } from '@jest/globals'
 
 describe('retry', () => {
     test('should return callback result on first success attempt', async () => {

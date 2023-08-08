@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "raccoon-client"
+version = "0.1.0"
+description = "A python client to serve requests to raccoon server"
+authors = ["Punit Kulal <punitkulal1996@gmail.com>"]
+readme = "README.md"
+packages = [{include = "raccoon_client"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+protobuf = "^4.23.4"
+
+[tool.poetry.group.dev.dependencies]
+requests = "^2.31.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

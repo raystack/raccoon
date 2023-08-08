@@ -1,10 +1,8 @@
 function createProtobufSerializer() {
 
-    function serialize(data) {
+    return function serialize(data) {
         // TODO://Return the serialized protobuf data
     }
-
-    return { serialize };
 }
 
 module.exports = createProtobufSerializer;

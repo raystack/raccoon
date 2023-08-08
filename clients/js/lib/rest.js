@@ -23,7 +23,7 @@ class RaccoonClient {
      * @returns {RaccoonClient} A new instance of the RaccoonClient.
      */
     constructor(options = {}, httpClient) {
-        this.serializer = options.serializationType === 'protobuf'
+        this.serialize = options.serializationType === 'protobuf'
             ? createProtobufSerializer()
             : createJsonSerializer();
         this.wire = options.wire || { ContentType: 'application/json' };
@@ -56,7 +56,7 @@ class RaccoonClient {
                 if (event && event.type && event.data) {
                     eventsToSend.push({
                         type: event.type,
-                        event_bytes: this.serializer.serialize(event.data),
+                        event_bytes: this.serialize(event.data),
                     });
                 } else {
                     throw new Error(`Invalid event: ${JSON.stringify(event)}`);

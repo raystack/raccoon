@@ -1,6 +1,6 @@
 import json
 
-from clients.python.serde.serde import Serde
+from serde.serde import Serde
 
 
 class JsonSerde(Serde):

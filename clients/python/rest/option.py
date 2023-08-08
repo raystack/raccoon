@@ -1,7 +1,7 @@
-from clients.python.serde.enum import ContentType
+from serde.enum import ContentType
 
 
-class Config:
+class RestClientConfig:
     url: str
     max_retries: int
     content_type: ContentType

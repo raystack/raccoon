@@ -3,17 +3,19 @@ import uuid
 
 import requests
 
-from clients.python.client import Client, Event
-from clients.python.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest
-from clients.python.serde.util import get_serde, CONTENT_TYPE_HEADER_KEY
 from google.protobuf import timestamp_pb2
+
+from client import Client, Event
+from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest
+from rest.option import RestClientConfig
+from serde.util import get_serde, CONTENT_TYPE_HEADER_KEY
 
 
 class RestClient(Client):
     session: requests.Session
     HTTP_PATH = "/api/v1/events"
 
-    def __init__(self, config):
+    def __init__(self, config: RestClientConfig):
         self.session = requests.session()
         self.url = config.url + self.HTTP_PATH
         self.serde = get_serde(config.content_type)

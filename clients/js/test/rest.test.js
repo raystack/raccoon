@@ -19,31 +19,40 @@ describe('RaccoonClient', () => {
             expect(raccoonClient.headers).toStrictEqual({});
             expect(raccoonClient.httpClient).toBeDefined;
             expect(raccoonClient.serializer).toBeDefined;
+            expect(raccoonClient.logger).toBe(console);
             expect(raccoonClient.retryMax).toBe(3);
             expect(raccoonClient.retryWait).toBe(5000);
             expect(raccoonClient.wire).toStrictEqual({ ContentType: 'application/json' });
         });
 
         it('should create an instance with provided configuration', () => {
-            const config = {
+
+            const mockLogger = {
+                info: jest.fn(),
+                error: jest.fn(),
+            };
+
+            const options = {
                 serializationType: 'protobuf',
                 wire: { ContentType: 'application/custom' },
                 headers: { 'Authorization': 'Bearer token' },
                 retryMax: 5,
                 retryWait: 3000,
                 url: 'http://example.com/api',
+                logger: mockLogger,
             };
 
-            const raccoonClient = new RaccoonClient(config, mockHTTPClient);
+            const raccoonClient = new RaccoonClient(options, mockHTTPClient);
 
             expect(raccoonClient).toBeDefined();
             expect(raccoonClient.serializer).toBeDefined;
-            expect(raccoonClient.wire).toEqual(config.wire);
-            expect(raccoonClient.headers).toEqual(config.headers);
-            expect(raccoonClient.retryMax).toBe(config.retryMax);
-            expect(raccoonClient.retryWait).toBe(config.retryWait);
-            expect(raccoonClient.url).toBe(config.url);
+            expect(raccoonClient.wire).toEqual(options.wire);
+            expect(raccoonClient.headers).toEqual(options.headers);
+            expect(raccoonClient.retryMax).toBe(options.retryMax);
+            expect(raccoonClient.retryWait).toBe(options.retryWait);
+            expect(raccoonClient.url).toBe(options.url);
             expect(raccoonClient.httpClient).toBe(mockHTTPClient);
+            expect(raccoonClient.logger).toBe(mockLogger)
         });
     });
     describe('send', () => {
@@ -159,7 +168,7 @@ describe('RaccoonClient', () => {
             );
         });
 
-        it('should return error if input message do not have data', async () => {
+        it('should throw error if input message do not have data', async () => {
             const config = {
                 serializationType: 'json',
                 headers: { 'X-User-ID': 'test-user-1' },
@@ -173,18 +182,11 @@ describe('RaccoonClient', () => {
                 { type: 'topic', daa: { key1: 'value' } }
             ];
 
-            const response = await raccoonClient.send(invalidEvents);
-
-            expect(response).toEqual({
-                reqId: 'mocked-uuid',
-                response: {},
-                error: expect.any(Error),
-            });
-            expect(response.error.message).toEqual("Invalid event: {\"type\":\"topic\",\"daa\":{\"key1\":\"value\"}}");
+            await expect(() => raccoonClient.send(invalidEvents)).rejects.toThrow("req-id: mocked-uuid, error: Error: Invalid event: {\"type\":\"topic\",\"daa\":{\"key1\":\"value\"}}");
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
 
-        it('should return error if input message do not have type', async () => {
+        it('should throw error if input message do not have type', async () => {
             const config = {
                 serializationType: 'json',
                 headers: { 'X-User-ID': 'test-user-1' },
@@ -198,18 +200,11 @@ describe('RaccoonClient', () => {
                 { tye: 'topic', data: { key1: 'value' } }
             ];
 
-            const response = await raccoonClient.send(invalidEvents);
-
-            expect(response).toEqual({
-                reqId: 'mocked-uuid',
-                response: {},
-                error: expect.any(Error),
-            });
-            expect(response.error.message).toEqual("Invalid event: {\"tye\":\"topic\",\"data\":{\"key1\":\"value\"}}");
+            await expect(() => raccoonClient.send(invalidEvents)).rejects.toThrow("req-id: mocked-uuid, error: Error: Invalid event: {\"tye\":\"topic\",\"data\":{\"key1\":\"value\"}}");
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
 
-        it('should return error if input messages empty', async () => {
+        it('should throw error if input messages empty', async () => {
             const config = {
                 serializationType: 'json',
                 headers: { 'X-User-ID': 'test-user-1' },
@@ -219,18 +214,12 @@ describe('RaccoonClient', () => {
             };
             const raccoonClient = new RaccoonClient(config, mockHTTPClient);
 
-            const response = await raccoonClient.send([]);
+            await expect(() => raccoonClient.send([])).rejects.toThrow("req-id: mocked-uuid, error: Error: No events provided");
 
-            expect(response).toEqual({
-                reqId: 'mocked-uuid',
-                response: {},
-                error: expect.any(Error),
-            });
-            expect(response.error.message).toEqual("No events provided");
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
 
-        it('should return error if input messages not sent', async () => {
+        it('should throw error if input messages not sent', async () => {
             const config = {
                 serializationType: 'json',
                 headers: { 'X-User-ID': 'test-user-1' },
@@ -240,18 +229,12 @@ describe('RaccoonClient', () => {
             };
             const raccoonClient = new RaccoonClient(config, mockHTTPClient);
 
-            const response = await raccoonClient.send();
+            await expect(() => raccoonClient.send()).rejects.toThrow("req-id: mocked-uuid, error: Error: No events provided");
 
-            expect(response).toEqual({
-                reqId: 'mocked-uuid',
-                response: {},
-                error: expect.any(Error),
-            });
-            expect(response.error.message).toEqual("No events provided");
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
 
-        it('should return error if input messages null', async () => {
+        it('should throw error if input messages null', async () => {
             const config = {
                 serializationType: 'json',
                 headers: { 'X-User-ID': 'test-user-1' },
@@ -261,18 +244,11 @@ describe('RaccoonClient', () => {
             };
             const raccoonClient = new RaccoonClient(config, mockHTTPClient);
 
-            const response = await raccoonClient.send(null);
-
-            expect(response).toEqual({
-                reqId: 'mocked-uuid',
-                response: {},
-                error: expect.any(Error),
-            });
-            expect(response.error.message).toEqual("No events provided");
+            await expect(() => raccoonClient.send(null)).rejects.toThrow("req-id: mocked-uuid, error: Error: No events provided");
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
 
-        it('should return error if error from server', async () => {
+        it('should throw error if error from server', async () => {
             const config = {
                 serializationType: 'json',
                 headers: { 'X-User-ID': 'test-user-1' },
@@ -285,15 +261,13 @@ describe('RaccoonClient', () => {
             const now = new Date('2023-08-07T00:00:00Z');
             Date.now = jest.spyOn(Date, 'now').mockReturnValue(now);
 
-            const sentTime = 1691395789;
-
             const events = [
                 { type: 'topic', data: { key1: 'value' } }
             ];
 
-            mockHTTPClient.post.mockRejectedValue({ status: 400, statusText: 'Bad Request' });
+            mockHTTPClient.post.mockRejectedValue(JSON.stringify({ status: 400, statusText: 'Bad Request' }));
 
-            const response = await raccoonClient.send(events);
+            await expect(() => raccoonClient.send(events)).rejects.toThrow("req-id: mocked-uuid, error: {\"status\":400,\"statusText\":\"Bad Request\"}");
 
             expect(mockHTTPClient.post).toHaveBeenCalledWith(
                 'http://example.com/api',
@@ -311,15 +285,6 @@ describe('RaccoonClient', () => {
                     }
                 }
             );
-
-            expect(response).toEqual({
-                reqId: 'mocked-uuid',
-                response: {},
-                error: {
-                    status: 400,
-                    statusText: 'Bad Request',
-                },
-            });
         });
     });
 });

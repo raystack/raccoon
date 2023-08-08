@@ -93,7 +93,7 @@ class RaccoonClient {
             };
         } catch (error) {
             this.logger.error(`error, url: ${this.url}, req-id: ${requestId}, ${error}`);
-            return { reqId: requestId, response: {}, error };
+            throw new Error(`req-id: ${requestId}, error: ${error}`);
         }
     }
 

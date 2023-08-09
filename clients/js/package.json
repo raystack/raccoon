@@ -1,0 +1,19 @@
+{
+  "name": "@raystack/raccoon",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Raccoon js client publishes events to raccoon server",
+  "main": "main.js",
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.6.2"
+  }
+}

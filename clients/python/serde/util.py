@@ -1,5 +1,5 @@
 from serde.enum import ContentType
-from serde.jsonserde import JsonSerde
+from serde.json_serde import JsonSerde
 
 
 def get_serde(content_type):

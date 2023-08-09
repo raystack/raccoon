@@ -5,6 +5,12 @@ class RestClientConfig:
     url: str
     max_retries: int
     content_type: ContentType
+    headers: dict
+
+    def __init__(self):
+        self.headers = {}
+        self.content_type = ContentType.JSON
+        self.max_retries = 0
 
 
 class RestClientConfigBuilder:
@@ -29,6 +35,9 @@ class RestClientConfigBuilder:
             raise ValueError("invalid  serialiser/deserialiser type")
         self.config.content_type = content_type
         return self
+
+    def with_headers(self, headers):
+        self.config.headers = headers
 
     def build(self):
         return self.config

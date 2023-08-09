@@ -1,8 +1,10 @@
 from enum import Enum
 
+from serde.json_serde import JsonSerde
+
 
 class ContentType(Enum):
-    JSON = 1
+    JSON = JsonSerde
     PROTOBUF = 2
 
 

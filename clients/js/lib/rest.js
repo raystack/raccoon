@@ -22,18 +22,18 @@ class RaccoonClient {
      * @param {string} [options.logger=''] - Logger object for logging.
      * @returns {RaccoonClient} A new instance of the RaccoonClient.
      */
-    constructor(options = {}, httpClient, uuidGenerator) {
+    constructor(options = {}) {
         this.serialize = options.serializationType === 'protobuf'
             ? createProtobufSerializer()
             : createJsonSerializer();
         this.wire = options.wire || { ContentType: 'application/json' };
-        this.httpClient = httpClient || axios.create();
         this.headers = options.headers || {};
         this.retryMax = options.retryMax || 3;
         this.retryWait = options.retryWait || 5000;
         this.url = options.url || '';
         this.logger = options.logger || console
-        this.uuidGenerator = uuidGenerator || (() => uuidv4());
+        this.uuidGenerator = (() => uuidv4());
+        this.httpClient =  axios.create();
     }
 
 

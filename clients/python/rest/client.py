@@ -4,7 +4,7 @@ import uuid
 import requests
 
 from client import Client, Event
-from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest
+from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse
 from rest.option import RestClientConfig
 from serde.util import get_serde, CONTENT_TYPE_HEADER_KEY
 
@@ -24,7 +24,8 @@ class RestClient(Client):
         for e in events:
             req.events.append(e)
         response = self.session.post(url=self.url, data=self.serde.serialise(req), headers=self.headers)
-        return self._parse_response(response)
+        deserialised_response = self._parse_response(response)
+        return req.req_guid, deserialised_response, response
 
     def _get_stub_request(self):
         req = SendEventRequest()
@@ -36,11 +37,7 @@ class RestClient(Client):
         headers[CONTENT_TYPE_HEADER_KEY] = self.serde.get_content_type()
         return headers
 
-    def _parse_response(self, response):
-        # todo handle response
-        # if len(response.content) != 0:
-        #     event_response = self.serde.deserialise(response.content, SendEventResponse)
-        #     return req.req_guid, event_response, response
-        # else:
-        #     return req.req_guid, None, response
-        pass
+    def _parse_response(self, response) -> SendEventResponse:
+        if len(response.content) != 0:
+            event_response = self.serde.deserialise(str(response.content), SendEventResponse())
+            return event_response

@@ -1,14 +1,14 @@
 import json
 import time
 import unittest
-import uuid
 from unittest import mock
 from unittest.mock import patch
 
 import requests
 from google.protobuf import json_format
+from google.protobuf.timestamp_pb2 import Timestamp
 
-from protos.raystack.raccoon.v1beta1.raccoon_pb2 import Event, SendEventRequest, SendEventResponse
+from protos.raystack.raccoon.v1beta1.raccoon_pb2 import Event, SendEventRequest, SendEventResponse, Status
 from rest.client import RestClient
 from rest.option import RestClientConfigBuilder
 from serde.enum import ContentType
@@ -61,6 +61,15 @@ class RestClientTest(unittest.TestCase):
             post.assert_called_once_with(url=self.sample_url, data=serialised_data, headers={"Content-Type": "application/json"})
             rest_client._parse_response.assert_called_once_with(post.return_value)
 
+    def test_parse_response(self):
+        resp = self._get_stub_response()
+        rest_client = self._get_rest_client()
+        deserialised_response = rest_client._parse_response(resp)
+        self.assertEqual(deserialised_response.status, Status.STATUS_SUCCESS)
+        self.assertEqual(deserialised_response.data["req_guid"], self._get_static_uuid())
+        self.assertEqual(deserialised_response.sent_time, self._get_static_time())
+
+
     def _get_rest_client(self):
         client_config = RestClientConfigBuilder().\
             with_url(self.sample_url).\
@@ -71,7 +80,9 @@ class RestClientTest(unittest.TestCase):
     def _get_stub_response(self):
         response = requests.Response()
         response.status_code = requests.status_codes.codes["ok"]
-        response._content = bytes("some_raw_data", "utf-8")
+        json_response = {"status": 1, "code": 1, "sent_time": self._get_static_time(), "data": {"req_guid": self._get_static_uuid()}}
+        json_string2 = json.dumps(json_response)
+        response._content = json_string2
         return response
 
     def _get_stub_event_payload(self):
@@ -82,6 +93,9 @@ class RestClientTest(unittest.TestCase):
 
     def _get_static_uuid(self):
         return "17e2ac19-df8b-4a30-b111-fd7f5073d2f5"
+
+    def _get_static_time(self):
+        return 1692182259
 
     def _get_send_event_response(self):
         serialised_data = SendEventResponse()

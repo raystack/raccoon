@@ -1,16 +1,17 @@
-from serde.enum import ContentType
+from serde.enum import Serialiser, WireType
 
 
 class RestClientConfig:
     url: str
     max_retries: int
-    content_type: ContentType
+    serialiser: Serialiser
     headers: dict
 
     def __init__(self):
         self.headers = {}
-        self.content_type = ContentType.JSON
+        self.serialiser = Serialiser.JSON
         self.max_retries = 0
+        self.wire_type = WireType.JSON
 
 
 class RestClientConfigBuilder:
@@ -30,14 +31,20 @@ class RestClientConfigBuilder:
         self.config.max_retries = retry_count
         return self
 
-    def with_content_type(self, content_type):
-        if not isinstance(content_type, ContentType):
+    def with_serialiser(self, content_type):
+        if not isinstance(content_type, Serialiser):
             raise ValueError("invalid  serialiser/deserialiser type")
-        self.config.content_type = content_type
+        self.config.serialiser = content_type
         return self
 
     def with_headers(self, headers):
         self.config.headers = headers
+
+    def with_wire_type(self, wire_type):
+        if not isinstance(wire_type, WireType):
+            raise ValueError("invalid  serialiser/deserialiser type")
+        self.config.wire_type = wire_type
+        return self
 
     def build(self):
         return self.config

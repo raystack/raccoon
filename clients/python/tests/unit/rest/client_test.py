@@ -8,22 +8,23 @@ import requests
 from google.protobuf import json_format
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from protos.raystack.raccoon.v1beta1.raccoon_pb2 import Event, SendEventRequest, SendEventResponse, Status
+import client
+from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse, Status
 from rest.client import RestClient
 from rest.option import RestClientConfigBuilder
-from serde.enum import ContentType
+from serde.enum import Serialiser
 
 
 class RestClientTest(unittest.TestCase):
 
     sample_url = "http://localhost:8080/api/v1/"
     max_retries = 3
-    content_type = ContentType.JSON
+    content_type = Serialiser.JSON
 
     def test_client_creation(self):
         client_config = RestClientConfigBuilder().\
             with_url(self.sample_url).\
-            with_content_type(self.content_type).\
+            with_serialiser(self.content_type).\
             with_retry_count(self.max_retries).build()
         rest_client = RestClient(client_config)
         self.assertEqual(rest_client.url, self.sample_url, "sample_urls do not match")
@@ -50,10 +51,10 @@ class RestClientTest(unittest.TestCase):
         time_in_ns = time.time_ns()
         req.sent_time.FromNanoseconds(time_in_ns)
         expected_req.sent_time.FromNanoseconds(time_in_ns)
-        expected_req.events.append(self._get_stub_event_payload())
-        serialised_data = json_format.MessageToJson(expected_req)
         with patch("rest.client.requests.session", return_value=session_mock):
             rest_client = self._get_rest_client()
+            expected_req.events.append(rest_client._convert_to_event_pb(self._get_stub_event_payload()))
+            serialised_data = json_format.MessageToJson(expected_req)
             rest_client._get_stub_request = mock.MagicMock()
             rest_client._get_stub_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
@@ -73,7 +74,7 @@ class RestClientTest(unittest.TestCase):
     def _get_rest_client(self):
         client_config = RestClientConfigBuilder().\
             with_url(self.sample_url).\
-            with_content_type(self.content_type).\
+            with_serialiser(self.content_type).\
             with_retry_count(self.max_retries).build()
         return RestClient(client_config)
 
@@ -86,9 +87,9 @@ class RestClientTest(unittest.TestCase):
         return response
 
     def _get_stub_event_payload(self):
-        e = Event()
+        e = client.Event()
         e.type = "random_topic"
-        e.event_bytes = bytes("random_bytes", "utf-8")
+        e.event = {"a":"abc"}
         return e
 
     def _get_static_uuid(self):

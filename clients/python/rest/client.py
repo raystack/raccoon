@@ -2,6 +2,8 @@ import time
 import uuid
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3 import Retry
 
 from client import Client, Event
 from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse, Event as EventPb
@@ -22,7 +24,17 @@ class RestClient(Client):
         self.serde = get_serde(config.serialiser)
         self.wire = get_wire_type(config.wire_type)
         self.headers = self._set_content_type_header(config.headers)
-        self.max_retries = config.max_retries
+        self._set_retries(self.session, config.max_retries)
+
+    def _set_retries(self, session, max_retries):
+        retries = Retry(
+            total=max_retries,
+            backoff_factor=1,
+            status_forcelist=[500, 502, 503, 504, 521, 429],
+            allowed_methods=["POST"],
+        )
+        session.mount("https://", HTTPAdapter(max_retries=retries))
+        session.mount("http://", HTTPAdapter(max_retries=retries))
 
     def send(self, events: [Event]):
         req = self._get_stub_request()

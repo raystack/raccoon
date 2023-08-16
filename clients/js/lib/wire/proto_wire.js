@@ -8,7 +8,7 @@ export function createProtoMarshaller() {
             throw new Error("Invalid Protobuf message object for marshalling");
         }
 
-        return data.constructor.encode(data).finish();
+        return new Uint8Array(data.constructor.encode(data).finish());
     }
 
     function unmarshal(data, type) {
@@ -20,7 +20,7 @@ export function createProtoMarshaller() {
             throw new Error("Invalid Protobuf message type for unmarshalling");
         }
 
-        return type.decode(Buffer.from(data));
+        return type.decode(new TextEncoder().encode((data)));
     }
 
     function getContentType() {

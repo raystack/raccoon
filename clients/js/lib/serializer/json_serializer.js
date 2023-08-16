@@ -6,6 +6,8 @@ export function createJsonSerializer() {
 
         const jsonString = JSON.stringify(data);
 
-        return Array.from(Buffer.from(jsonString));
+        const encoder = new TextEncoder();
+
+        return Array.from(encoder.encode(jsonString));
     }
 }

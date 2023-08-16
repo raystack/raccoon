@@ -28,9 +28,10 @@ describe('JsonSerializer', () => {
     test('should handle null', () => {
         const serialize = createJsonSerializer();
         const data = null;
-        const serializedData = serialize(data);
 
-        expect(JSON.parse(Buffer.from(serializedData).toString())).toEqual(data);
+        expect(() => {
+            serialize(data);
+        }).toThrowError("Invalid data object for serialization");
     });
 
     test('should handle undefined with proper error', () => {
@@ -39,7 +40,7 @@ describe('JsonSerializer', () => {
 
         expect(() => {
             serialize(data);
-        }).toThrowError("The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined");
+        }).toThrowError("Invalid data object for serialization");
     });
 
 

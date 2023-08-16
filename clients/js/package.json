@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Raccoon js client publishes events to raccoon server",
   "main": "main.js",
+  "exports": {
+    ".": "./main.js"
+  },
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },

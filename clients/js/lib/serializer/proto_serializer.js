@@ -9,7 +9,6 @@ export function createProtobufSerializer() {
             throw new Error("Invalid Protobuf message object for serialization");
         }
 
-        const buffer = data.constructor.encode(data).finish();
-        return buffer.toString('base64');
+        return Array.from(data.constructor.encode(data).finish());
     }
 }

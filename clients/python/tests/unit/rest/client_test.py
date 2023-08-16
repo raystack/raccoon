@@ -56,8 +56,10 @@ class RestClientTest(unittest.TestCase):
             rest_client = self._get_rest_client()
             rest_client._get_stub_request = mock.MagicMock()
             rest_client._get_stub_request.return_value = req
+            rest_client._parse_response = mock.MagicMock()
             rest_client.send(event_arr)
             post.assert_called_once_with(url=self.sample_url, data=serialised_data, headers={"Content-Type": "application/json"})
+            rest_client._parse_response.assert_called_once_with(post.return_value)
 
     def _get_rest_client(self):
         client_config = RestClientConfigBuilder().\

@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
+	confluent "github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/goto/raccoon/config/util"
 	"github.com/spf13/viper"
-	confluent "gopkg.in/confluentinc/confluent-kafka-go.v1/kafka"
 )
 
 var PublisherKafka publisherKafka

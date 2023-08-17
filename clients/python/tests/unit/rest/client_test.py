@@ -15,12 +15,29 @@ from rest.option import RestClientConfigBuilder
 from serde.enum import Serialiser, WireType
 
 
-def _get_static_uuid():
+def get_static_uuid():
     return "17e2ac19-df8b-4a30-b111-fd7f5073d2f5"
 
 
-def _get_static_time():
-    return 1692182259
+def get_static_time():
+    return 1692250729234986000
+
+
+def get_stub_event_payload():
+    e = client.Event()
+    e.type = "random_topic"
+    e.event = {"a": "abc"}
+    return e
+
+
+def get_stub_response():
+    response = requests.Response()
+    response.status_code = requests.status_codes.codes["ok"]
+    json_response = {"status": 1, "code": 1, "sent_time": get_static_time(),
+                     "data": {"req_guid": get_static_uuid()}}
+    json_string2 = json.dumps(json_response)
+    response._content = json_string2
+    return response
 
 
 class RestClientTest(unittest.TestCase):
@@ -51,14 +68,14 @@ class RestClientTest(unittest.TestCase):
         self.assertRaises(ValueError, builder.with_retry_count, "five")
         self.assertRaises(ValueError, builder.with_timeout, 0.005)
 
-    @patch("rest.client.time.time_ns", return_value=_get_static_time())
+    @patch("rest.client.time.time_ns", return_value=get_static_time())
     def test_get_stub_request(self, time_ns):
         rest_client = self._get_rest_client()
         ts = timestamp_pb2.Timestamp()
         ts.FromNanoseconds(time.time_ns())
-        with patch("rest.client.uuid.uuid4", return_value=_get_static_uuid()):
+        with patch("rest.client.uuid.uuid4", return_value=get_static_uuid()):
             req = rest_client._get_stub_request()
-            self.assertEqual(req.req_guid, _get_static_uuid())
+            self.assertEqual(req.req_guid, get_static_uuid())
             self.assertEqual(req.sent_time.seconds, ts.seconds)
             self.assertEqual(req.sent_time.nanos, ts.nanos)
 
@@ -75,18 +92,18 @@ class RestClientTest(unittest.TestCase):
         session_mock = mock.Mock()
         post = mock.MagicMock()
         session_mock.post = post
-        post.return_value = self._get_stub_response()
-        event_arr = [self._get_stub_event_payload()]
+        post.return_value = get_stub_response()
+        event_arr = [get_stub_event_payload()]
         req = SendEventRequest()
         expected_req = SendEventRequest()
-        expected_req.req_guid = _get_static_uuid()
-        req.req_guid = _get_static_uuid()
+        expected_req.req_guid = get_static_uuid()
+        req.req_guid = get_static_uuid()
         time_in_ns = time.time_ns()
         req.sent_time.FromNanoseconds(time_in_ns)
         expected_req.sent_time.FromNanoseconds(time_in_ns)
         with patch("rest.client.requests.session", return_value=session_mock):
             rest_client = self._get_rest_client()
-            expected_req.events.append(rest_client._convert_to_event_pb(self._get_stub_event_payload()))
+            expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload()))
             serialised_data = json_format.MessageToJson(expected_req)
             rest_client._get_stub_request = mock.MagicMock()
             rest_client._get_stub_request.return_value = req
@@ -101,17 +118,17 @@ class RestClientTest(unittest.TestCase):
         post = mock.MagicMock()
         session_mock.post = post
         post.side_effect = ConnectionError("error connecting to host")
-        event_arr = [self._get_stub_event_payload()]
+        event_arr = [get_stub_event_payload()]
         req = SendEventRequest()
         expected_req = SendEventRequest()
-        expected_req.req_guid = _get_static_uuid()
-        req.req_guid = _get_static_uuid()
+        expected_req.req_guid = get_static_uuid()
+        req.req_guid = get_static_uuid()
         time_in_ns = time.time_ns()
         req.sent_time.FromNanoseconds(time_in_ns)
         expected_req.sent_time.FromNanoseconds(time_in_ns)
         with patch("rest.client.requests.session", return_value=session_mock):
             rest_client = self._get_rest_client()
-            expected_req.events.append(rest_client._convert_to_event_pb(self._get_stub_event_payload()))
+            expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload()))
             serialised_data = json_format.MessageToJson(expected_req)
             rest_client._get_stub_request = mock.MagicMock()
             rest_client._get_stub_request.return_value = req
@@ -122,12 +139,12 @@ class RestClientTest(unittest.TestCase):
             rest_client._parse_response.assert_not_called()
 
     def test_parse_response(self):
-        resp = self._get_stub_response()
+        resp = get_stub_response()
         rest_client = self._get_rest_client()
         deserialised_response = rest_client._parse_response(resp)
         self.assertEqual(deserialised_response.status, Status.STATUS_SUCCESS)
-        self.assertEqual(deserialised_response.data["req_guid"], _get_static_uuid())
-        self.assertEqual(deserialised_response.sent_time, _get_static_time())
+        self.assertEqual(deserialised_response.data["req_guid"], get_static_uuid())
+        self.assertEqual(deserialised_response.sent_time, get_static_time())
 
     def _get_rest_client(self):
         client_config = RestClientConfigBuilder(). \
@@ -137,20 +154,3 @@ class RestClientTest(unittest.TestCase):
             with_timeout(2.0).build()
         return RestClient(client_config)
 
-    def _get_stub_response(self):
-        response = requests.Response()
-        response.status_code = requests.status_codes.codes["ok"]
-        json_response = {"status": 1, "code": 1, "sent_time": _get_static_time(),
-                         "data": {"req_guid": _get_static_uuid()}}
-        json_string2 = json.dumps(json_response)
-        response._content = json_string2
-        return response
-
-    def _get_stub_event_payload(self):
-        e = client.Event()
-        e.type = "random_topic"
-        e.event = {"a": "abc"}
-        return e
-
-    def _get_send_event_response(self):
-        serialised_data = SendEventResponse()

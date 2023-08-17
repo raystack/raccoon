@@ -33,6 +33,7 @@ class RestClient(Client):
             backoff_factor=1,
             status_forcelist=[500, 502, 503, 504, 521, 429],
             allowed_methods=["POST"],
+            raise_on_status=False,
         )
         session.mount("https://", HTTPAdapter(max_retries=retries))
         session.mount("http://", HTTPAdapter(max_retries=retries))

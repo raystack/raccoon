@@ -49,6 +49,7 @@ class RestClientTest(unittest.TestCase):
         self.assertRaises(ValueError, builder.with_serialiser, "JSON")
         self.assertRaises(ValueError, builder.with_wire_type, "PROTOBUF")
         self.assertRaises(ValueError, builder.with_retry_count, "five")
+        self.assertRaises(ValueError, builder.with_timeout, 0.005)
 
     @patch("rest.client.time.time_ns", return_value=_get_static_time())
     def test_get_stub_request(self, time_ns):
@@ -68,6 +69,7 @@ class RestClientTest(unittest.TestCase):
         req2 = rest_client._get_stub_request()
         self.assertNotEqual(req1.req_guid, req2.req_guid)
         self.assertNotEqual(req1.sent_time.nanos, req2.sent_time.nanos)
+        self.assertNotEqual(req1.sent_time.seconds, req2.sent_time.seconds)
 
     def test_client_send_success(self):
         session_mock = mock.Mock()
@@ -93,6 +95,31 @@ class RestClientTest(unittest.TestCase):
             post.assert_called_once_with(url=self.sample_url, data=serialised_data,
                                          headers={"Content-Type": "application/json"}, timeout=2.0)
             rest_client._parse_response.assert_called_once_with(post.return_value)
+
+    def test_client_send_connection_failure(self):
+        session_mock = mock.Mock()
+        post = mock.MagicMock()
+        session_mock.post = post
+        post.side_effect = ConnectionError("error connecting to host")
+        event_arr = [self._get_stub_event_payload()]
+        req = SendEventRequest()
+        expected_req = SendEventRequest()
+        expected_req.req_guid = _get_static_uuid()
+        req.req_guid = _get_static_uuid()
+        time_in_ns = time.time_ns()
+        req.sent_time.FromNanoseconds(time_in_ns)
+        expected_req.sent_time.FromNanoseconds(time_in_ns)
+        with patch("rest.client.requests.session", return_value=session_mock):
+            rest_client = self._get_rest_client()
+            expected_req.events.append(rest_client._convert_to_event_pb(self._get_stub_event_payload()))
+            serialised_data = json_format.MessageToJson(expected_req)
+            rest_client._get_stub_request = mock.MagicMock()
+            rest_client._get_stub_request.return_value = req
+            rest_client._parse_response = mock.MagicMock()
+            self.assertRaises(ConnectionError, rest_client.send, event_arr)
+            post.assert_called_once_with(url=self.sample_url, data=serialised_data,
+                                         headers={"Content-Type": "application/json"}, timeout=2.0)
+            rest_client._parse_response.assert_not_called()
 
     def test_parse_response(self):
         resp = self._get_stub_response()

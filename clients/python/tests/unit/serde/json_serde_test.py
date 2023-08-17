@@ -2,13 +2,13 @@ import unittest
 
 from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
 from serde.json_serde import JsonSerde
-from tests.unit.rest.client_test import get_static_uuid, get_static_time, get_stub_response_json
+from tests.unit.rest.client_test import get_static_uuid, get_static_time_ns, get_stub_response_json
 
 
 def get_event_request():
     request = SendEventRequest()
     request.req_guid = get_static_uuid()
-    request.sent_time.FromNanoseconds(get_static_time())
+    request.sent_time.FromNanoseconds(get_static_time_ns())
     e = Event()
     e.type = "topic 1"
     e.event_bytes = b'{"random1": "abc", "xyz": 1}'
@@ -42,7 +42,7 @@ class JsonSerdeTest(unittest.TestCase):
         unmarshalled_response = self.serde.unmarshal(stub_response, SendEventResponse())
         self.assertEqual(Status.STATUS_SUCCESS, unmarshalled_response.status)
         self.assertEqual(Code.CODE_OK, unmarshalled_response.code)
-        self.assertEqual(get_static_time(), unmarshalled_response.sent_time)
+        self.assertEqual(get_static_time_ns(), unmarshalled_response.sent_time)
         self.assertEqual(get_static_uuid(), unmarshalled_response.data["req_guid"])
 
     def test_content_type_for_json(self):

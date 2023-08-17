@@ -2,13 +2,13 @@ import unittest
 
 from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
 from serde.protobuf_serde import ProtobufSerde
-from tests.unit.rest.client_test import get_static_uuid, get_static_time
+from tests.unit.rest.client_test import get_static_uuid, get_static_time_ns
 
 
 def get_stub_request() -> SendEventRequest:
     req = SendEventRequest()
     req.req_guid = get_static_uuid()
-    req.sent_time.FromNanoseconds(get_static_time())
+    req.sent_time.FromNanoseconds(get_static_time_ns())
     e = Event()
     e.type = "click-events"
     e.event_bytes = bytes("data bytes for click", "utf-8")
@@ -44,7 +44,7 @@ class ProtobufSerdeTest(unittest.TestCase):
         unmarshalled_response = self.serde.unmarshal(marshalled_response, SendEventResponse())
         self.assertEqual(Status.STATUS_SUCCESS, unmarshalled_response.status)
         self.assertEqual(Code.CODE_OK, unmarshalled_response.code)
-        self.assertEqual(get_static_time(), unmarshalled_response.sent_time)
+        self.assertEqual(get_static_time_ns(), unmarshalled_response.sent_time)
         self.assertEqual(get_static_uuid(), unmarshalled_response.data["req_guid"])
 
     def test_correct_content_type(self):

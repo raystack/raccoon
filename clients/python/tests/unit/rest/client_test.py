@@ -28,8 +28,12 @@ def get_static_uuid():
     return "17e2ac19-df8b-4a30-b111-fd7f5073d2f5"
 
 
-def get_static_time():
+def get_static_time_ns():
     return 1692250729234986000
+
+
+def get_static_time():
+    return 1692276392
 
 
 def get_stub_event_payload_json():
@@ -59,7 +63,8 @@ def get_stub_response_protobuf():
 def get_stub_event_payload_protobuf():
     e = client.Event()
     e.type = "random_topic"
-    e.event = ProtobufSerde().unmarshal(get_marshalled_request(), SendEventRequest())  # sample proto serialised to bytes
+    e.event = ProtobufSerde().unmarshal(get_marshalled_request(),
+                                        SendEventRequest())  # sample proto serialised to bytes
     return e
 
 
@@ -108,7 +113,7 @@ class RestClientTest(unittest.TestCase):
 
     @patch("rest.client.time.time_ns")
     def test_get_stub_request(self, time_ns):
-        time_ns.return_value = get_static_time()
+        time_ns.return_value = get_static_time_ns()
         rest_client = self._get_rest_client()
         ts = timestamp_pb2.Timestamp()
         ts.FromNanoseconds(time.time_ns())
@@ -217,7 +222,7 @@ class RestClientTest(unittest.TestCase):
         deserialised_response = rest_client._parse_response(resp)
         self.assertEqual(deserialised_response.status, Status.STATUS_SUCCESS)
         self.assertEqual(deserialised_response.data["req_guid"], get_static_uuid())
-        self.assertEqual(deserialised_response.sent_time, get_static_time())
+        self.assertEqual(deserialised_response.sent_time, get_static_time_ns())
         self.assertEqual(deserialised_response.code, Code.CODE_OK)
 
     def _get_rest_client(self, serialiser=Serialiser.JSON, wire_type=WireType.JSON):

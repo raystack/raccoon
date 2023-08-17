@@ -64,5 +64,5 @@ class RestClient(Client):
 
     def _parse_response(self, response) -> SendEventResponse:
         if len(response.content) != 0:
-            event_response = self.wire.unmarshal(str(response.content), SendEventResponse())
+            event_response = self.wire.unmarshal(response.content, SendEventResponse())
             return event_response

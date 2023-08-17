@@ -9,7 +9,7 @@ import requests
 from google.protobuf import json_format, timestamp_pb2
 
 import client
-from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse, Status, Event
+from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse, Status, Event, Code
 from rest.client import RestClient
 from rest.option import RestClientConfigBuilder
 from serde.enum import Serialiser, WireType
@@ -202,13 +202,23 @@ class RestClientTest(unittest.TestCase):
                                          headers={"Content-Type": "application/json"}, timeout=2.0)
             rest_client._parse_response.assert_not_called()
 
-    def test_parse_response(self):
+    def test_parse_response_json(self):
         resp = get_stub_response_json()
         rest_client = self._get_rest_client()
         deserialised_response = rest_client._parse_response(resp)
         self.assertEqual(deserialised_response.status, Status.STATUS_SUCCESS)
         self.assertEqual(deserialised_response.data["req_guid"], get_static_uuid())
         self.assertEqual(deserialised_response.sent_time, get_static_time())
+        self.assertEqual(deserialised_response.code, Code.CODE_OK)
+
+    def test_parse_response_protobuf(self):
+        resp = get_stub_response_protobuf()
+        rest_client = self._get_rest_client(wire_type=WireType.PROTOBUF)
+        deserialised_response = rest_client._parse_response(resp)
+        self.assertEqual(deserialised_response.status, Status.STATUS_SUCCESS)
+        self.assertEqual(deserialised_response.data["req_guid"], get_static_uuid())
+        self.assertEqual(deserialised_response.sent_time, get_static_time())
+        self.assertEqual(deserialised_response.code, Code.CODE_OK)
 
     def _get_rest_client(self, serialiser=Serialiser.JSON, wire_type=WireType.JSON):
         client_config = RestClientConfigBuilder(). \

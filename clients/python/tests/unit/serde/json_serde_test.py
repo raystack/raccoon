@@ -2,7 +2,7 @@ import unittest
 
 from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
 from serde.json_serde import JsonSerde
-from tests.unit.rest.client_test import get_static_uuid, get_static_time, get_stub_event_payload, get_stub_response
+from tests.unit.rest.client_test import get_static_uuid, get_static_time, get_stub_response_json
 
 
 def get_event_request():
@@ -37,8 +37,8 @@ class JsonSerdeTest(unittest.TestCase):
         request = get_event_request()
         self.assertEqual(self.serde.marshal(request), self.marshalled_event_request)
 
-    def test_unmarshaling_of_proto_message(self):
-        stub_response = get_stub_response()._content
+    def test_unmarshalling_of_proto_message(self):
+        stub_response = get_stub_response_json()._content
         unmarshalled_response = self.serde.unmarshal(stub_response, SendEventResponse())
         self.assertEqual(Status.STATUS_SUCCESS, unmarshalled_response.status)
         self.assertEqual(Code.CODE_OK, unmarshalled_response.code)

@@ -12,6 +12,7 @@ class RestClientConfig:
         self.serialiser = Serialiser.JSON
         self.max_retries = 0
         self.wire_type = WireType.JSON
+        self.timeout = 1.0
 
 
 class RestClientConfigBuilder:
@@ -44,6 +45,17 @@ class RestClientConfigBuilder:
         if not isinstance(wire_type, WireType):
             raise ValueError("invalid  serialiser/deserialiser type")
         self.config.wire_type = wire_type
+        return self
+
+    def with_timeout(self, timeout):
+        if not isinstance(timeout, float):
+            raise ValueError
+        if timeout > 10:
+            raise ValueError("timeout too high")
+        elif timeout < 0.010:
+            raise ValueError("timeout is too low")
+        else:
+            self.config.timeout = timeout
         return self
 
     def build(self):

@@ -34,13 +34,21 @@ class RestClientTest(unittest.TestCase):
             with_url(self.sample_url). \
             with_serialiser(self.serialiser). \
             with_retry_count(self.max_retries). \
-            with_wire_type(self.wire_type).build()
+            with_wire_type(self.wire_type).\
+            with_timeout(2.0).build()
         rest_client = RestClient(client_config)
         self.assertEqual(rest_client.url, self.sample_url, "sample_urls do not match")
         self.assertEqual(rest_client.session.adapters["https://"].max_retries.total, self.max_retries)
         self.assertEqual(rest_client.session.adapters["http://"].max_retries.total, self.max_retries)
         self.assertEqual(type(rest_client.serde), self.serialiser.value, "serialiser is configured incorrectly")
         self.assertEqual(type(rest_client.wire), self.wire_type.value, "wire type is configured incorrectly")
+        self.assertEqual(rest_client.timeout, 2.0, "timeout is configured incorrectly")
+
+    def test_client_creation_failure(self):
+        builder = RestClientConfigBuilder().with_url(self.sample_url)
+        self.assertRaises(ValueError, builder.with_serialiser, "JSON")
+        self.assertRaises(ValueError, builder.with_wire_type, "PROTOBUF")
+        self.assertRaises(ValueError, builder.with_retry_count, "five")
 
     @patch("rest.client.time.time_ns", return_value=_get_static_time())
     def test_get_stub_request(self, time_ns):
@@ -53,7 +61,15 @@ class RestClientTest(unittest.TestCase):
             self.assertEqual(req.sent_time.seconds, ts.seconds)
             self.assertEqual(req.sent_time.nanos, ts.nanos)
 
-    def test_client_send(self):
+    def test_uniqueness_of_stub_request(self):
+        rest_client = self._get_rest_client()
+        req1 = rest_client._get_stub_request()
+        time.sleep(1)
+        req2 = rest_client._get_stub_request()
+        self.assertNotEqual(req1.req_guid, req2.req_guid)
+        self.assertNotEqual(req1.sent_time.nanos, req2.sent_time.nanos)
+
+    def test_client_send_success(self):
         session_mock = mock.Mock()
         post = mock.MagicMock()
         session_mock.post = post
@@ -75,7 +91,7 @@ class RestClientTest(unittest.TestCase):
             rest_client._parse_response = mock.MagicMock()
             rest_client.send(event_arr)
             post.assert_called_once_with(url=self.sample_url, data=serialised_data,
-                                         headers={"Content-Type": "application/json"})
+                                         headers={"Content-Type": "application/json"}, timeout=2.0)
             rest_client._parse_response.assert_called_once_with(post.return_value)
 
     def test_parse_response(self):
@@ -90,7 +106,8 @@ class RestClientTest(unittest.TestCase):
         client_config = RestClientConfigBuilder(). \
             with_url(self.sample_url). \
             with_serialiser(self.serialiser). \
-            with_retry_count(self.max_retries).build()
+            with_retry_count(self.max_retries). \
+            with_timeout(2.0).build()
         return RestClient(client_config)
 
     def _get_stub_response(self):

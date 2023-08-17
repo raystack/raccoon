@@ -25,6 +25,7 @@ class RestClient(Client):
         self.wire = get_wire_type(config.wire_type)
         self.headers = self._set_content_type_header(config.headers)
         self._set_retries(self.session, config.max_retries)
+        self.timeout = config.timeout
 
     def _set_retries(self, session, max_retries):
         retries = Retry(
@@ -40,7 +41,7 @@ class RestClient(Client):
         req = self._get_stub_request()
         events_pb = map(lambda x: self._convert_to_event_pb(x), events)
         req.events.extend(events_pb)
-        response = self.session.post(url=self.url, data=self.wire.marshal(req), headers=self.headers)
+        response = self.session.post(url=self.url, data=self.wire.marshal(req), headers=self.headers, timeout=self.timeout)
         deserialised_response = self._parse_response(response)
         return req.req_guid, deserialised_response, response
 
@@ -52,7 +53,7 @@ class RestClient(Client):
 
     def _get_stub_request(self):
         req = SendEventRequest()
-        req.req_guid = uuid.uuid4()
+        req.req_guid = str(uuid.uuid4())
         req.sent_time.FromNanoseconds(time.time_ns())
         return req
 

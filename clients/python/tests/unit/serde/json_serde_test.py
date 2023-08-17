@@ -44,3 +44,6 @@ class JsonSerdeTest(unittest.TestCase):
         self.assertEqual(Code.CODE_OK, unmarshalled_response.code)
         self.assertEqual(get_static_time(), unmarshalled_response.sent_time)
         self.assertEqual(get_static_uuid(), unmarshalled_response.data["req_guid"])
+
+    def test_content_type_for_json(self):
+        self.assertEqual("application/json", self.serde.get_content_type())

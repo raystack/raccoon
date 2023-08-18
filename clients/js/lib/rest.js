@@ -6,7 +6,7 @@ import { createProtobufSerializer } from './serializer/proto_serializer.js';
 import { retry } from './retry/retry.js';
 import { createProtoMarshaller } from './wire/proto_wire.js';
 import { createJsonMarshaller } from './wire/json_wire.js';
-import protos from '../proton_compiled.js';
+import protos from '../protos/proton_compiled.js';
 
 const NANOSECONDS_PER_MILLISECOND = 1e6;
 
@@ -26,13 +26,14 @@ class RaccoonClient {
      *
      * @constructor
      * @param {Object} options - Configuration options for the RaccoonClient.
-     * @param {string} [options.serializationType='json'] - The serialization type to use, either 'protobuf' or 'json'.
+     * @param {string} [options.serializationType] - The serialization type to use, either 'protobuf' or 'json'.
      * @param {Object} [options.wireType] - The wire configuration, containing ContentType.
      * @param {Object} [options.headers] - Custom headers to be included in the HTTP requests.
      * @param {number} [options.retryMax=3] - The maximum number of retry attempts for failed requests.
      * @param {number} [options.retryWait=1000] - The time in milliseconds to wait between retry attempts.
      * @param {string} [options.url=''] - The base URL for the API requests.
      * @param {string} [options.logger=''] - Logger object for logging.
+     * @param {number} [options.timeout=5000] - The timeout in milliseconds.
      * @returns {RaccoonClient} A new instance of the RaccoonClient.
      */
     constructor(options = {}) {
@@ -53,6 +54,7 @@ class RaccoonClient {
         this.retryWait = options.retryWait || 5000;
         this.url = options.url || '';
         this.logger = options.logger || console
+        this.timeout = options.timeout || 5000;
         this.uuidGenerator = (() => uuidv4());
         this.httpClient = axios.create();
     }
@@ -117,6 +119,8 @@ class RaccoonClient {
         this.headers['Content-Type'] = this.marshaller.getContentType();
         const response = await this.httpClient.post(this.url, raccoonRequest, {
             headers: this.headers,
+            timeout: this.timeout,
+            responseType: this.marshaller.getResponseType()
         });
         return response.data;
     }

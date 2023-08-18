@@ -1,3 +1,5 @@
+import { WireType } from "../rest.js";
+
 export function createJsonMarshaller() {
     function marshal(data) {
         if (!data) {
@@ -25,12 +27,17 @@ export function createJsonMarshaller() {
     }
 
     function getContentType() {
-        return "application/json";
+        return WireType.JSON;
+    }
+
+    function getResponseType() {
+        return 'json';
     }
 
     return {
         marshal,
         unmarshal,
-        getContentType
+        getContentType,
+        getResponseType
     };
 }

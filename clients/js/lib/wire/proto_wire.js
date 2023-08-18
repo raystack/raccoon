@@ -1,3 +1,5 @@
+import { WireType } from "../rest.js";
+
 export function createProtoMarshaller() {
     function marshal(data) {
         if (!data) {
@@ -20,16 +22,21 @@ export function createProtoMarshaller() {
             throw new Error("Invalid Protobuf message type for unmarshalling");
         }
 
-        return type.decode(new TextEncoder().encode((data)));
+        return type.decode(new Uint8Array(data));
     }
 
     function getContentType() {
-        return "application/proto";
+        return WireType.PROTOBUF;
+    }
+
+    function getResponseType() {
+        return 'arraybuffer';
     }
 
     return {
         marshal,
         unmarshal,
-        getContentType
+        getContentType,
+        getResponseType
     };
 }

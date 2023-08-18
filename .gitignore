@@ -13,7 +13,8 @@ coverage
 .vscode
 *.env
 *.idea/
-raccoon
 .temp
 clients/python/venv
 clients/python/poetry.lock
+__pycache__
+

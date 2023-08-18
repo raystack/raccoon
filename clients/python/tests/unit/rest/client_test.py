@@ -8,12 +8,12 @@ from unittest.mock import patch
 import requests
 from google.protobuf import json_format, timestamp_pb2
 
-import client
-from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse, Status, Event, Code
-from rest.client import RestClient
-from rest.option import RestClientConfigBuilder
-from serde.enum import Serialiser, WireType
-from serde.protobuf_serde import ProtobufSerde
+from raccoon_client import client
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Status, Code
+from raccoon_client.rest.client import RestClient
+from raccoon_client.rest.option import RestClientConfigBuilder
+from raccoon_client.serde.enum import Serialiser, WireType
+from raccoon_client.serde.protobuf_serde import ProtobufSerde
 
 
 def get_marshalled_response():

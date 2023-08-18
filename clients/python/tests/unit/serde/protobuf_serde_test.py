@@ -1,7 +1,7 @@
 import unittest
 
-from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
-from serde.protobuf_serde import ProtobufSerde
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
+from raccoon_client.serde.protobuf_serde import ProtobufSerde
 from tests.unit.rest.client_test import get_static_uuid, get_static_time_ns
 
 
@@ -40,7 +40,9 @@ class ProtobufSerdeTest(unittest.TestCase):
         self.assertEqual(expected_marshalled_data, marshalled_data)
 
     def test_unmarshalling_of_payload(self):
-        marshalled_response = get_marshalled_response()
+        x = [8, 1, 16, 1, 24, 204, 153, 179, 102, 42, 48, 10, 8, 114, 101, 113, 95, 103, 117, 105, 100, 18, 36, 54, 49, 54, 57, 49, 98, 50, 51, 45, 52, 98, 55, 102, 45, 52, 54, 99, 102, 45, 97, 102, 57, 51, 45, 97, 98, 97, 56, 55, 52, 99, 50, 52, 49, 56, 54]
+        marshalled_response = bytes(x)
+        # marshalled_response = get_marshalled_response()
         unmarshalled_response = self.serde.unmarshal(marshalled_response, SendEventResponse())
         self.assertEqual(Status.STATUS_SUCCESS, unmarshalled_response.status)
         self.assertEqual(Code.CODE_OK, unmarshalled_response.code)

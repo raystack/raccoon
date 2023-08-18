@@ -3,8 +3,8 @@ import json
 from google.protobuf import json_format
 
 
-from serde.serde import Serde
-from serde.wire import Wire
+from raccoon_client.serde.serde import Serde
+from raccoon_client.serde.wire import Wire
 
 
 class JsonSerde(Serde, Wire):

@@ -1,8 +1,8 @@
-from serde.enum import Serialiser, WireType
-from serde.json_serde import JsonSerde
-from serde.protobuf_serde import ProtobufSerde
-from serde.serde import Serde
-from serde.wire import Wire
+from raccoon_client.serde.enum import Serialiser, WireType
+from raccoon_client.serde.json_serde import JsonSerde
+from raccoon_client.serde.protobuf_serde import ProtobufSerde
+from raccoon_client.serde.serde import Serde
+from raccoon_client.serde.wire import Wire
 
 
 def get_serde(serialiser) -> Serde:

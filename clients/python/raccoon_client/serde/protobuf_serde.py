@@ -1,7 +1,7 @@
 from google.protobuf.message import Message
 
-from serde.serde import Serde
-from serde.wire import Wire
+from raccoon_client.serde.serde import Serde
+from raccoon_client.serde.wire import Wire
 
 
 class ProtobufSerde(Serde, Wire):

@@ -5,12 +5,12 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
-from client import Client, Event
-from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse, Event as EventPb
-from rest.option import RestClientConfig
-from serde.serde import Serde
-from serde.util import get_serde, CONTENT_TYPE_HEADER_KEY, get_wire_type
-from serde.wire import Wire
+from raccoon_client.client import Client, Event
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse, Event as EventPb
+from raccoon_client.rest.option import RestClientConfig
+from raccoon_client.serde.serde import Serde
+from raccoon_client.serde.util import get_serde, CONTENT_TYPE_HEADER_KEY, get_wire_type
+from raccoon_client.serde.wire import Wire
 
 
 class RestClient(Client):

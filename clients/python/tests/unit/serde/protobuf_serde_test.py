@@ -1,6 +1,7 @@
 import unittest
 
-from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, \
+    Status, Code
 from raccoon_client.serde.protobuf_serde import ProtobufSerde
 from tests.unit.rest.client_test import get_static_uuid, get_static_time_ns
 
@@ -27,11 +28,15 @@ def get_marshalled_request():
 class ProtobufSerdeTest(unittest.TestCase):
     serde = ProtobufSerde()
 
-    def test_serialisation_of_input(self):
+    def test_serialisation_of_proto_input(self):
         event = get_stub_request()
         serialised_data = self.serde.serialise(event)
         expected_serialised_data = get_marshalled_request()
         self.assertEqual(expected_serialised_data, serialised_data)
+
+    def test_serialisation_non_proto_input(self):
+        event = {"a": "b"}
+        self.assertRaises(ValueError, self.serde.serialise, event)
 
     def test_marshalling_of_payload(self):
         event = get_stub_request()
@@ -40,7 +45,9 @@ class ProtobufSerdeTest(unittest.TestCase):
         self.assertEqual(expected_marshalled_data, marshalled_data)
 
     def test_unmarshalling_of_payload(self):
-        x = [8, 1, 16, 1, 24, 204, 153, 179, 102, 42, 48, 10, 8, 114, 101, 113, 95, 103, 117, 105, 100, 18, 36, 54, 49, 54, 57, 49, 98, 50, 51, 45, 52, 98, 55, 102, 45, 52, 54, 99, 102, 45, 97, 102, 57, 51, 45, 97, 98, 97, 56, 55, 52, 99, 50, 52, 49, 56, 54]
+        x = [8, 1, 16, 1, 24, 204, 153, 179, 102, 42, 48, 10, 8, 114, 101, 113, 95, 103, 117, 105, 100, 18, 36, 54, 49,
+             54, 57, 49, 98, 50, 51, 45, 52, 98, 55, 102, 45, 52, 54, 99, 102, 45, 97, 102, 57, 51, 45, 97, 98, 97, 56,
+             55, 52, 99, 50, 52, 49, 56, 54]
         marshalled_response = bytes(x)
         # marshalled_response = get_marshalled_response()
         unmarshalled_response = self.serde.unmarshal(marshalled_response, SendEventResponse())

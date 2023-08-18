@@ -28,10 +28,16 @@ class JsonSerdeTest(unittest.TestCase):
     }
   ]
 }"""
+    serialised_event_request = b'{\n  "reqGuid": "17e2ac19-df8b-4a30-b111-fd7f5073d2f5",\n  "sentTime": "2023-08-17T05:38:49.234986Z",\n  "events": [\n    {\n      "eventBytes": "eyJyYW5kb20xIjogImFiYyIsICJ4eXoiOiAxfQ==",\n      "type": "topic 1"\n    }\n  ]\n}'
 
     def test_serialise_of_input(self):
         event = {"random1": "abc", "xyz": 1}
         self.assertEqual(self.serde.serialise(event), b'{"random1": "abc", "xyz": 1}')
+
+    def test_serialise_of_proto_object(self):
+        event = get_event_request()
+        serialised_proto = self.serde.serialise(event)
+        self.assertEqual(serialised_proto, self.serialised_event_request)
 
     def test_marshaling_of_proto_message(self):
         request = get_event_request()

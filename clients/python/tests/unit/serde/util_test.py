@@ -1,8 +1,8 @@
 import unittest
 
-from serde import util
-from serde.enum import Serialiser, WireType
-from serde.json_serde import JsonSerde
+from raccoon_client.serde import util
+from raccoon_client.serde.enum import Serialiser, WireType
+from raccoon_client.serde.json_serde import JsonSerde
 
 
 class UtilTest(unittest.TestCase):

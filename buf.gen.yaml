@@ -7,7 +7,7 @@ plugins:
     out: proto
     opt: paths=source_relative,require_unimplemented_servers=true
   - plugin: buf.build/protocolbuffers/python:v23.4
-    out: clients/python/protos
+    out: clients/python/raccoon_client/protos
   - plugin: buf.build/protocolbuffers/pyi:v23.4
-    out: clients/python/protos
+    out: clients/python/raccoon_client/protos
   

@@ -1,14 +1,14 @@
 import unittest
 
-from protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
-from serde.json_serde import JsonSerde
-from tests.unit.rest.client_test import get_static_uuid, get_static_time, get_stub_event_payload, get_stub_response
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
+from raccoon_client.serde.json_serde import JsonSerde
+from tests.unit.rest.client_test import get_static_uuid, get_static_time_ns, get_stub_response_json
 
 
 def get_event_request():
     request = SendEventRequest()
     request.req_guid = get_static_uuid()
-    request.sent_time.FromNanoseconds(get_static_time())
+    request.sent_time.FromNanoseconds(get_static_time_ns())
     e = Event()
     e.type = "topic 1"
     e.event_bytes = b'{"random1": "abc", "xyz": 1}'
@@ -28,21 +28,27 @@ class JsonSerdeTest(unittest.TestCase):
     }
   ]
 }"""
+    serialised_event_request = b'{\n  "reqGuid": "17e2ac19-df8b-4a30-b111-fd7f5073d2f5",\n  "sentTime": "2023-08-17T05:38:49.234986Z",\n  "events": [\n    {\n      "eventBytes": "eyJyYW5kb20xIjogImFiYyIsICJ4eXoiOiAxfQ==",\n      "type": "topic 1"\n    }\n  ]\n}'
 
     def test_serialise_of_input(self):
         event = {"random1": "abc", "xyz": 1}
         self.assertEqual(self.serde.serialise(event), b'{"random1": "abc", "xyz": 1}')
 
+    def test_serialise_of_proto_object(self):
+        event = get_event_request()
+        serialised_proto = self.serde.serialise(event)
+        self.assertEqual(serialised_proto, self.serialised_event_request)
+
     def test_marshaling_of_proto_message(self):
         request = get_event_request()
         self.assertEqual(self.serde.marshal(request), self.marshalled_event_request)
 
-    def test_unmarshaling_of_proto_message(self):
-        stub_response = get_stub_response()._content
+    def test_unmarshalling_of_proto_message(self):
+        stub_response = get_stub_response_json()._content
         unmarshalled_response = self.serde.unmarshal(stub_response, SendEventResponse())
         self.assertEqual(Status.STATUS_SUCCESS, unmarshalled_response.status)
         self.assertEqual(Code.CODE_OK, unmarshalled_response.code)
-        self.assertEqual(get_static_time(), unmarshalled_response.sent_time)
+        self.assertEqual(get_static_time_ns(), unmarshalled_response.sent_time)
         self.assertEqual(get_static_uuid(), unmarshalled_response.data["req_guid"])
 
     def test_content_type_for_json(self):

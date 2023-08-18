@@ -1,4 +1,4 @@
-from serde.enum import Serialiser, WireType
+from raccoon_client.serde.enum import Serialiser, WireType
 
 
 class RestClientConfig:

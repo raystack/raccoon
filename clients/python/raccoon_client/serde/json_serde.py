@@ -1,14 +1,16 @@
 import json
 
 from google.protobuf import json_format
+from google.protobuf.message import Message
 
-
-from serde.serde import Serde
-from serde.wire import Wire
+from raccoon_client.serde.serde import Serde
+from raccoon_client.serde.wire import Wire
 
 
 class JsonSerde(Serde, Wire):
     def serialise(self, event):
+        if isinstance(event, Message):
+            return bytes(json_format.MessageToJson(event), "utf-8")
         return bytes(json.dumps(event), "utf-8")  # uses json.dumps since the input can be either protobuf message or dictionary
 
     def get_content_type(self):

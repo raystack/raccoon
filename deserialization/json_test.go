@@ -1,6 +1,7 @@
 package deserialization
 
 import "testing"
+import pb "github.com/raystack/raccoon/proto"
 
 func TestJSONDeserializer_Deserialize(t *testing.T) {
 	type args struct {
@@ -17,10 +18,17 @@ func TestJSONDeserializer_Deserialize(t *testing.T) {
 			name: "Use JSON Deserializer",
 			j:    DeserializeJSON,
 			args: args{
-				b: []byte(`{"A": "a"}`),
-				i: &struct {
-					A string
-				}{},
+				b: []byte(`{
+					"reqGuid": "17e2ac19-df8b-4a30-b111-fd7f5073d2f5",
+					"sentTime": "2023-08-17T05:38:49.234986Z",
+					"events": [
+					  {
+						"eventBytes": "eyJyYW5kb20xIjogImFiYyIsICJ4eXoiOiAxfQ==",
+						"type": "topic 1"
+					  }
+					]
+				  }`),
+				i: &pb.SendEventRequest{},
 			},
 			wantErr: false,
 		},

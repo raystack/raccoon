@@ -43,7 +43,7 @@ class JsonSerdeTest(unittest.TestCase):
         request = get_event_request()
         self.assertEqual(self.serde.marshal(request), self.marshalled_event_request)
 
-    def test_unmarshalling_of_proto_message(self):
+    def test_unmarshalling_into_proto_message(self):
         stub_response = get_stub_response_json()._content
         unmarshalled_response = self.serde.unmarshal(stub_response, SendEventResponse())
         self.assertEqual(Status.STATUS_SUCCESS, unmarshalled_response.status)

@@ -128,16 +128,16 @@ class RestClientTest(unittest.TestCase):
         ts = timestamp_pb2.Timestamp()
         ts.FromNanoseconds(time.time_ns())
         with patch("raccoon_client.rest.client.uuid.uuid4", return_value=get_static_uuid()):
-            req = rest_client._get_stub_request()
+            req = rest_client._get_init_request()
             self.assertEqual(req.req_guid, get_static_uuid())
             self.assertEqual(req.sent_time.seconds, ts.seconds)
             self.assertEqual(req.sent_time.nanos, ts.nanos)
 
     def test_uniqueness_of_stub_request(self):
         rest_client = self._get_rest_client()
-        req1 = rest_client._get_stub_request()
+        req1 = rest_client._get_init_request()
         time.sleep(1)
-        req2 = rest_client._get_stub_request()
+        req2 = rest_client._get_init_request()
         self.assertNotEqual(req1.req_guid, req2.req_guid)
         self.assertNotEqual(req1.sent_time.nanos, req2.sent_time.nanos)
         self.assertNotEqual(req1.sent_time.seconds, req2.sent_time.seconds)
@@ -159,8 +159,8 @@ class RestClientTest(unittest.TestCase):
             rest_client = self._get_rest_client()
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_json()))
             serialised_data = json_format.MessageToJson(expected_req)
-            rest_client._get_stub_request = mock.MagicMock()
-            rest_client._get_stub_request.return_value = req
+            rest_client._get_init_request = mock.MagicMock()
+            rest_client._get_init_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
             rest_client._parse_response.return_value = [SendEventResponse(), None]
             rest_client.send(event_arr)
@@ -185,8 +185,8 @@ class RestClientTest(unittest.TestCase):
             rest_client = self._get_rest_client(serialiser=Serialiser.PROTOBUF, wire_type=WireType.PROTOBUF)
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_protobuf()))
             serialised_data = expected_req.SerializeToString()
-            rest_client._get_stub_request = mock.MagicMock()
-            rest_client._get_stub_request.return_value = req
+            rest_client._get_init_request = mock.MagicMock()
+            rest_client._get_init_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
             rest_client._parse_response.return_value = [SendEventResponse(), None]
             rest_client.send(event_arr)
@@ -211,8 +211,8 @@ class RestClientTest(unittest.TestCase):
             rest_client = self._get_rest_client(serialiser=Serialiser.JSON, wire_type=WireType.PROTOBUF)
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_json()))
             serialised_data = expected_req.SerializeToString()
-            rest_client._get_stub_request = mock.MagicMock()
-            rest_client._get_stub_request.return_value = req
+            rest_client._get_init_request = mock.MagicMock()
+            rest_client._get_init_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
             rest_client._parse_response.return_value = [SendEventResponse(), None]
             rest_client.send(event_arr)
@@ -237,8 +237,8 @@ class RestClientTest(unittest.TestCase):
             rest_client = self._get_rest_client(serialiser=Serialiser.PROTOBUF, wire_type=WireType.JSON)
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_protobuf()))
             serialised_data = json_format.MessageToJson(expected_req)
-            rest_client._get_stub_request = mock.MagicMock()
-            rest_client._get_stub_request.return_value = req
+            rest_client._get_init_request = mock.MagicMock()
+            rest_client._get_init_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
             rest_client._parse_response.return_value = [SendEventResponse(), None]
             rest_client.send(event_arr)
@@ -263,8 +263,8 @@ class RestClientTest(unittest.TestCase):
             rest_client = self._get_rest_client()
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_json()))
             serialised_data = json_format.MessageToJson(expected_req)
-            rest_client._get_stub_request = mock.MagicMock()
-            rest_client._get_stub_request.return_value = req
+            rest_client._get_init_request = mock.MagicMock()
+            rest_client._get_init_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
             self.assertRaises(ConnectionError, rest_client.send, event_arr)
             post.assert_called_once_with(url=self.sample_url, data=serialised_data,

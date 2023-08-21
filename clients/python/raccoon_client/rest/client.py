@@ -39,7 +39,7 @@ class RestClient(Client):
         session.mount("http://", HTTPAdapter(max_retries=retries))
 
     def send(self, events: [Event]):
-        req = self._get_stub_request()
+        req = self._get_init_request()
         events_pb = map(lambda x: self._convert_to_event_pb(x), events)
         req.events.extend(events_pb)
         response = self.session.post(url=self.url, data=self.wire.marshal(req), headers=self.headers, timeout=self.timeout)
@@ -52,7 +52,7 @@ class RestClient(Client):
         proto_event.type = e.type
         return proto_event
 
-    def _get_stub_request(self):
+    def _get_init_request(self):
         req = SendEventRequest()
         req.req_guid = str(uuid.uuid4())
         req.sent_time.FromNanoseconds(time.time_ns())

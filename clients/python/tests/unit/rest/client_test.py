@@ -9,7 +9,7 @@ import requests
 from google.protobuf import json_format, timestamp_pb2
 
 from raccoon_client import client
-from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Status, Code
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Status, Code, SendEventResponse
 from raccoon_client.rest.client import RestClient
 from raccoon_client.rest.option import RestClientConfigBuilder
 from raccoon_client.serde.enum import Serialiser, WireType
@@ -47,6 +47,16 @@ def get_stub_response_json():
     response = requests.Response()
     response.status_code = requests.status_codes.codes["ok"]
     json_response = {"status": 1, "code": 1, "sent_time": get_static_time(),
+                     "data": {"req_guid": get_static_uuid()}}
+    json_string2 = json.dumps(json_response)
+    response._content = json_string2
+    return response
+
+
+def get_stub_response_non_ok_json():
+    response = requests.Response()
+    response.status_code = requests.status_codes.codes["not_found"]
+    json_response = {"status": Status.STATUS_ERROR, "code": Code.CODE_BAD_REQUEST, "sent_time": get_static_time(),
                      "data": {"req_guid": get_static_uuid()}}
     json_string2 = json.dumps(json_response)
     response._content = json_string2
@@ -111,13 +121,13 @@ class RestClientTest(unittest.TestCase):
         self.assertRaises(ValueError, builder.with_retry_count, "five")
         self.assertRaises(ValueError, builder.with_timeout, 0.005)
 
-    @patch("rest.client.time.time_ns")
+    @patch("raccoon_client.rest.client.time.time_ns")
     def test_get_stub_request(self, time_ns):
         time_ns.return_value = get_static_time_ns()
         rest_client = self._get_rest_client()
         ts = timestamp_pb2.Timestamp()
         ts.FromNanoseconds(time.time_ns())
-        with patch("rest.client.uuid.uuid4", return_value=get_static_uuid()):
+        with patch("raccoon_client.rest.client.uuid.uuid4", return_value=get_static_uuid()):
             req = rest_client._get_stub_request()
             self.assertEqual(req.req_guid, get_static_uuid())
             self.assertEqual(req.sent_time.seconds, ts.seconds)
@@ -145,13 +155,14 @@ class RestClientTest(unittest.TestCase):
         time_in_ns = time.time_ns()
         req.sent_time.FromNanoseconds(time_in_ns)
         expected_req.sent_time.FromNanoseconds(time_in_ns)
-        with patch("rest.client.requests.session", return_value=session_mock):
+        with patch("raccoon_client.rest.client.requests.session", return_value=session_mock):
             rest_client = self._get_rest_client()
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_json()))
             serialised_data = json_format.MessageToJson(expected_req)
             rest_client._get_stub_request = mock.MagicMock()
             rest_client._get_stub_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
+            rest_client._parse_response.return_value = [SendEventResponse(), None]
             rest_client.send(event_arr)
             post.assert_called_once_with(url=self.sample_url, data=serialised_data,
                                          headers={"Content-Type": "application/json"}, timeout=2.0)
@@ -170,13 +181,14 @@ class RestClientTest(unittest.TestCase):
         time_in_ns = time.time_ns()
         req.sent_time.FromNanoseconds(time_in_ns)
         expected_req.sent_time.FromNanoseconds(time_in_ns)
-        with patch("rest.client.requests.session", return_value=session_mock):
+        with patch("raccoon_client.rest.client.requests.session", return_value=session_mock):
             rest_client = self._get_rest_client(serialiser=Serialiser.PROTOBUF, wire_type=WireType.PROTOBUF)
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_protobuf()))
             serialised_data = expected_req.SerializeToString()
             rest_client._get_stub_request = mock.MagicMock()
             rest_client._get_stub_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
+            rest_client._parse_response.return_value = [SendEventResponse(), None]
             rest_client.send(event_arr)
             post.assert_called_once_with(url=self.sample_url, data=serialised_data,
                                          headers={"Content-Type": "application/proto"}, timeout=2.0)
@@ -195,7 +207,7 @@ class RestClientTest(unittest.TestCase):
         time_in_ns = time.time_ns()
         req.sent_time.FromNanoseconds(time_in_ns)
         expected_req.sent_time.FromNanoseconds(time_in_ns)
-        with patch("rest.client.requests.session", return_value=session_mock):
+        with patch("raccoon_client.rest.client.requests.session", return_value=session_mock):
             rest_client = self._get_rest_client()
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_json()))
             serialised_data = json_format.MessageToJson(expected_req)
@@ -210,20 +222,33 @@ class RestClientTest(unittest.TestCase):
     def test_parse_response_json(self):
         resp = get_stub_response_json()
         rest_client = self._get_rest_client()
-        deserialised_response = rest_client._parse_response(resp)
+        deserialised_response, err = rest_client._parse_response(resp)
         self.assertEqual(deserialised_response.status, Status.STATUS_SUCCESS)
         self.assertEqual(deserialised_response.data["req_guid"], get_static_uuid())
         self.assertEqual(deserialised_response.sent_time, get_static_time())
         self.assertEqual(deserialised_response.code, Code.CODE_OK)
+        self.assertIsNone(err)
 
     def test_parse_response_protobuf(self):
         resp = get_stub_response_protobuf()
         rest_client = self._get_rest_client(wire_type=WireType.PROTOBUF)
-        deserialised_response = rest_client._parse_response(resp)
+        deserialised_response, err = rest_client._parse_response(resp)
         self.assertEqual(deserialised_response.status, Status.STATUS_SUCCESS)
         self.assertEqual(deserialised_response.data["req_guid"], get_static_uuid())
         self.assertEqual(deserialised_response.sent_time, get_static_time_ns())
         self.assertEqual(deserialised_response.code, Code.CODE_OK)
+        self.assertIsNone(err)
+
+    def test_parse_response_for_non_ok_status(self):
+        resp = get_stub_response_non_ok_json()
+        rest_client = self._get_rest_client()
+        deserialised_response, err = rest_client._parse_response(resp)
+        self.assertEqual(deserialised_response.status, Status.STATUS_ERROR)
+        self.assertEqual(deserialised_response.data["req_guid"], get_static_uuid())
+        self.assertEqual(deserialised_response.sent_time, get_static_time())
+        self.assertEqual(deserialised_response.code, Code.CODE_BAD_REQUEST)
+        self.assertIsNotNone(err)
+        self.assertEqual(err.status_code, 404)
 
     def _get_rest_client(self, serialiser=Serialiser.JSON, wire_type=WireType.JSON):
         client_config = RestClientConfigBuilder(). \

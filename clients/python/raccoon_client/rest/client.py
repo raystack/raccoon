@@ -5,7 +5,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
-from raccoon_client.client import Client, Event
+from raccoon_client.client import Client, Event, RaccoonResponseError
 from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse, Event as EventPb
 from raccoon_client.rest.option import RestClientConfig
 from raccoon_client.serde.serde import Serde
@@ -43,8 +43,8 @@ class RestClient(Client):
         events_pb = map(lambda x: self._convert_to_event_pb(x), events)
         req.events.extend(events_pb)
         response = self.session.post(url=self.url, data=self.wire.marshal(req), headers=self.headers, timeout=self.timeout)
-        deserialised_response = self._parse_response(response)
-        return req.req_guid, deserialised_response, response
+        deserialised_response, err = self._parse_response(response)
+        return req.req_guid, deserialised_response, err
 
     def _convert_to_event_pb(self, e: Event):
         proto_event = EventPb()
@@ -62,7 +62,12 @@ class RestClient(Client):
         headers[CONTENT_TYPE_HEADER_KEY] = self.wire.get_content_type()
         return headers
 
-    def _parse_response(self, response) -> SendEventResponse:
+    def _parse_response(self, response: requests.Response) -> (SendEventResponse, ValueError):
+        event_response = error = None
         if len(response.content) != 0:
             event_response = self.wire.unmarshal(response.content, SendEventResponse())
-            return event_response
+
+        if 200 < response.status_code >= 300:
+            error = RaccoonResponseError(response.status_code, response.content)
+
+        return event_response, error

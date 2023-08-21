@@ -11,7 +11,7 @@ def get_serde(serialiser) -> Serde:
     elif serialiser == Serialiser.PROTOBUF:
         return ProtobufSerde()
     else:
-        raise NotImplementedError()
+        raise ValueError()
 
 
 def get_wire_type(wire_type) -> Wire:
@@ -20,7 +20,7 @@ def get_wire_type(wire_type) -> Wire:
     elif wire_type == WireType.PROTOBUF:
         return ProtobufSerde()
     else:
-        raise NotImplementedError()
+        raise ValueError()
 
 
 CONTENT_TYPE_HEADER_KEY = "Content-Type"

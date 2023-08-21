@@ -194,6 +194,32 @@ class RestClientTest(unittest.TestCase):
                                          headers={"Content-Type": "application/proto"}, timeout=2.0)
             rest_client._parse_response.assert_called_once_with(post.return_value)
 
+    def test_client_send_success_json_serialiser_protobuf_wire(self):
+        session_mock = mock.Mock()
+        post = mock.MagicMock()
+        session_mock.post = post
+        post.return_value = get_stub_response_protobuf()
+        event_arr = [get_stub_event_payload_json()]
+        req = SendEventRequest()
+        expected_req = SendEventRequest()
+        expected_req.req_guid = get_static_uuid()
+        req.req_guid = get_static_uuid()
+        time_in_ns = time.time_ns()
+        req.sent_time.FromNanoseconds(time_in_ns)
+        expected_req.sent_time.FromNanoseconds(time_in_ns)
+        with patch("raccoon_client.rest.client.requests.session", return_value=session_mock):
+            rest_client = self._get_rest_client(serialiser=Serialiser.JSON, wire_type=WireType.PROTOBUF)
+            expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_json()))
+            serialised_data = expected_req.SerializeToString()
+            rest_client._get_stub_request = mock.MagicMock()
+            rest_client._get_stub_request.return_value = req
+            rest_client._parse_response = mock.MagicMock()
+            rest_client._parse_response.return_value = [SendEventResponse(), None]
+            rest_client.send(event_arr)
+            post.assert_called_once_with(url=self.sample_url, data=serialised_data,
+                                         headers={"Content-Type": "application/proto"}, timeout=2.0)
+            rest_client._parse_response.assert_called_once_with(post.return_value)
+
     def test_client_send_connection_failure(self):
         session_mock = mock.Mock()
         post = mock.MagicMock()

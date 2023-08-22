@@ -2,7 +2,7 @@ import unittest
 
 from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
 from raccoon_client.serde.json_serde import JsonSerde
-from tests.unit.rest.client_test import get_static_uuid, get_static_time_ns, get_stub_response_json
+from tests.unit.rest.client_test import get_static_uuid, get_static_time_ns, get_stub_response_json, get_static_time
 
 
 def get_event_request():
@@ -18,16 +18,7 @@ def get_event_request():
 
 class JsonSerdeTest(unittest.TestCase):
     serde = JsonSerde()
-    marshalled_event_request = """{
-  "reqGuid": "17e2ac19-df8b-4a30-b111-fd7f5073d2f5",
-  "sentTime": "2023-08-17T05:38:49.234986Z",
-  "events": [
-    {
-      "eventBytes": "eyJyYW5kb20xIjogImFiYyIsICJ4eXoiOiAxfQ==",
-      "type": "topic 1"
-    }
-  ]
-}"""
+    marshalled_event_request = """{"req_guid": "17e2ac19-df8b-4a30-b111-fd7f5073d2f5", "sent_time": {"seconds": 1692250729, "nanos": 234986000}, "events": [{"event_bytes": "eyJyYW5kb20xIjogImFiYyIsICJ4eXoiOiAxfQ==", "type": "topic 1"}]}"""
     serialised_event_request = b'{\n  "reqGuid": "17e2ac19-df8b-4a30-b111-fd7f5073d2f5",\n  "sentTime": "2023-08-17T05:38:49.234986Z",\n  "events": [\n    {\n      "eventBytes": "eyJyYW5kb20xIjogImFiYyIsICJ4eXoiOiAxfQ==",\n      "type": "topic 1"\n    }\n  ]\n}'
 
     def test_serialise_of_input(self):
@@ -48,7 +39,7 @@ class JsonSerdeTest(unittest.TestCase):
         unmarshalled_response = self.serde.unmarshal(stub_response, SendEventResponse())
         self.assertEqual(Status.STATUS_SUCCESS, unmarshalled_response.status)
         self.assertEqual(Code.CODE_OK, unmarshalled_response.code)
-        self.assertEqual(get_static_time_ns(), unmarshalled_response.sent_time)
+        self.assertEqual(get_static_time(), unmarshalled_response.sent_time)
         self.assertEqual(get_static_uuid(), unmarshalled_response.data["req_guid"])
 
     def test_content_type_for_json(self):

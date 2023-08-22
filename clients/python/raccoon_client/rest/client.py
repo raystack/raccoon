@@ -8,6 +8,7 @@ from urllib3 import Retry
 from raccoon_client.client import Client, Event, RaccoonResponseError
 from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, SendEventResponse, Event as EventPb
 from raccoon_client.rest.option import RestClientConfig
+from raccoon_client.serde.enum import Serialiser
 from raccoon_client.serde.serde import Serde
 from raccoon_client.serde.util import get_serde, CONTENT_TYPE_HEADER_KEY, get_wire_type
 from raccoon_client.serde.wire import Wire
@@ -19,6 +20,7 @@ class RestClient(Client):
     wire: Wire
 
     def __init__(self, config: RestClientConfig):
+        self.config = config
         self.session = requests.session()
         self.url = config.url
         self.serde = get_serde(config.serialiser)

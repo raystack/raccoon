@@ -6,13 +6,14 @@ from unittest import mock
 from unittest.mock import patch
 
 import requests
-from google.protobuf import json_format, timestamp_pb2
+from google.protobuf import timestamp_pb2
 
 from raccoon_client import client
 from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Status, Code, SendEventResponse
 from raccoon_client.rest.client import RestClient
 from raccoon_client.rest.option import RestClientConfigBuilder
 from raccoon_client.serde.enum import Serialiser, WireType
+from raccoon_client.serde.json_serde import JsonSerde
 from raccoon_client.serde.protobuf_serde import ProtobufSerde
 
 
@@ -158,7 +159,7 @@ class RestClientTest(unittest.TestCase):
         with patch("raccoon_client.rest.client.requests.session", return_value=session_mock):
             rest_client = self._get_rest_client()
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_json()))
-            serialised_data = json_format.MessageToJson(expected_req)
+            serialised_data = JsonSerde().marshal(expected_req)
             rest_client._get_init_request = mock.MagicMock()
             rest_client._get_init_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
@@ -236,7 +237,7 @@ class RestClientTest(unittest.TestCase):
         with patch("raccoon_client.rest.client.requests.session", return_value=session_mock):
             rest_client = self._get_rest_client(serialiser=Serialiser.PROTOBUF, wire_type=WireType.JSON)
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_protobuf()))
-            serialised_data = json_format.MessageToJson(expected_req)
+            serialised_data = JsonSerde().marshal(expected_req)
             rest_client._get_init_request = mock.MagicMock()
             rest_client._get_init_request.return_value = req
             rest_client._parse_response = mock.MagicMock()
@@ -262,7 +263,7 @@ class RestClientTest(unittest.TestCase):
         with patch("raccoon_client.rest.client.requests.session", return_value=session_mock):
             rest_client = self._get_rest_client()
             expected_req.events.append(rest_client._convert_to_event_pb(get_stub_event_payload_json()))
-            serialised_data = json_format.MessageToJson(expected_req)
+            serialised_data = JsonSerde().marshal(expected_req)
             rest_client._get_init_request = mock.MagicMock()
             rest_client._get_init_request.return_value = req
             rest_client._parse_response = mock.MagicMock()

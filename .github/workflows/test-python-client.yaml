@@ -1,15 +1,15 @@
 name: Test Raccoon Python Client
 on:
   push:
-    paths:
-      - "clients/python/**"
     branches:
-      - main
-  pull_request:
-    paths:
       - "clients/python/**"
-    branches:
-      - main
+#    branches:
+#      - main
+#  pull_request:
+#    paths:
+#      - "clients/python/**"
+#    branches:
+#      - main
 jobs:
   test-python:
     runs-on: ubuntu-latest

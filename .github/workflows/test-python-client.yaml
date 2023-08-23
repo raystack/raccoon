@@ -26,4 +26,4 @@ jobs:
         run: poetry install
       - name: Unit Test
         working-directory: clients/python
-        run: python -m unittest discover -p '*_test.py'
+        run: poetry run python -m unittest discover -p '*_test.py'

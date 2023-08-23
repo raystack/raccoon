@@ -1,0 +1,30 @@
+name: Test Raccoon Python Client
+on:
+  push:
+    paths:
+      - "clients/python/**"
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "clients/python/**"
+    branches:
+      - main
+jobs:
+  test-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        working-directory: clients/python
+      - name: Install dependencies
+        working-directory: clients/python
+        run: poetry install
+      - name: Unit Test
+        working-directory: clients/python
+        run: python -m unittest discover -p '*_test.py'

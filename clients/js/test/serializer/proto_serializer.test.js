@@ -1,10 +1,10 @@
-import { createProtobufSerializer } from '../../lib/serializer/proto_serializer.js';
-import protos from '../../protos/proton_compiled.js';
+import createProtobufSerializer from '../../lib/serializer/proto_serializer.js';
+import { raystack } from '../../protos/proton_compiled.js';
 
 describe('ProtoSerializer', () => {
     test('should convert data to Proto object', () => {
         const serialize = createProtobufSerializer();
-        const Event = protos.raystack.raccoon.v1beta1.Event;
+        const { Event } = raystack.raccoon.v1beta1;
         const eventMessage = new Event();
         eventMessage.type = 'test-type';
         eventMessage.event_bytes = Buffer.from('test-data');

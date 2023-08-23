@@ -23,6 +23,9 @@ jobs:
       - name: Check formatting
         run: npm run format
         working-directory: clients/js
+      - name: Check linting
+        run: npm run lint
+        working-directory: clients/js
       - name: Test
         run: npm test
         working-directory: clients/js

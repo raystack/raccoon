@@ -1,4 +1,4 @@
-import { createJsonSerializer } from '../../lib/serializer/json_serializer.js';
+import createJsonSerializer from '../../lib/serializer/json_serializer.js';
 
 describe('JsonSerializer', () => {
     test('should convert data to JSON', () => {

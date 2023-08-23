@@ -1,4 +1,4 @@
-export function createProtobufSerializer() {
+function createProtobufSerializer() {
     return function serialize(data) {
         if (!data) {
             throw new Error('Invalid data object for serialization');
@@ -15,3 +15,5 @@ export function createProtobufSerializer() {
         return Array.from(data.constructor.encode(data).finish());
     };
 }
+
+export default createProtobufSerializer;

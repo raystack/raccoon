@@ -1,4 +1,4 @@
-export function createJsonSerializer() {
+function createJsonSerializer() {
     return function serialize(data) {
         if (!data) {
             throw new Error('Invalid data object for serialization');
@@ -11,3 +11,5 @@ export function createJsonSerializer() {
         return Array.from(encoder.encode(jsonString));
     };
 }
+
+export default createJsonSerializer;

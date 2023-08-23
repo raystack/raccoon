@@ -1,6 +1,6 @@
-import { WireType } from '../rest.js';
+import WireType from '../types/wire_type.js';
 
-export function createProtoMarshaller() {
+function createProtoMarshaller() {
     function marshal(data) {
         if (!data) {
             throw new Error('Invalid data object for marshalling');
@@ -44,3 +44,5 @@ export function createProtoMarshaller() {
         getResponseType
     };
 }
+
+export default createProtoMarshaller;

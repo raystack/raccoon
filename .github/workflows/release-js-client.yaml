@@ -1,9 +1,8 @@
 name: Release Client - JS
 
 on:
-  push:
-    paths:
-      - "clients/js/**"
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:

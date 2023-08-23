@@ -1,6 +1,7 @@
-import { RaccoonClient, SerializationType, WireType } from '../lib/rest.js';
+// eslint-disable-next-line
 import { jest } from '@jest/globals';
-import protos from '../protos/proton_compiled.js';
+import { RaccoonClient, SerializationType, WireType } from '../lib/rest.js';
+import { raystack, google } from '../protos/proton_compiled.js';
 
 const mockHTTPClient = {
     post: jest.fn()
@@ -30,8 +31,8 @@ describe('RaccoonClient', () => {
             const raccoonClient = new RaccoonClient(options);
 
             expect(raccoonClient).toBeDefined();
-            expect(raccoonClient.serializer).toBeDefined;
-            expect(raccoonClient.marshaller).toBeDefined;
+            expect(raccoonClient.serialize).toBeDefined();
+            expect(raccoonClient.marshaller).toBeDefined();
             expect(raccoonClient.headers).toEqual(options.headers);
             expect(raccoonClient.retryMax).toBe(options.retryMax);
             expect(raccoonClient.retryWait).toBe(options.retryWait);
@@ -41,11 +42,6 @@ describe('RaccoonClient', () => {
         });
 
         it('should add default values', () => {
-            const mockLogger = {
-                info: jest.fn(),
-                error: jest.fn()
-            };
-
             const options = {
                 serializationType: SerializationType.JSON,
                 wireType: WireType.JSON
@@ -54,8 +50,8 @@ describe('RaccoonClient', () => {
             const raccoonClient = new RaccoonClient(options);
 
             expect(raccoonClient).toBeDefined();
-            expect(raccoonClient.serializer).toBeDefined;
-            expect(raccoonClient.marshaller).toBeDefined;
+            expect(raccoonClient.serialize).toBeDefined();
+            expect(raccoonClient.marshaller).toBeDefined();
             expect(raccoonClient.headers).toEqual({});
             expect(raccoonClient.retryMax).toBe(3);
             expect(raccoonClient.retryWait).toBe(5000);
@@ -199,8 +195,8 @@ describe('RaccoonClient', () => {
 
             const events = [{ type: 'topic', data: { key1: 'value' } }];
 
-            const SendEventRequest = protos.raystack.raccoon.v1beta1.SendEventRequest;
-            const SendEventResponse = protos.raystack.raccoon.v1beta1.SendEventResponse;
+            const { SendEventRequest } = raystack.raccoon.v1beta1;
+            const { SendEventResponse } = raystack.raccoon.v1beta1;
 
             mockHTTPClient.post.mockResolvedValue({
                 data: SendEventResponse.encode(
@@ -274,7 +270,7 @@ describe('RaccoonClient', () => {
 
             const sentTime = 1691366400;
 
-            const timestamp = new protos.google.protobuf.Timestamp();
+            const timestamp = new google.protobuf.Timestamp();
             timestamp.seconds = 123;
             timestamp.nanos = 12;
 
@@ -348,7 +344,7 @@ describe('RaccoonClient', () => {
 
             const sentTime = 1691366400;
 
-            const timestamp = new protos.google.protobuf.Timestamp();
+            const timestamp = new google.protobuf.Timestamp();
             timestamp.seconds = 123;
             timestamp.nanos = 12;
 
@@ -359,8 +355,8 @@ describe('RaccoonClient', () => {
                 }
             ];
 
-            const SendEventRequest = protos.raystack.raccoon.v1beta1.SendEventRequest;
-            const SendEventResponse = protos.raystack.raccoon.v1beta1.SendEventResponse;
+            const { SendEventRequest } = raystack.raccoon.v1beta1;
+            const { SendEventResponse } = raystack.raccoon.v1beta1;
 
             mockHTTPClient.post.mockResolvedValue({
                 data: SendEventResponse.encode(

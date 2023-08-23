@@ -1,13 +1,13 @@
-import { createJsonMarshaller } from '../../lib/wire/json_wire.js';
-import { WireType } from '../../lib/rest.js';
-import protos from '../../protos/proton_compiled.js';
+import createJsonMarshaller from '../../lib/wire/json_wire.js';
+import WireType from '../../lib/types/wire_type.js';
+import { raystack } from '../../protos/proton_compiled.js';
 
 describe('JsonMarshaller', () => {
     const jsonMarshaller = createJsonMarshaller();
 
     describe('marshal', () => {
         it('should marshal a valid data object', () => {
-            const Event = protos.raystack.raccoon.v1beta1.Event;
+            const { Event } = raystack.raccoon.v1beta1;
             const eventMessage = new Event();
             eventMessage.type = 'test-type';
             eventMessage.event_bytes = Buffer.from('test-data');
@@ -51,7 +51,7 @@ describe('JsonMarshaller', () => {
 
     describe('unmarshal', () => {
         it('should unmarshal data using a valid type', () => {
-            const Event = protos.raystack.raccoon.v1beta1.Event;
+            const { Event } = raystack.raccoon.v1beta1;
             const eventObject = {
                 type: 'test-type',
                 event_bytes: Buffer.from('test-data')

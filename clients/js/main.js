@@ -1,5 +1,3 @@
-const RaccoonClient = require('./lib/rest');
+import { RaccoonClient, SerializationType, WireType } from './lib/rest.js';
 
-module.exports = {
-    RaccoonClient
-};
+export { RaccoonClient, SerializationType, WireType };

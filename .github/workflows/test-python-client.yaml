@@ -3,13 +3,12 @@ on:
   push:
     branches:
       - "clients/python/**"
-#    branches:
-#      - main
-#  pull_request:
-#    paths:
-#      - "clients/python/**"
-#    branches:
-#      - main
+      - main
+  pull_request:
+    paths:
+      - "clients/python/**"
+    branches:
+      - main
 jobs:
   test-python:
     runs-on: ubuntu-latest

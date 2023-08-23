@@ -49,7 +49,6 @@ class ProtobufSerdeTest(unittest.TestCase):
              54, 57, 49, 98, 50, 51, 45, 52, 98, 55, 102, 45, 52, 54, 99, 102, 45, 97, 102, 57, 51, 45, 97, 98, 97, 56,
              55, 52, 99, 50, 52, 49, 56, 54]
         marshalled_response = bytes(x)
-        # marshalled_response = get_marshalled_response()
         unmarshalled_response = self.serde.unmarshal(marshalled_response, SendEventResponse())
         self.assertEqual(Status.STATUS_SUCCESS, unmarshalled_response.status)
         self.assertEqual(Code.CODE_OK, unmarshalled_response.code)

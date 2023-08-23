@@ -1,5 +1,5 @@
 import { retry } from '../../lib/retry/retry.js';
-import { jest } from '@jest/globals'
+import { jest } from '@jest/globals';
 
 describe('retry', () => {
     test('should return callback result on first success attempt', async () => {
@@ -11,7 +11,8 @@ describe('retry', () => {
     });
 
     test('should return callback result after multiple attempts', async () => {
-        const mockCallback = jest.fn()
+        const mockCallback = jest
+            .fn()
             .mockRejectedValueOnce(new Error('Attempt 1 failed'))
             .mockRejectedValueOnce(new Error('Attempt 2 failed'))
             .mockResolvedValueOnce('success');
@@ -30,7 +31,8 @@ describe('retry', () => {
     });
 
     test('should throw error if retry limit exceeded', async () => {
-        const mockCallback = jest.fn()
+        const mockCallback = jest
+            .fn()
             .mockRejectedValueOnce(new Error('Attempt 1 failed'))
             .mockRejectedValueOnce(new Error('Attempt 2 failed'))
             .mockRejectedValueOnce(new Error('Attempt 3 failed'))

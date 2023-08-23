@@ -40,22 +40,24 @@ class RaccoonClient {
         if (!Object.values(SerializationType).includes(options.serializationType)) {
             throw new Error(`Invalid serializationType: ${options.serializationType}`);
         }
-        this.serialize = options.serializationType === SerializationType.PROTOBUF
-            ? createProtobufSerializer()
-            : createJsonSerializer();
+        this.serialize =
+            options.serializationType === SerializationType.PROTOBUF
+                ? createProtobufSerializer()
+                : createJsonSerializer();
         if (!Object.values(WireType).includes(options.wireType)) {
             throw new Error(`Invalid wireType: ${options.wireType}`);
         }
-        this.marshaller = options.wireType === WireType.PROTOBUF
-            ? createProtoMarshaller()
-            : createJsonMarshaller();
+        this.marshaller =
+            options.wireType === WireType.PROTOBUF
+                ? createProtoMarshaller()
+                : createJsonMarshaller();
         this.headers = options.headers || {};
         this.retryMax = options.retryMax || 3;
         this.retryWait = options.retryWait || 5000;
         this.url = options.url || '';
-        this.logger = options.logger || console
+        this.logger = options.logger || console;
         this.timeout = options.timeout || 5000;
-        this.uuidGenerator = (() => uuidv4());
+        this.uuidGenerator = () => uuidv4();
         this.httpClient = axios.create();
     }
 
@@ -101,13 +103,16 @@ class RaccoonClient {
                 this.retryWait
             );
 
-            const sendEventResponse = this.marshaller.unmarshal(response, protos.raystack.raccoon.v1beta1.SendEventResponse);
+            const sendEventResponse = this.marshaller.unmarshal(
+                response,
+                protos.raystack.raccoon.v1beta1.SendEventResponse
+            );
 
             this.logger.info(`ended request, url: ${this.url}, req-id: ${requestId}`);
             return {
                 reqId: requestId,
                 response: sendEventResponse.toJSON(),
-                error: null,
+                error: null
             };
         } catch (error) {
             this.logger.error(`error, url: ${this.url}, req-id: ${requestId}, ${error}`);

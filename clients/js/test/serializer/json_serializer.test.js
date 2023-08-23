@@ -31,7 +31,7 @@ describe('JsonSerializer', () => {
 
         expect(() => {
             serialize(data);
-        }).toThrowError("Invalid data object for serialization");
+        }).toThrowError('Invalid data object for serialization');
     });
 
     test('should handle undefined with proper error', () => {
@@ -40,9 +40,8 @@ describe('JsonSerializer', () => {
 
         expect(() => {
             serialize(data);
-        }).toThrowError("Invalid data object for serialization");
+        }).toThrowError('Invalid data object for serialization');
     });
-
 
     test('should handle numbers', () => {
         const serialize = createJsonSerializer();

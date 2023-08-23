@@ -16,18 +16,26 @@ describe('ProtoMarshaller', () => {
             const decodedData = Event.decode(result);
 
             expect(decodedData.type).toEqual('test-type');
-            expect(decodedData.event_bytes).toEqual(new Uint8Array([116, 101, 115, 116, 45, 100, 97, 116, 97]));
+            expect(decodedData.event_bytes).toEqual(
+                new Uint8Array([116, 101, 115, 116, 45, 100, 97, 116, 97])
+            );
         });
 
         it('should throw an error for invalid data object', () => {
-            expect(() => protoMarshaller.marshal(null)).toThrow('Invalid data object for marshalling');
-            expect(() => protoMarshaller.marshal(undefined)).toThrow('Invalid data object for marshalling');
+            expect(() => protoMarshaller.marshal(null)).toThrow(
+                'Invalid data object for marshalling'
+            );
+            expect(() => protoMarshaller.marshal(undefined)).toThrow(
+                'Invalid data object for marshalling'
+            );
         });
 
         it('should throw an error if data object constructor is missing encode method', () => {
             const mockData = {};
 
-            expect(() => protoMarshaller.marshal(mockData)).toThrow('Invalid Protobuf message object for marshalling');
+            expect(() => protoMarshaller.marshal(mockData)).toThrow(
+                'Invalid Protobuf message object for marshalling'
+            );
         });
 
         it('should throw an error if data object constructor encode is not a function', () => {
@@ -37,7 +45,9 @@ describe('ProtoMarshaller', () => {
                 }
             };
 
-            expect(() => protoMarshaller.marshal(mockData)).toThrow('Invalid Protobuf message object for marshalling');
+            expect(() => protoMarshaller.marshal(mockData)).toThrow(
+                'Invalid Protobuf message object for marshalling'
+            );
         });
     });
 
@@ -53,19 +63,29 @@ describe('ProtoMarshaller', () => {
             const result = protoMarshaller.unmarshal(bytes, Event);
 
             expect(result.type).toEqual('test-type');
-            expect(result.event_bytes).toEqual(new Uint8Array([116, 101, 115, 116, 45, 100, 97, 116, 97]));
+            expect(result.event_bytes).toEqual(
+                new Uint8Array([116, 101, 115, 116, 45, 100, 97, 116, 97])
+            );
         });
 
         it('should throw an error for invalid data', () => {
-            expect(() => protoMarshaller.unmarshal(null, {})).toThrow('Invalid data for unmarshalling');
-            expect(() => protoMarshaller.unmarshal(undefined, {})).toThrow('Invalid data for unmarshalling');
+            expect(() => protoMarshaller.unmarshal(null, {})).toThrow(
+                'Invalid data for unmarshalling'
+            );
+            expect(() => protoMarshaller.unmarshal(undefined, {})).toThrow(
+                'Invalid data for unmarshalling'
+            );
         });
 
         it('should throw an error for invalid type', () => {
             const mockData = new Uint8Array([1, 2, 3]);
 
-            expect(() => protoMarshaller.unmarshal(mockData, null)).toThrow('Invalid Protobuf message type for unmarshalling');
-            expect(() => protoMarshaller.unmarshal(mockData, undefined)).toThrow('Invalid Protobuf message type for unmarshalling');
+            expect(() => protoMarshaller.unmarshal(mockData, null)).toThrow(
+                'Invalid Protobuf message type for unmarshalling'
+            );
+            expect(() => protoMarshaller.unmarshal(mockData, undefined)).toThrow(
+                'Invalid Protobuf message type for unmarshalling'
+            );
         });
 
         it('should throw an error if type.decode is not a function', () => {
@@ -74,7 +94,9 @@ describe('ProtoMarshaller', () => {
                 decode: 'not_a_function'
             };
 
-            expect(() => protoMarshaller.unmarshal(mockData, invalidType)).toThrow('Invalid Protobuf message type for unmarshalling');
+            expect(() => protoMarshaller.unmarshal(mockData, invalidType)).toThrow(
+                'Invalid Protobuf message type for unmarshalling'
+            );
         });
     });
 

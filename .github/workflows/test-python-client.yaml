@@ -21,7 +21,6 @@ jobs:
           python-version: '3.11'
       - name: Install Poetry
         uses: snok/install-poetry@v1
-        working-directory: clients/python
       - name: Install dependencies
         working-directory: clients/python
         run: poetry install

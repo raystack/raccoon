@@ -1,4 +1,4 @@
-name: Release Python Raccoon Client
+name: Release Client - Python
 
 on:
   release:

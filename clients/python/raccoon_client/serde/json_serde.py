@@ -22,6 +22,11 @@ class JsonSerde(Serde, Wire):
         return "application/json"
 
     def marshal(self, event: SendEventRequest):
+        """
+        The sent_time is added in the dict format because protobuf style guide/conventions convert Timestamp Type to ISO format.
+        Since, the server doesn't support this format, we are explicitly setting the sent_time in the format the servers
+        supports. Ref: https://github.com/raystack/raccoon/issues/67
+        """
         req_dict = json_format.MessageToDict(event, preserving_proto_field_name=True)
         req_dict["sent_time"] = {
             "seconds": event.sent_time.seconds,

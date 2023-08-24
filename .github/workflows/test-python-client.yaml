@@ -5,12 +5,9 @@ on:
       - "clients/python/**"
     branches:
       - main
-      - clients/python/** # remove post testing
   pull_request:
     paths:
       - "clients/python/**"
-    branches:
-      - main
 jobs:
   format-python:
     runs-on: ubuntu-latest

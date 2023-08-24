@@ -107,7 +107,9 @@ class RestClientTest(unittest.TestCase):
             .build()
         )
         rest_client = RestClient(client_config)
-        self.assertEqual(rest_client.http_config.url, self.sample_url, "sample_urls do not match")
+        self.assertEqual(
+            rest_client.http_config.url, self.sample_url, "sample_urls do not match"
+        )
         self.assertEqual(
             rest_client.session.adapters["https://"].max_retries.total,
             self.max_retries,
@@ -125,7 +127,9 @@ class RestClientTest(unittest.TestCase):
             self.wire_type.value,
             "wire type is configured incorrectly",
         )
-        self.assertEqual(rest_client.http_config.timeout, 2.0, "timeout is configured incorrectly")
+        self.assertEqual(
+            rest_client.http_config.timeout, 2.0, "timeout is configured incorrectly"
+        )
 
     def test_client_creation_success_with_protobuf(self):
         client_config = (
@@ -138,7 +142,9 @@ class RestClientTest(unittest.TestCase):
             .build()
         )
         rest_client = RestClient(client_config)
-        self.assertEqual(rest_client.http_config.url, self.sample_url, "sample_urls do not match")
+        self.assertEqual(
+            rest_client.http_config.url, self.sample_url, "sample_urls do not match"
+        )
         self.assertEqual(
             rest_client.session.adapters["https://"].max_retries.total,
             self.max_retries,
@@ -156,7 +162,9 @@ class RestClientTest(unittest.TestCase):
             WireType.PROTOBUF.value,
             "wire type is configured incorrectly",
         )
-        self.assertEqual(rest_client.http_config.timeout, 2.0, "timeout is configured incorrectly")
+        self.assertEqual(
+            rest_client.http_config.timeout, 2.0, "timeout is configured incorrectly"
+        )
 
     def test_client_creation_failure(self):
         builder = RestClientConfigBuilder().with_url(self.sample_url)

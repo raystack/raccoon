@@ -43,10 +43,7 @@ def get_static_time():
 
 
 def get_stub_event_payload_json():
-    e = client.Event()
-    e.type = "random_topic"
-    e.event = {"a": "abc"}
-    return e
+    return client.Event("random_topic", {"a": "abc"})
 
 
 def get_stub_response_json():
@@ -85,12 +82,12 @@ def get_stub_response_protobuf():
 
 
 def get_stub_event_payload_protobuf():
-    e = client.Event()
-    e.type = "random_topic"
-    e.event = ProtobufSerde().unmarshal(
-        get_marshalled_request(), SendEventRequest()
-    )  # sample proto serialised to bytes
-    return e
+    return client.Event(
+        "random_topic",
+        ProtobufSerde().unmarshal(
+            get_marshalled_request(), SendEventRequest()
+        ),  # sample proto serialised to bytes)
+    )
 
 
 class RestClientTest(unittest.TestCase):
@@ -110,9 +107,10 @@ class RestClientTest(unittest.TestCase):
             .build()
         )
         rest_client = RestClient(client_config)
-        self.assertEqual(rest_client.url, self.sample_url, "sample_urls do not match")
+        self.assertEqual(rest_client.http_config.url, self.sample_url, "sample_urls do not match")
         self.assertEqual(
-            rest_client.session.adapters["https://"].max_retries.total, self.max_retries
+            rest_client.session.adapters["https://"].max_retries.total,
+            self.max_retries,
         )
         self.assertEqual(
             rest_client.session.adapters["http://"].max_retries.total, self.max_retries
@@ -127,7 +125,7 @@ class RestClientTest(unittest.TestCase):
             self.wire_type.value,
             "wire type is configured incorrectly",
         )
-        self.assertEqual(rest_client.timeout, 2.0, "timeout is configured incorrectly")
+        self.assertEqual(rest_client.http_config.timeout, 2.0, "timeout is configured incorrectly")
 
     def test_client_creation_success_with_protobuf(self):
         client_config = (
@@ -140,9 +138,10 @@ class RestClientTest(unittest.TestCase):
             .build()
         )
         rest_client = RestClient(client_config)
-        self.assertEqual(rest_client.url, self.sample_url, "sample_urls do not match")
+        self.assertEqual(rest_client.http_config.url, self.sample_url, "sample_urls do not match")
         self.assertEqual(
-            rest_client.session.adapters["https://"].max_retries.total, self.max_retries
+            rest_client.session.adapters["https://"].max_retries.total,
+            self.max_retries,
         )
         self.assertEqual(
             rest_client.session.adapters["http://"].max_retries.total, self.max_retries
@@ -157,7 +156,7 @@ class RestClientTest(unittest.TestCase):
             WireType.PROTOBUF.value,
             "wire type is configured incorrectly",
         )
-        self.assertEqual(rest_client.timeout, 2.0, "timeout is configured incorrectly")
+        self.assertEqual(rest_client.http_config.timeout, 2.0, "timeout is configured incorrectly")
 
     def test_client_creation_failure(self):
         builder = RestClientConfigBuilder().with_url(self.sample_url)
@@ -170,15 +169,15 @@ class RestClientTest(unittest.TestCase):
     def test_get_stub_request(self, time_ns):
         time_ns.return_value = get_static_time_ns()
         rest_client = self._get_rest_client()
-        ts = timestamp_pb2.Timestamp()
-        ts.FromNanoseconds(time.time_ns())
+        time_stamp = timestamp_pb2.Timestamp()  # pylint: disable=no-member
+        time_stamp.FromNanoseconds(time.time_ns())
         with patch(
             "raccoon_client.rest.client.uuid.uuid4", return_value=get_static_uuid()
         ):
             req = rest_client._get_init_request()
             self.assertEqual(req.req_guid, get_static_uuid())
-            self.assertEqual(req.sent_time.seconds, ts.seconds)
-            self.assertEqual(req.sent_time.nanos, ts.nanos)
+            self.assertEqual(req.sent_time.seconds, time_stamp.seconds)
+            self.assertEqual(req.sent_time.nanos, time_stamp.nanos)
 
     def test_uniqueness_of_stub_request(self):
         rest_client = self._get_rest_client()

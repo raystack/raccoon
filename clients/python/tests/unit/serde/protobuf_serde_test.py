@@ -15,10 +15,10 @@ def get_stub_request() -> SendEventRequest:
     req = SendEventRequest()
     req.req_guid = get_static_uuid()
     req.sent_time.FromNanoseconds(get_static_time_ns())
-    e = Event()
-    e.type = "click-events"
-    e.event_bytes = bytes("data bytes for click", "utf-8")
-    req.events.append(e)
+    event = Event()
+    event.type = "click-events"
+    event.event_bytes = bytes("data bytes for click", "utf-8")
+    req.events.append(event)
     return req
 
 
@@ -50,8 +50,7 @@ class ProtobufSerdeTest(unittest.TestCase):
         self.assertEqual(expected_marshalled_data, marshalled_data)
 
     def test_unmarshalling_of_payload(self):
-        x = get_marshalled_response()
-        marshalled_response = bytes(x)
+        marshalled_response = bytes(get_marshalled_response())
         unmarshalled_response = self.serde.unmarshal(
             marshalled_response, SendEventResponse()
         )

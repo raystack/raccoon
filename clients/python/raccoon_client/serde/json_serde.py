@@ -12,12 +12,11 @@ from raccoon_client.serde.wire import Wire
 
 
 class JsonSerde(Serde, Wire):
+    # uses json.dumps since the input can be either protobuf message or dictionary
     def serialise(self, event):
         if isinstance(event, Message):
             return bytes(json_format.MessageToJson(event), "utf-8")
-        return bytes(
-            json.dumps(event), "utf-8"
-        )  # uses json.dumps since the input can be either protobuf message or dictionary
+        return bytes(json.dumps(event), "utf-8")
 
     def get_content_type(self):
         return "application/json"

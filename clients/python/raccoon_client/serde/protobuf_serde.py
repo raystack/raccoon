@@ -10,11 +10,11 @@ class ProtobufSerde(Serde, Wire):
             raise ValueError("event should be a protobuf message")
         return event.SerializeToString()  # the name is a misnomer, returns bytes
 
-    def marshal(self, obj: Message):
-        return obj.SerializeToString()
+    def marshal(self, event: Message):
+        return event.SerializeToString()
 
-    def unmarshal(self, marshalled_data: bytes, template: Message):
-        template.ParseFromString(marshalled_data)
+    def unmarshal(self, data: bytes, template: Message):
+        template.ParseFromString(data)
         return template
 
     def get_content_type(self):

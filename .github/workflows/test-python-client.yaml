@@ -1,15 +1,33 @@
 name: Test Raccoon Python Client
 on:
   push:
-    branches:
+    paths:
       - "clients/python/**"
+    branches:
       - main
+      - clients/python/** # remove post testing
   pull_request:
     paths:
       - "clients/python/**"
     branches:
       - main
 jobs:
+  format-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install dependencies
+        working-directory: clients/python
+        run: poetry install --with=dev
+      - name: Format
+        working-directory: clients/python
+        run: poetry run python -m black . --check
   test-python:
     runs-on: ubuntu-latest
     steps:

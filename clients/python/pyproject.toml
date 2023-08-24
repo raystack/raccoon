@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "raccoon-client"
-version = "0.1.0"
+version = "v0.2.1"
 description = "A python client to serve requests to raccoon server"
 authors = ["Punit Kulal <punitkulal1996@gmail.com>"]
 readme = "README.md"

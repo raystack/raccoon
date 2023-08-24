@@ -16,7 +16,6 @@ class RestClientConfig:
 
 
 class RestClientConfigBuilder:
-
     def __init__(self):
         self.config = RestClientConfig()
 

@@ -1,8 +1,19 @@
 import unittest
 
-from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import (
+    SendEventRequest,
+    Event,
+    SendEventResponse,
+    Status,
+    Code,
+)
 from raccoon_client.serde.json_serde import JsonSerde
-from tests.unit.rest.client_test import get_static_uuid, get_static_time_ns, get_stub_response_json, get_static_time
+from tests.unit.rest.client_test import (
+    get_static_uuid,
+    get_static_time_ns,
+    get_stub_response_json,
+    get_static_time,
+)
 
 
 def get_event_request():

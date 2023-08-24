@@ -14,7 +14,11 @@ google = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 requests = "^2.31.0"
+black = "^23.7.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+extend-exclude = '.*_pb2.py|.*_pb2.pyi'

@@ -7,4 +7,3 @@ class Wire:
 
     def get_content_type(self):
         raise NotImplementedError("not implemented")
-

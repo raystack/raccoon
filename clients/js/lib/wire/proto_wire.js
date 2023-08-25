@@ -1,13 +1,17 @@
-import { WireType } from "../rest.js";
+import WireType from '../types/wire_type.js';
 
-export function createProtoMarshaller() {
+function createProtoMarshaller() {
     function marshal(data) {
         if (!data) {
-            throw new Error("Invalid data object for marshalling");
+            throw new Error('Invalid data object for marshalling');
         }
 
-        if (!data.constructor || !data.constructor.encode || typeof data.constructor.encode !== "function") {
-            throw new Error("Invalid Protobuf message object for marshalling");
+        if (
+            !data.constructor ||
+            !data.constructor.encode ||
+            typeof data.constructor.encode !== 'function'
+        ) {
+            throw new Error('Invalid Protobuf message object for marshalling');
         }
 
         return new Uint8Array(data.constructor.encode(data).finish());
@@ -15,11 +19,11 @@ export function createProtoMarshaller() {
 
     function unmarshal(data, type) {
         if (!data) {
-            throw new Error("Invalid data for unmarshalling");
+            throw new Error('Invalid data for unmarshalling');
         }
 
-        if (!type || !type.decode || typeof type.decode !== "function") {
-            throw new Error("Invalid Protobuf message type for unmarshalling");
+        if (!type || !type.decode || typeof type.decode !== 'function') {
+            throw new Error('Invalid Protobuf message type for unmarshalling');
         }
 
         return type.decode(new Uint8Array(data));
@@ -40,3 +44,5 @@ export function createProtoMarshaller() {
         getResponseType
     };
 }
+
+export default createProtoMarshaller;

@@ -1,4 +1,4 @@
-import { createJsonSerializer } from '../../lib/serializer/json_serializer.js';
+import createJsonSerializer from '../../lib/serializer/json_serializer.js';
 
 describe('JsonSerializer', () => {
     test('should convert data to JSON', () => {
@@ -31,7 +31,7 @@ describe('JsonSerializer', () => {
 
         expect(() => {
             serialize(data);
-        }).toThrowError("Invalid data object for serialization");
+        }).toThrowError('Invalid data object for serialization');
     });
 
     test('should handle undefined with proper error', () => {
@@ -40,9 +40,8 @@ describe('JsonSerializer', () => {
 
         expect(() => {
             serialize(data);
-        }).toThrowError("Invalid data object for serialization");
+        }).toThrowError('Invalid data object for serialization');
     });
-
 
     test('should handle numbers', () => {
         const serialize = createJsonSerializer();

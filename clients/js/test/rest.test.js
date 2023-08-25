@@ -1,27 +1,26 @@
-import { RaccoonClient, SerializationType, WireType } from '../lib/rest.js';
+// eslint-disable-next-line
 import { jest } from '@jest/globals';
-import protos from '../protos/proton_compiled.js';
+import { RaccoonClient, SerializationType, WireType } from '../lib/rest.js';
+import { raystack, google } from '../protos/proton_compiled.js';
 
 const mockHTTPClient = {
     post: jest.fn()
 };
 
-const mockUUIDGenerator = (() => 'mocked-uuid');
+const mockUUIDGenerator = () => 'mocked-uuid';
 
 describe('RaccoonClient', () => {
-
     describe('constructor', () => {
         it('should create an instance with provided configuration', () => {
-
             const mockLogger = {
                 info: jest.fn(),
-                error: jest.fn(),
+                error: jest.fn()
             };
 
             const options = {
                 serializationType: SerializationType.JSON,
                 wireType: WireType.JSON,
-                headers: { 'Authorization': 'Bearer token' },
+                headers: { Authorization: 'Bearer token' },
                 retryMax: 5,
                 retryWait: 3000,
                 url: 'http://example.com/api',
@@ -32,8 +31,8 @@ describe('RaccoonClient', () => {
             const raccoonClient = new RaccoonClient(options);
 
             expect(raccoonClient).toBeDefined();
-            expect(raccoonClient.serializer).toBeDefined;
-            expect(raccoonClient.marshaller).toBeDefined;
+            expect(raccoonClient.serialize).toBeDefined();
+            expect(raccoonClient.marshaller).toBeDefined();
             expect(raccoonClient.headers).toEqual(options.headers);
             expect(raccoonClient.retryMax).toBe(options.retryMax);
             expect(raccoonClient.retryWait).toBe(options.retryWait);
@@ -43,22 +42,16 @@ describe('RaccoonClient', () => {
         });
 
         it('should add default values', () => {
-
-            const mockLogger = {
-                info: jest.fn(),
-                error: jest.fn(),
-            };
-
             const options = {
                 serializationType: SerializationType.JSON,
-                wireType: WireType.JSON,
+                wireType: WireType.JSON
             };
 
             const raccoonClient = new RaccoonClient(options);
 
             expect(raccoonClient).toBeDefined();
-            expect(raccoonClient.serializer).toBeDefined;
-            expect(raccoonClient.marshaller).toBeDefined;
+            expect(raccoonClient.serialize).toBeDefined();
+            expect(raccoonClient.marshaller).toBeDefined();
             expect(raccoonClient.headers).toEqual({});
             expect(raccoonClient.retryMax).toBe(3);
             expect(raccoonClient.retryWait).toBe(5000);
@@ -67,16 +60,15 @@ describe('RaccoonClient', () => {
         });
 
         it('should throw error for invalid serializationType', () => {
-
             const mockLogger = {
                 info: jest.fn(),
-                error: jest.fn(),
+                error: jest.fn()
             };
 
             const options = {
                 serializationType: 'invalidType',
                 wireType: WireType.JSON,
-                headers: { 'Authorization': 'Bearer token' },
+                headers: { Authorization: 'Bearer token' },
                 retryMax: 5,
                 retryWait: 3000,
                 url: 'http://example.com/api',
@@ -84,20 +76,21 @@ describe('RaccoonClient', () => {
                 timeout: 1000
             };
 
-            expect(() => new RaccoonClient(options)).toThrow('Invalid serializationType: invalidType');
+            expect(() => new RaccoonClient(options)).toThrow(
+                'Invalid serializationType: invalidType'
+            );
         });
 
         it('should throw error for invalid wireType', () => {
-
             const mockLogger = {
                 info: jest.fn(),
-                error: jest.fn(),
+                error: jest.fn()
             };
 
             const options = {
                 serializationType: SerializationType.PROTOBUF,
                 wireType: 'invalidType',
-                headers: { 'Authorization': 'Bearer token' },
+                headers: { Authorization: 'Bearer token' },
                 retryMax: 5,
                 retryWait: 3000,
                 url: 'http://example.com/api',
@@ -109,7 +102,6 @@ describe('RaccoonClient', () => {
         });
     });
     describe('send', () => {
-
         afterEach(() => {
             jest.spyOn(Date, 'now').mockRestore();
             mockHTTPClient.post.mockReset();
@@ -122,7 +114,7 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
@@ -133,11 +125,16 @@ describe('RaccoonClient', () => {
 
             const sentTime = 1691366400;
 
-            const events = [
-                { type: 'topic', data: { key1: 'value' } }
-            ];
+            const events = [{ type: 'topic', data: { key1: 'value' } }];
 
-            mockHTTPClient.post.mockResolvedValue({ data: { status: 1, code: 1, sent_time: sentTime, data: { req_guid: 'mocked-uuid' } } });
+            mockHTTPClient.post.mockResolvedValue({
+                data: {
+                    status: 1,
+                    code: 1,
+                    sent_time: sentTime,
+                    data: { req_guid: 'mocked-uuid' }
+                }
+            });
 
             const response = await raccoonClient.send(events);
 
@@ -147,9 +144,9 @@ describe('RaccoonClient', () => {
                     status: 'STATUS_SUCCESS',
                     code: 'CODE_OK',
                     sent_time: '1691366400',
-                    data: { req_guid: 'mocked-uuid' },
+                    data: { req_guid: 'mocked-uuid' }
                 },
-                error: null,
+                error: null
             });
 
             expect(mockHTTPClient.post).toHaveBeenCalledWith(
@@ -159,15 +156,18 @@ describe('RaccoonClient', () => {
                     sent_time: { seconds: 1691366400, nanos: 0 },
                     events: [
                         {
-                            event_bytes: [123, 34, 107, 101, 121, 49, 34, 58, 34, 118, 97, 108, 117, 101, 34, 125],
-                            type: 'topic',
+                            event_bytes: [
+                                123, 34, 107, 101, 121, 49, 34, 58, 34, 118, 97, 108, 117, 101, 34,
+                                125
+                            ],
+                            type: 'topic'
                         }
-                    ],
+                    ]
                 }),
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-User-ID': 'test-user-1',
+                        'X-User-ID': 'test-user-1'
                     },
                     timeout: 5000,
                     responseType: 'json'
@@ -182,7 +182,7 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
@@ -193,27 +193,21 @@ describe('RaccoonClient', () => {
 
             const sentTime = 1691366400;
 
-            const events = [
-                { type: 'topic', data: { key1: 'value' } }
-            ];
+            const events = [{ type: 'topic', data: { key1: 'value' } }];
 
-            const SendEventRequest = protos.raystack.raccoon.v1beta1.SendEventRequest;
-            const SendEventResponse = protos.raystack.raccoon.v1beta1.SendEventResponse;
+            const { SendEventRequest } = raystack.raccoon.v1beta1;
+            const { SendEventResponse } = raystack.raccoon.v1beta1;
 
-            mockHTTPClient.post.mockResolvedValue(
-                {
-                    data: SendEventResponse.encode(
-                        SendEventResponse.create(
-                            {
-                                status: 1,
-                                code: 1,
-                                sent_time: sentTime,
-                                data: { req_guid: 'mocked-uuid' }
-                            }
-                        )
-                    ).finish()
-                }
-            );
+            mockHTTPClient.post.mockResolvedValue({
+                data: SendEventResponse.encode(
+                    SendEventResponse.create({
+                        status: 1,
+                        code: 1,
+                        sent_time: sentTime,
+                        data: { req_guid: 'mocked-uuid' }
+                    })
+                ).finish()
+            });
 
             const response = await raccoonClient.send(events);
 
@@ -223,9 +217,9 @@ describe('RaccoonClient', () => {
                     status: 'STATUS_SUCCESS',
                     code: 'CODE_OK',
                     sent_time: '1691366400',
-                    data: { req_guid: 'mocked-uuid' },
+                    data: { req_guid: 'mocked-uuid' }
                 },
-                error: null,
+                error: null
             });
 
             expect(mockHTTPClient.post).toHaveBeenCalledWith(
@@ -237,17 +231,20 @@ describe('RaccoonClient', () => {
                             sent_time: { seconds: 1691366400, nanos: 0 },
                             events: [
                                 {
-                                    event_bytes: [123, 34, 107, 101, 121, 49, 34, 58, 34, 118, 97, 108, 117, 101, 34, 125],
-                                    type: 'topic',
+                                    event_bytes: [
+                                        123, 34, 107, 101, 121, 49, 34, 58, 34, 118, 97, 108, 117,
+                                        101, 34, 125
+                                    ],
+                                    type: 'topic'
                                 }
-                            ],
+                            ]
                         })
                     ).finish()
                 ),
                 {
                     headers: {
                         'Content-Type': 'application/proto',
-                        'X-User-ID': 'test-user-1',
+                        'X-User-ID': 'test-user-1'
                     },
                     timeout: 5000,
                     responseType: 'arraybuffer'
@@ -262,7 +259,7 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
@@ -273,7 +270,7 @@ describe('RaccoonClient', () => {
 
             const sentTime = 1691366400;
 
-            const timestamp = new protos.google.protobuf.Timestamp();
+            const timestamp = new google.protobuf.Timestamp();
             timestamp.seconds = 123;
             timestamp.nanos = 12;
 
@@ -284,7 +281,14 @@ describe('RaccoonClient', () => {
                 }
             ];
 
-            mockHTTPClient.post.mockResolvedValue({ data: { status: 1, code: 1, sent_time: sentTime, data: { req_guid: 'mocked-uuid' } } });
+            mockHTTPClient.post.mockResolvedValue({
+                data: {
+                    status: 1,
+                    code: 1,
+                    sent_time: sentTime,
+                    data: { req_guid: 'mocked-uuid' }
+                }
+            });
 
             const response = await raccoonClient.send(events);
 
@@ -294,9 +298,9 @@ describe('RaccoonClient', () => {
                     status: 'STATUS_SUCCESS',
                     code: 'CODE_OK',
                     sent_time: '1691366400',
-                    data: { req_guid: 'mocked-uuid' },
+                    data: { req_guid: 'mocked-uuid' }
                 },
-                error: null,
+                error: null
             });
 
             expect(mockHTTPClient.post).toHaveBeenCalledWith(
@@ -307,14 +311,14 @@ describe('RaccoonClient', () => {
                     events: [
                         {
                             event_bytes: [8, 123, 16, 12],
-                            type: 'topic',
+                            type: 'topic'
                         }
-                    ],
+                    ]
                 }),
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-User-ID': 'test-user-1',
+                        'X-User-ID': 'test-user-1'
                     },
                     timeout: 5000,
                     responseType: 'json'
@@ -329,7 +333,7 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
@@ -340,7 +344,7 @@ describe('RaccoonClient', () => {
 
             const sentTime = 1691366400;
 
-            const timestamp = new protos.google.protobuf.Timestamp();
+            const timestamp = new google.protobuf.Timestamp();
             timestamp.seconds = 123;
             timestamp.nanos = 12;
 
@@ -351,23 +355,19 @@ describe('RaccoonClient', () => {
                 }
             ];
 
-            const SendEventRequest = protos.raystack.raccoon.v1beta1.SendEventRequest;
-            const SendEventResponse = protos.raystack.raccoon.v1beta1.SendEventResponse;
+            const { SendEventRequest } = raystack.raccoon.v1beta1;
+            const { SendEventResponse } = raystack.raccoon.v1beta1;
 
-            mockHTTPClient.post.mockResolvedValue(
-                {
-                    data: SendEventResponse.encode(
-                        SendEventResponse.create(
-                            {
-                                status: 1,
-                                code: 1,
-                                sent_time: sentTime,
-                                data: { req_guid: 'mocked-uuid' }
-                            }
-                        )
-                    ).finish()
-                }
-            );
+            mockHTTPClient.post.mockResolvedValue({
+                data: SendEventResponse.encode(
+                    SendEventResponse.create({
+                        status: 1,
+                        code: 1,
+                        sent_time: sentTime,
+                        data: { req_guid: 'mocked-uuid' }
+                    })
+                ).finish()
+            });
 
             const response = await raccoonClient.send(events);
 
@@ -377,9 +377,9 @@ describe('RaccoonClient', () => {
                     status: 'STATUS_SUCCESS',
                     code: 'CODE_OK',
                     sent_time: '1691366400',
-                    data: { req_guid: 'mocked-uuid' },
+                    data: { req_guid: 'mocked-uuid' }
                 },
-                error: null,
+                error: null
             });
 
             expect(mockHTTPClient.post).toHaveBeenCalledWith(
@@ -392,16 +392,16 @@ describe('RaccoonClient', () => {
                             events: [
                                 {
                                     event_bytes: [8, 123, 16, 12],
-                                    type: 'topic',
+                                    type: 'topic'
                                 }
-                            ],
+                            ]
                         })
                     ).finish()
                 ),
                 {
                     headers: {
                         'Content-Type': 'application/proto',
-                        'X-User-ID': 'test-user-1',
+                        'X-User-ID': 'test-user-1'
                     },
                     timeout: 5000,
                     responseType: 'arraybuffer'
@@ -416,7 +416,7 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
@@ -429,10 +429,17 @@ describe('RaccoonClient', () => {
 
             const events = [
                 { type: 'topic1', data: { key1: 'value1' } },
-                { type: 'topic2', data: { key2: 'value2' } },
+                { type: 'topic2', data: { key2: 'value2' } }
             ];
 
-            mockHTTPClient.post.mockResolvedValue({ data: { status: 1, code: 1, sent_time: sentTime, data: { req_guid: 'mocked-uuid' } } });
+            mockHTTPClient.post.mockResolvedValue({
+                data: {
+                    status: 1,
+                    code: 1,
+                    sent_time: sentTime,
+                    data: { req_guid: 'mocked-uuid' }
+                }
+            });
 
             const response = await raccoonClient.send(events);
 
@@ -442,9 +449,9 @@ describe('RaccoonClient', () => {
                     status: 'STATUS_SUCCESS',
                     code: 'CODE_OK',
                     sent_time: '1691366400',
-                    data: { req_guid: 'mocked-uuid' },
+                    data: { req_guid: 'mocked-uuid' }
                 },
-                error: null,
+                error: null
             });
 
             expect(mockHTTPClient.post).toHaveBeenCalledWith(
@@ -453,14 +460,26 @@ describe('RaccoonClient', () => {
                     req_guid: 'mocked-uuid',
                     sent_time: { seconds: 1691366400, nanos: 0 },
                     events: [
-                        { event_bytes: [123, 34, 107, 101, 121, 49, 34, 58, 34, 118, 97, 108, 117, 101, 49, 34, 125], type: 'topic1' },
-                        { event_bytes: [123, 34, 107, 101, 121, 50, 34, 58, 34, 118, 97, 108, 117, 101, 50, 34, 125], type: 'topic2' },
-                    ],
+                        {
+                            event_bytes: [
+                                123, 34, 107, 101, 121, 49, 34, 58, 34, 118, 97, 108, 117, 101, 49,
+                                34, 125
+                            ],
+                            type: 'topic1'
+                        },
+                        {
+                            event_bytes: [
+                                123, 34, 107, 101, 121, 50, 34, 58, 34, 118, 97, 108, 117, 101, 50,
+                                34, 125
+                            ],
+                            type: 'topic2'
+                        }
+                    ]
                 }),
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-User-ID': 'test-user-1',
+                        'X-User-ID': 'test-user-1'
                     },
                     timeout: 5000,
                     responseType: 'json'
@@ -475,17 +494,17 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
             raccoonClient.uuidGenerator = mockUUIDGenerator;
 
-            const invalidEvents = [
-                { type: 'topic', daa: { key1: 'value' } }
-            ];
+            const invalidEvents = [{ type: 'topic', daa: { key1: 'value' } }];
 
-            await expect(() => raccoonClient.send(invalidEvents)).rejects.toThrow("req-id: mocked-uuid, error: Error: Invalid event: {\"type\":\"topic\",\"daa\":{\"key1\":\"value\"}}");
+            await expect(() => raccoonClient.send(invalidEvents)).rejects.toThrow(
+                'req-id: mocked-uuid, error: Error: Invalid event: {"type":"topic","daa":{"key1":"value"}}'
+            );
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
 
@@ -496,17 +515,17 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
             raccoonClient.uuidGenerator = mockUUIDGenerator;
 
-            const invalidEvents = [
-                { tye: 'topic', data: { key1: 'value' } }
-            ];
+            const invalidEvents = [{ tye: 'topic', data: { key1: 'value' } }];
 
-            await expect(() => raccoonClient.send(invalidEvents)).rejects.toThrow("req-id: mocked-uuid, error: Error: Invalid event: {\"tye\":\"topic\",\"data\":{\"key1\":\"value\"}}");
+            await expect(() => raccoonClient.send(invalidEvents)).rejects.toThrow(
+                'req-id: mocked-uuid, error: Error: Invalid event: {"tye":"topic","data":{"key1":"value"}}'
+            );
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
 
@@ -517,13 +536,15 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
             raccoonClient.uuidGenerator = mockUUIDGenerator;
 
-            await expect(() => raccoonClient.send([])).rejects.toThrow("req-id: mocked-uuid, error: Error: No events provided");
+            await expect(() => raccoonClient.send([])).rejects.toThrow(
+                'req-id: mocked-uuid, error: Error: No events provided'
+            );
 
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
@@ -535,13 +556,15 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
             raccoonClient.uuidGenerator = mockUUIDGenerator;
 
-            await expect(() => raccoonClient.send()).rejects.toThrow("req-id: mocked-uuid, error: Error: No events provided");
+            await expect(() => raccoonClient.send()).rejects.toThrow(
+                'req-id: mocked-uuid, error: Error: No events provided'
+            );
 
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
@@ -553,13 +576,15 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 3000,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
             raccoonClient.uuidGenerator = mockUUIDGenerator;
 
-            await expect(() => raccoonClient.send(null)).rejects.toThrow("req-id: mocked-uuid, error: Error: No events provided");
+            await expect(() => raccoonClient.send(null)).rejects.toThrow(
+                'req-id: mocked-uuid, error: Error: No events provided'
+            );
             expect(mockHTTPClient.post).not.toHaveBeenCalled();
         });
 
@@ -570,7 +595,7 @@ describe('RaccoonClient', () => {
                 headers: { 'X-User-ID': 'test-user-1' },
                 retryMax: 5,
                 retryWait: 5,
-                url: 'http://example.com/api',
+                url: 'http://example.com/api'
             };
             const raccoonClient = new RaccoonClient(config);
             raccoonClient.httpClient = mockHTTPClient;
@@ -579,13 +604,15 @@ describe('RaccoonClient', () => {
             const now = new Date('2023-08-07T00:00:00Z');
             Date.now = jest.spyOn(Date, 'now').mockReturnValue(now);
 
-            const events = [
-                { type: 'topic', data: { key1: 'value' } }
-            ];
+            const events = [{ type: 'topic', data: { key1: 'value' } }];
 
-            mockHTTPClient.post.mockRejectedValue(JSON.stringify({ status: 400, statusText: 'Bad Request' }));
+            mockHTTPClient.post.mockRejectedValue(
+                JSON.stringify({ status: 400, statusText: 'Bad Request' })
+            );
 
-            await expect(() => raccoonClient.send(events)).rejects.toThrow("req-id: mocked-uuid, error: {\"status\":400,\"statusText\":\"Bad Request\"}");
+            await expect(() => raccoonClient.send(events)).rejects.toThrow(
+                'req-id: mocked-uuid, error: {"status":400,"statusText":"Bad Request"}'
+            );
 
             expect(mockHTTPClient.post).toHaveBeenCalledWith(
                 'http://example.com/api',
@@ -593,13 +620,19 @@ describe('RaccoonClient', () => {
                     req_guid: 'mocked-uuid',
                     sent_time: { seconds: 1691366400, nanos: 0 },
                     events: [
-                        { event_bytes: [123, 34, 107, 101, 121, 49, 34, 58, 34, 118, 97, 108, 117, 101, 34, 125], type: 'topic' }
-                    ],
+                        {
+                            event_bytes: [
+                                123, 34, 107, 101, 121, 49, 34, 58, 34, 118, 97, 108, 117, 101, 34,
+                                125
+                            ],
+                            type: 'topic'
+                        }
+                    ]
                 }),
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-User-ID': 'test-user-1',
+                        'X-User-ID': 'test-user-1'
                     },
                     timeout: 5000,
                     responseType: 'json'

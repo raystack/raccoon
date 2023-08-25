@@ -1,10 +1,10 @@
-import { createProtobufSerializer } from '../../lib/serializer/proto_serializer.js';
-import protos from '../../protos/proton_compiled.js';
+import createProtobufSerializer from '../../lib/serializer/proto_serializer.js';
+import { raystack } from '../../protos/proton_compiled.js';
 
 describe('ProtoSerializer', () => {
     test('should convert data to Proto object', () => {
         const serialize = createProtobufSerializer();
-        const Event = protos.raystack.raccoon.v1beta1.Event;
+        const { Event } = raystack.raccoon.v1beta1;
         const eventMessage = new Event();
         eventMessage.type = 'test-type';
         eventMessage.event_bytes = Buffer.from('test-data');
@@ -22,7 +22,7 @@ describe('ProtoSerializer', () => {
 
         expect(() => {
             serialize(data);
-        }).toThrowError("Invalid Protobuf message object for serialization");
+        }).toThrowError('Invalid Protobuf message object for serialization');
     });
 
     test('should throw error for null', () => {
@@ -31,7 +31,7 @@ describe('ProtoSerializer', () => {
 
         expect(() => {
             serialize(data);
-        }).toThrowError("Invalid data object for serialization");
+        }).toThrowError('Invalid data object for serialization');
     });
 
     test('should handle undefined with proper error', () => {
@@ -40,7 +40,7 @@ describe('ProtoSerializer', () => {
 
         expect(() => {
             serialize(data);
-        }).toThrowError("Invalid data object for serialization");
+        }).toThrowError('Invalid data object for serialization');
     });
 
     it('should throw an error if data object constructor is missing encode method', () => {
@@ -49,7 +49,9 @@ describe('ProtoSerializer', () => {
         };
         const serialize = createProtobufSerializer();
 
-        expect(() => serialize(mockData)).toThrow('Invalid Protobuf message object for serialization');
+        expect(() => serialize(mockData)).toThrow(
+            'Invalid Protobuf message object for serialization'
+        );
     });
 
     it('should throw an error if data object constructor encode is not a function', () => {
@@ -60,6 +62,8 @@ describe('ProtoSerializer', () => {
         };
         const serialize = createProtobufSerializer();
 
-        expect(() => serialize(mockData)).toThrow('Invalid Protobuf message object for serialization');
+        expect(() => serialize(mockData)).toThrow(
+            'Invalid Protobuf message object for serialization'
+        );
     });
 });

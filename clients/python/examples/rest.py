@@ -1,7 +1,5 @@
 from raccoon_client.client import Event
-from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import (
-    SendEventRequest
-)
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest
 from raccoon_client.rest.client import RestClient
 from raccoon_client.rest.option import RestClientConfigBuilder
 from raccoon_client.serde.enum import Serialiser, WireType
@@ -73,4 +71,3 @@ if __name__ == "__main__":
     example_json_serialiser_json_wire()
     example_protobuf_serialiser_protobuf_wire()
     example_protobuf_serialiser_json_wire()
-

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package clickevents;
+
+message PageEvent {
+    string event_guid = 1;
+    string event_name = 2;
+    google.protobuf.Timestamp sent_time = 3;
+}

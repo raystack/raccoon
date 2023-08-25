@@ -2,6 +2,7 @@
 
 ### Setup
 - The project uses poetry for build, and virutal env management.
+- The client was created with 3.11 as it's python environment. Hence 3.11 can be considered it's minimum requirement. 
 - Make sure to install poetry via https://python-poetry.org/docs/#installing-manually
 - After installing poetry you can activate the env by `poetry env use`
 - Install all dependencies using `poetry install --no-root --with=dev` (no-root tells that the package is not at the root of the directory)

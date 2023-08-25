@@ -20,6 +20,19 @@
     where $VERSION is a git tag.
 - An example on how to use the client is under the [examples](examples) package.
 
+### Confiugration
+The client supports the following configuration:
+
+| Name    | Description                                                                       | Type                              | Default |
+|---------|-----------------------------------------------------------------------------------|-----------------------------------|---------|
+| url     | The remote server url to connect to                                               | string                            | ""      |
+| retries | The max number of retries to be attempted before an event is considered a failure | int (<10)                         | 0       |
+| timeout | The number of seconds to wait before timing out the request                       | float                             | 1.0     |
+| serialiser | The format to which event field of client.Event serialises it's data to           | Serialiser Enum(JSON or PROTOBUF) | JSON    |
+|wire_type | The format in which the request payload should be sent to server                  | Wire Type Enum(JSON or PROTOBUF)  | JSON | 
+| headers | HTTP header key value pair to be sent along with each request | dict                              | {} |
+
+
 Note: 
 - During development, make sure to open just the python directory, otherwise the IDE misconfigures the imports.
 - The protos package contain generated code and should not be edited manually.

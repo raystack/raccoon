@@ -10,6 +10,7 @@ import (
 	"github.com/raystack/raccoon/collection"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/metrics"
+	"github.com/raystack/raccoon/middleware"
 	"github.com/raystack/raccoon/services/rest/websocket"
 	"github.com/raystack/raccoon/services/rest/websocket/connection"
 )
@@ -36,7 +37,7 @@ func NewRestService(c collection.Collector) *Service {
 	subRouter.HandleFunc("/events", restHandler.RESTAPIHandler).Methods(http.MethodPost).Name("events")
 
 	server := &http.Server{
-		Handler: router,
+		Handler: middleware.Cors(router),
 		Addr:    ":" + config.ServerWs.AppPort,
 	}
 	return &Service{

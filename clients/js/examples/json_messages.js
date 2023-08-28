@@ -1,6 +1,9 @@
+// eslint-disable-next-line import/no-unresolved
 import { RaccoonClient, SerializationType, WireType } from '@raystack/raccoon';
 
-//create json messages
+const logger = console;
+
+//  create json messages
 const jsonEvents = [
     {
         type: 'test-topic1',
@@ -8,11 +11,11 @@ const jsonEvents = [
     },
     {
         type: 'test-topic2',
-        data: { key1: 'value2' , key2: {key3: 'value3', key4: 'value4'}}
+        data: { key1: 'value2', key2: { key3: 'value3', key4: 'value4' } }
     }
 ];
 
-//initialise the raccoon client with required configs
+//  initialise the raccoon client with required configs
 const raccoonClient = new RaccoonClient({
     serializationType: SerializationType.JSON,
     wireType: WireType.JSON,
@@ -23,11 +26,12 @@ const raccoonClient = new RaccoonClient({
     }
 });
 
-//send the request
-raccoonClient.send(jsonEvents)
-    .then(result => {
-        console.log('Result:', result);
+//  send the request
+raccoonClient
+    .send(jsonEvents)
+    .then((result) => {
+        logger.log('Result:', result);
     })
-    .catch(error => {
-        console.error('Error:', error);
+    .catch((error) => {
+        logger.error('Error:', error);
     });

@@ -1,6 +1,9 @@
+// eslint-disable-next-line import/no-unresolved
 import { RaccoonClient, SerializationType, WireType } from '@raystack/raccoon';
-//import the compiled js file generated via protobufjs
+//  import the compiled js file generated via protobufjs
 import { google, clickevents } from './protos/compiled.js';
+
+const logger = console;
 
 const currentTime = new Date();
 const timestamp = google.protobuf.Timestamp.create({
@@ -8,16 +11,16 @@ const timestamp = google.protobuf.Timestamp.create({
     nanos: (currentTime % 1000) * 1e6
 });
 
-//create the protobufjs messages and set the field values
+//  create the protobufjs messages and set the field values
 const pageEvent = new clickevents.PageEvent();
-pageEvent.eventGuid = "123";
-pageEvent.eventName = "page open";
+pageEvent.eventGuid = '123';
+pageEvent.eventName = 'page open';
 pageEvent.sentTime = timestamp;
 
 const clickEvent = new clickevents.ClickEvent();
-clickEvent.eventGuid = "123";
+clickEvent.eventGuid = '123';
 clickEvent.componentIndex = 12;
-clickEvent.componentName = "images";
+clickEvent.componentName = 'images';
 clickEvent.sentTime = timestamp;
 
 const protobufEvents = [
@@ -31,7 +34,7 @@ const protobufEvents = [
     }
 ];
 
-//initialise the raccoon client with required configs
+//  initialise the raccoon client with required configs
 const raccoonClient = new RaccoonClient({
     serializationType: SerializationType.PROTOBUF,
     wireType: WireType.JSON,
@@ -42,11 +45,12 @@ const raccoonClient = new RaccoonClient({
     }
 });
 
-//send the request
-raccoonClient.send(protobufEvents)
-    .then(result => {
-        console.log('Result:', result);
+//  send the request
+raccoonClient
+    .send(protobufEvents)
+    .then((result) => {
+        logger.log('Result:', result);
     })
-    .catch(error => {
-        console.error('Error:', error);
+    .catch((error) => {
+        logger.error('Error:', error);
     });

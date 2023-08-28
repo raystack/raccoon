@@ -56,7 +56,7 @@ describe('RaccoonClient', () => {
             expect(raccoonClient.retryMax).toBe(3);
             expect(raccoonClient.retryWait).toBe(5000);
             expect(raccoonClient.logger).toBe(console);
-            expect(raccoonClient.timeout).toBe(5000);
+            expect(raccoonClient.timeout).toBe(1000);
         });
 
         it('should throw error for invalid serializationType', () => {
@@ -169,7 +169,7 @@ describe('RaccoonClient', () => {
                         'Content-Type': 'application/json',
                         'X-User-ID': 'test-user-1'
                     },
-                    timeout: 5000,
+                    timeout: 1000,
                     responseType: 'json'
                 }
             );
@@ -246,7 +246,7 @@ describe('RaccoonClient', () => {
                         'Content-Type': 'application/proto',
                         'X-User-ID': 'test-user-1'
                     },
-                    timeout: 5000,
+                    timeout: 1000,
                     responseType: 'arraybuffer'
                 }
             );
@@ -320,7 +320,7 @@ describe('RaccoonClient', () => {
                         'Content-Type': 'application/json',
                         'X-User-ID': 'test-user-1'
                     },
-                    timeout: 5000,
+                    timeout: 1000,
                     responseType: 'json'
                 }
             );
@@ -403,7 +403,7 @@ describe('RaccoonClient', () => {
                         'Content-Type': 'application/proto',
                         'X-User-ID': 'test-user-1'
                     },
-                    timeout: 5000,
+                    timeout: 1000,
                     responseType: 'arraybuffer'
                 }
             );
@@ -481,7 +481,7 @@ describe('RaccoonClient', () => {
                         'Content-Type': 'application/json',
                         'X-User-ID': 'test-user-1'
                     },
-                    timeout: 5000,
+                    timeout: 1000,
                     responseType: 'json'
                 }
             );
@@ -634,7 +634,7 @@ describe('RaccoonClient', () => {
                         'Content-Type': 'application/json',
                         'X-User-ID': 'test-user-1'
                     },
-                    timeout: 5000,
+                    timeout: 1000,
                     responseType: 'json'
                 }
             );

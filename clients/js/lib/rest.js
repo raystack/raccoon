@@ -25,7 +25,7 @@ class RaccoonClient {
      * @param {number} [options.retryWait=1000] - The time in milliseconds to wait between retry attempts.
      * @param {string} [options.url=''] - The base URL for the API requests.
      * @param {string} [options.logger=''] - Logger object for logging.
-     * @param {number} [options.timeout=5000] - The timeout in milliseconds.
+     * @param {number} [options.timeout=1000] - The timeout in milliseconds.
      * @returns {RaccoonClient} A new instance of the RaccoonClient.
      */
     constructor(options = {}) {
@@ -48,7 +48,7 @@ class RaccoonClient {
         this.retryWait = options.retryWait || 5000;
         this.url = options.url || '';
         this.logger = options.logger || console;
-        this.timeout = options.timeout || 5000;
+        this.timeout = options.timeout || 1000;
         this.uuidGenerator = () => uuidv4();
         this.httpClient = axios.create();
     }

@@ -117,7 +117,7 @@ Custom headers to be included in the HTTP requests.
 The request timeout in milliseconds.
 
 - Type: `Optional`
-- Default value: `5000`
+- Default value: `1000`
 
 #### `retryMax`
 
@@ -178,4 +178,4 @@ Logger object for logging.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags](https://github.com/raystack/raccoon/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags](https://www.npmjs.com/package/@raystack/raccoon?activeTab=versions).

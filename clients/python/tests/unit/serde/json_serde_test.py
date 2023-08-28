@@ -1,18 +1,29 @@
 import unittest
 
-from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest, Event, SendEventResponse, Status, Code
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import (
+    SendEventRequest,
+    Event,
+    SendEventResponse,
+    Status,
+    Code,
+)
 from raccoon_client.serde.json_serde import JsonSerde
-from tests.unit.rest.client_test import get_static_uuid, get_static_time_ns, get_stub_response_json, get_static_time
+from tests.unit.rest.client_test import (
+    get_static_uuid,
+    get_static_time_ns,
+    get_stub_response_json,
+    get_static_time,
+)
 
 
 def get_event_request():
     request = SendEventRequest()
     request.req_guid = get_static_uuid()
     request.sent_time.FromNanoseconds(get_static_time_ns())
-    e = Event()
-    e.type = "topic 1"
-    e.event_bytes = b'{"random1": "abc", "xyz": 1}'
-    request.events.append(e)
+    event = Event()
+    event.type = "topic 1"
+    event.event_bytes = b'{"random1": "abc", "xyz": 1}'
+    request.events.append(event)
     return request
 
 

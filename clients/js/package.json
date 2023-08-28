@@ -1,6 +1,6 @@
 {
   "name": "@raystack/raccoon",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "Raccoon js client publishes events to raccoon server",
   "main": "main.js",

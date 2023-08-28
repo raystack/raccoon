@@ -32,7 +32,7 @@ import { RaccoonClient, SerializationType, WireType } from '@raystack/raccoon';
 
 ```javascript
 const raccoonClient = new RaccoonClient({
-    serializationType: SerializationType.PROTBUF,
+    serializationType: SerializationType.PROTOBUF,
     wireType: WireType.JSON,
     timeout: 5000,
     url: 'http://localhost:8080/api/v1/events',
@@ -170,7 +170,7 @@ Logger object for logging.
    ```sh
    $ npm run format
    ```
-4. Run link.
+4. Run lint.
 
    ```sh
    $ npm run lint

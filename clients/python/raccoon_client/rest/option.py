@@ -12,7 +12,7 @@ class HttpConfig:
 
     def __init__(self):
         self.url = ""
-        self.max_retries = 0
+        self.max_retries = 3
         self.timeout = 1.0
         self.headers = {}
 

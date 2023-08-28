@@ -10,6 +10,7 @@ import (
 var Server server
 var ServerWs serverWs
 var ServerGRPC serverGRPC
+var ServerCors serverCors
 
 type server struct {
 	DedupEnabled bool
@@ -34,10 +35,41 @@ type serverGRPC struct {
 	Port string
 }
 
+type serverCors struct {
+	Enabled          bool
+	AllowedOrigin    []string
+	AllowedMethods   []string
+	AllowedHeaders   []string
+	AllowCredentials bool
+	MaxAge           int
+}
+
 func serverConfigLoader() {
 	viper.SetDefault("SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED", "false")
 	Server = server{
 		DedupEnabled: util.MustGetBool("SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED"),
+	}
+}
+
+func serverCorsConfigLoader() {
+	allowedHeaders := []string{}
+	viper.SetDefault("SERVER_WEBSOCKET_CONN_GROUP_HEADER", "")
+	if connHeader := viper.GetString("SERVER_WEBSOCKET_CONN_GROUP_HEADER"); connHeader != "" {
+		allowedHeaders = append(allowedHeaders, connHeader)
+	}
+	viper.SetDefault("SERVER_CORS_ENABLED", false)
+	viper.SetDefault("SERVER_CORS_ALLOWED_ORIGIN", "*")
+	viper.SetDefault("SERVER_CORS_ALLOWED_METHODS", []string{"GET", "HEAD", "POST"})
+	viper.SetDefault("SERVER_CORS_ALLOWED_HEADERS", allowedHeaders)
+	viper.SetDefault("SERVER_CORS_ALLOW_CREDENTIALS", false)
+	viper.SetDefault("SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS", 0)
+	ServerCors = serverCors{
+		Enabled:          util.MustGetBool("SERVER_CORS_ALLOWED_ORIGIN"),
+		AllowedOrigin:    viper.GetStringSlice("SERVER_CORS_ALLOWED_ORIGIN"),
+		AllowedMethods:   viper.GetStringSlice("SERVER_CORS_ALLOWED_METHODS"),
+		AllowCredentials: util.MustGetBool("SERVER_CORS_ALLOW_CREDENTIALS"),
+		AllowedHeaders:   viper.GetStringSlice("SERVER_CORS_ALLOWED_HEADERS"),
+		MaxAge:           util.MustGetInt("SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS"),
 	}
 }
 

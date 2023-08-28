@@ -37,4 +37,5 @@ The client supports the following configuration:
 Note: 
 - During development, make sure to open just the python directory, otherwise the IDE misconfigures the imports.
 - The protos package contain generated code and should not be edited manually.
+- It's recommended not to use JSON serialiser, when using proto generated classes as your events due to JSON encoding incompatibility. [Issue](https://github.com/raystack/raccoon/issues/67)
 

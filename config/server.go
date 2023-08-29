@@ -64,7 +64,7 @@ func serverCorsConfigLoader() {
 	viper.SetDefault("SERVER_CORS_ALLOW_CREDENTIALS", false)
 	viper.SetDefault("SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS", 0)
 	ServerCors = serverCors{
-		Enabled:          util.MustGetBool("SERVER_CORS_ALLOWED_ORIGIN"),
+		Enabled:          util.MustGetBool("SERVER_CORS_ENABLED"),
 		AllowedOrigin:    viper.GetStringSlice("SERVER_CORS_ALLOWED_ORIGIN"),
 		AllowedMethods:   viper.GetStringSlice("SERVER_CORS_ALLOWED_METHODS"),
 		AllowCredentials: util.MustGetBool("SERVER_CORS_ALLOW_CREDENTIALS"),

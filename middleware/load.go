@@ -7,4 +7,5 @@ func Load() {
 		return
 	}
 	loadCors()
+	loaded = true
 }

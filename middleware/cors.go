@@ -21,5 +21,8 @@ func loadCors() {
 			opts = append(opts, handlers.MaxAge(config.ServerCors.MaxAge))
 		}
 		Cors = handlers.CORS(opts...)
+	} else {
+		Cors = func(h http.Handler) http.Handler { return h }
 	}
+
 }

@@ -495,7 +495,7 @@ func TestIntegration(t *testing.T) {
 		}
 	})
 
-	t.Run("Should respond with correct Access-Control-Allow-Origin Header when listed origin makes a request", func(t *testing.T) {
+	t.Run("Should respond with correct Access-Control-Allow-Origin Header when whitelisted origin makes a request", func(t *testing.T) {
 		client := &http.Client{}
 		var events []*pb.Event
 
@@ -544,7 +544,7 @@ func TestIntegration(t *testing.T) {
 		assert.Equal(t, res.Header["Access-Control-Allow-Origin"][0], "http://localhost:3000")
 	})
 
-	t.Run("Should respond with correct Access-Control-Allow-Origin Header when listed origin makes a request", func(t *testing.T) {
+	t.Run("Should respond with no Access-Control-Allow-Origin Header when non whitelisted origin makes a request", func(t *testing.T) {
 		client := &http.Client{}
 		var events []*pb.Event
 

@@ -37,7 +37,7 @@ func NewRestService(c collection.Collector) *Service {
 	subRouter.HandleFunc("/events", restHandler.RESTAPIHandler).Methods(http.MethodPost).Name("events")
 
 	server := &http.Server{
-		Handler: middleware.Cors(router),
+		Handler: middleware.Apply(router),
 		Addr:    ":" + config.ServerWs.AppPort,
 	}
 	return &Service{

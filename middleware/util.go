@@ -1,5 +1,7 @@
 package middleware
 
+import "net/http"
+
 var loaded bool
 
 func Load() {
@@ -8,4 +10,9 @@ func Load() {
 	}
 	loadCors()
 	loaded = true
+}
+
+func Apply(h http.Handler) http.Handler {
+	handler := cors(h)
+	return handler
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/raystack/raccoon/config"
 )
 
-var Cors func(http.Handler) http.Handler
+var cors func(http.Handler) http.Handler
 
 func loadCors() {
 	if config.ServerCors.Enabled {
@@ -20,9 +20,9 @@ func loadCors() {
 		if config.ServerCors.MaxAge > 0 {
 			opts = append(opts, handlers.MaxAge(config.ServerCors.MaxAge))
 		}
-		Cors = handlers.CORS(opts...)
+		cors = handlers.CORS(opts...)
 	} else {
-		Cors = func(h http.Handler) http.Handler { return h }
+		cors = func(h http.Handler) http.Handler { return h }
 	}
 
 }

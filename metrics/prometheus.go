@@ -1,6 +1,10 @@
 package metrics
 
-import "github.com/prometheus/client_golang/prometheus"
+import (
+	"fmt"
+
+	"github.com/prometheus/client_golang/prometheus"
+)
 
 type PrometheusCollector struct {
 	counters  map[string]*prometheus.CounterVec
@@ -14,6 +18,27 @@ func initPrometheusCollector() *PrometheusCollector {
 		gauges:    getGaugeMap(),
 		histogram: getHistogramMap(),
 	}
+}
+
+func (p *PrometheusCollector) Count(metricName string, labels map[string]string, count int64) error {
+	counter, ok := p.counters[metricName]
+	if !ok {
+		return fmt.Errorf("invalid counter metric %s", metricName)
+	}
+	counter.With(labels).Add(float64(count))
+	return nil
+}
+
+func (p *PrometheusCollector) Increment(metricName string, labels map[string]string) error {
+	return nil
+}
+
+func (p *PrometheusCollector) Gauge(metricName string, labels map[string]string, value float64) error {
+	return nil
+}
+
+func (p *PrometheusCollector) Histogram(metricName string, labels map[string]string, value float64) error {
+	return nil
 }
 
 func getCounterMap() map[string]*prometheus.CounterVec {

@@ -64,6 +64,7 @@ class RestClientConfigBuilder:
 
     def with_headers(self, headers):
         self.config.http.headers = headers
+        return self
 
     def with_wire_type(self, wire_type):
         if not isinstance(wire_type, WireType):

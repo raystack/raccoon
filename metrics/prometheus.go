@@ -12,15 +12,15 @@ type PrometheusCollector struct {
 	histogram map[string]prometheus.Histogram
 }
 
-func initPrometheusCollector() *PrometheusCollector {
+func initPrometheusCollector() (*PrometheusCollector, error) {
 	return &PrometheusCollector{
 		counters:  getCounterMap(),
 		gauges:    getGaugeMap(),
 		histogram: getHistogramMap(),
-	}
+	}, nil
 }
 
-func (p *PrometheusCollector) Count(metricName string, labels map[string]string, count int64) error {
+func (p *PrometheusCollector) Count(metricName string, count int64, labels map[string]string) error {
 	counter, ok := p.counters[metricName]
 	if !ok {
 		return fmt.Errorf("invalid counter metric %s", metricName)
@@ -33,12 +33,20 @@ func (p *PrometheusCollector) Increment(metricName string, labels map[string]str
 	return nil
 }
 
-func (p *PrometheusCollector) Gauge(metricName string, labels map[string]string, value float64) error {
+func (p *PrometheusCollector) Gauge(metricName string, value int64, labels map[string]string) error {
 	return nil
 }
 
-func (p *PrometheusCollector) Histogram(metricName string, labels map[string]string, value float64) error {
+func (p *PrometheusCollector) Histogram(metricName string, value int64, labels map[string]string) error {
 	return nil
+}
+
+func (p *PrometheusCollector) Close() {
+
+}
+
+func setPrometheusVoid() {
+
 }
 
 func getCounterMap() map[string]*prometheus.CounterVec {

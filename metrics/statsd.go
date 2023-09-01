@@ -89,7 +89,7 @@ func (s *Statsd) Increment(bucket string, labels map[string]string) error {
 // 	}
 // }
 
-func (s *Statsd) Gauge(metricName string, value int64, labels map[string]string) error {
+func (s *Statsd) Gauge(metricName string, value interface{}, labels map[string]string) error {
 	tags := translateLabelIntoTags(labels)
 	s.gauge(metricName, value, tags)
 	return nil

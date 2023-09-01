@@ -33,7 +33,7 @@ func (p *PrometheusCollector) Increment(metricName string, labels map[string]str
 	return nil
 }
 
-func (p *PrometheusCollector) Gauge(metricName string, value int64, labels map[string]string) error {
+func (p *PrometheusCollector) Gauge(metricName string, value interface{}, labels map[string]string) error {
 	return nil
 }
 

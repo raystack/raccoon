@@ -11,7 +11,7 @@ var Instrument MetricInstrument
 type MetricInstrument interface {
 	Increment(metricName string, labels map[string]string) error
 	Count(metricName string, count int64, labels map[string]string) error
-	Gauge(metricName string, value int64, labels map[string]string) error
+	Gauge(metricName string, value interface{}, labels map[string]string) error
 	Histogram(metricName string, value int64, labels map[string]string) error
 	Close()
 }

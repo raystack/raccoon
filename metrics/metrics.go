@@ -6,7 +6,7 @@ import (
 	"github.com/raystack/raccoon/config"
 )
 
-var Instrument MetricInstrument
+var instrument MetricInstrument
 
 type MetricInstrument interface {
 	Increment(metricName string, labels map[string]string) error
@@ -14,6 +14,22 @@ type MetricInstrument interface {
 	Gauge(metricName string, value interface{}, labels map[string]string) error
 	Histogram(metricName string, value int64, labels map[string]string) error
 	Close()
+}
+
+func Increment(metricName string, labels map[string]string) error {
+	return instrument.Increment(metricName, labels)
+}
+
+func Count(metricName string, count int64, labels map[string]string) error {
+	return instrument.Count(metricName, count, labels)
+}
+
+func Gauge(metricName string, value interface{}, labels map[string]string) error {
+	return instrument.Gauge(metricName, value, labels)
+}
+
+func Histogram(metricName string, value int64, labels map[string]string) error {
+	return instrument.Histogram(metricName, value, labels)
 }
 
 func Setup() error {
@@ -27,14 +43,14 @@ func Setup() error {
 		if err != nil {
 			return err
 		}
-		Instrument = prometheus
+		instrument = prometheus
 	}
 	if config.MetricStatsd.Enabled {
 		statsD, err := initStatsd()
 		if err != nil {
 			return err
 		}
-		Instrument = statsD
+		instrument = statsD
 	}
 	return nil
 }
@@ -49,7 +65,7 @@ func SetVoid() {
 }
 
 func Close() {
-	if Instrument != nil {
-		Instrument.Close()
+	if instrument != nil {
+		instrument.Close()
 	}
 }

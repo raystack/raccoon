@@ -97,7 +97,7 @@ func (s *Statsd) Gauge(metricName string, value interface{}, labels map[string]s
 
 func setStatsDVoid() {
 	c, _ := client.New(client.Mute(true))
-	Instrument = &Statsd{
+	instrument = &Statsd{
 		c: c,
 	}
 }

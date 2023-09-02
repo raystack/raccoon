@@ -18,6 +18,7 @@ func initPrometheusCollector() (*PrometheusCollector, error) {
 		gauges:    getGaugeMap(),
 		histogram: getHistogramMap(),
 	}, nil
+
 }
 
 func (p *PrometheusCollector) Count(metricName string, count int64, labels map[string]string) error {

@@ -59,7 +59,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	serde, ok := h.serDeMap[contentType]
 
 	if !ok {
-		metrics.Increment("batches_read_total", "status=failed,reason=unknowncontentype")
+		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "unknowncontentype"})
 		logger.Errorf("[rest.GetRESTAPIHandler] invalid content type %s", contentType)
 		rw.WriteHeader(http.StatusBadRequest)
 		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("invalid content type").
@@ -82,7 +82,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Body == nil {
-		metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=emptybody,conn_group=%s", identifier.Group))
+		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "emptybody", "conn_group": "identifier.Group"})
 		logger.Errorf("[rest.GetRESTAPIHandler] %s no body", identifier)
 		rw.WriteHeader(http.StatusBadRequest)
 		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("no body present").
@@ -99,7 +99,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		logger.Errorf(fmt.Sprintf("[rest.GetRESTAPIHandler] %s error reading request body, error: %v", identifier, err))
-		metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=readerr,conn_group=%s", identifier.Group))
+		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "readerr", "conn_group": identifier.Group})
 		rw.WriteHeader(http.StatusInternalServerError)
 		_, err := res.SetCode(pb.Code_CODE_INTERNAL_ERROR).SetStatus(pb.Status_STATUS_ERROR).SetReason("deserialization failure").
 			SetSentTime(time.Now().Unix()).Write(rw, s)
@@ -114,7 +114,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 
 	if err := d(b, req); err != nil {
 		logger.Errorf("[rest.GetRESTAPIHandler] error while calling d.Deserialize() for %s, error: %s", identifier, err)
-		metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_group=%s", identifier.Group))
+		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "serde", "conn_group": identifier.Group})
 		rw.WriteHeader(http.StatusBadRequest)
 		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("deserialization failure").
 			SetSentTime(time.Now().Unix()).Write(rw, s)
@@ -124,7 +124,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", identifier.Group))
+	metrics.Increment("batches_read_total", map[string]string{"status": "success", "conn_group": identifier.Group})
 	h.sendEventCounters(req.Events, identifier.Group)
 
 	resChannel := make(chan struct{}, 1)
@@ -187,7 +187,7 @@ func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serial
 
 func (h *Handler) sendEventCounters(events []*pb.Event, group string) {
 	for _, e := range events {
-		metrics.Count("events_rx_bytes_total", len(e.EventBytes), fmt.Sprintf("conn_group=%s,event_type=%s", group, e.Type))
-		metrics.Increment("events_rx_total", fmt.Sprintf("conn_group=%s,event_type=%s", group, e.Type))
+		metrics.Count("events_rx_bytes_total", int64(len(e.EventBytes)), map[string]string{"conn_group": group, "event_type": e.Type})
+		metrics.Increment("events_rx_total", map[string]string{"conn_group": group, "event_type": e.Type})
 	}
 }

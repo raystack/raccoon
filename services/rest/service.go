@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -61,7 +60,7 @@ func reportConnectionMetrics(conn connection.Table) {
 	for {
 		<-t
 		for k, v := range conn.TotalConnectionPerGroup() {
-			metrics.Gauge("connections_count_current", v, fmt.Sprintf("conn_group=%s", k))
+			metrics.Gauge("connections_count_current", v, map[string]string{"conn_group": k})
 		}
 	}
 }

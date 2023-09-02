@@ -60,16 +60,17 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string, deliveryChann
 
 		err := pr.kp.Produce(message, deliveryChannel)
 		if err != nil {
-			metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=false,conn_group=%s,event_type=%s", connGroup, event.Type))
+			metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "false", "conn_group": connGroup, "event_type": event.Type})
 			if err.Error() == "Local: Unknown topic" {
 				errors[order] = fmt.Errorf("%v %s", err, topic)
-				metrics.Increment("kafka_unknown_topic_failure_total", fmt.Sprintf("topic=%s,event_type=%s,conn_group=%s", topic, event.Type, connGroup))
+				metrics.Increment("kafka_unknown_topic_failure_total", map[string]string{"topic": topic, "event_type": event.Type, "conn_group": connGroup})
 			} else {
 				errors[order] = err
 			}
 			continue
 		}
-		metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=true,conn_group=%s,event_type=%s", connGroup, event.Type))
+		metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "true", "conn_group": connGroup, "event_type": event.Type})
+
 		totalProcessed++
 	}
 	// Wait for deliveryChannel as many as processed
@@ -78,8 +79,8 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string, deliveryChann
 		m := d.(*kafka.Message)
 		if m.TopicPartition.Error != nil {
 			eventType := events[i].Type
-			metrics.Decrement("kafka_messages_delivered_total", fmt.Sprintf("success=true,conn_group=%s,event_type=%s", connGroup, eventType)) // TODO: remove this decrement call
-			metrics.Increment("kafka_messages_delivered_total", fmt.Sprintf("success=false,conn_group=%s,event_type=%s", connGroup, eventType))
+			// metrics.Decrement("kafka_messages_delivered_total", fmt.Sprintf("success=true,conn_group=%s,event_type=%s", connGroup, eventType)) // TODO: remove this decrement call
+			metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "false", "conn_group": connGroup, "event_type": eventType})
 			order := m.Opaque.(int)
 			errors[order] = m.TopicPartition.Error
 		}
@@ -99,16 +100,16 @@ func (pr *Kafka) ReportStats() {
 			json.Unmarshal([]byte(e.String()), &stats)
 
 			brokers := stats["brokers"].(map[string]interface{})
-			metrics.Gauge("kafka_tx_messages_total", stats["txmsgs"], "")
-			metrics.Gauge("kafka_tx_messages_bytes_total", stats["txmsg_bytes"], "")
+			metrics.Gauge("kafka_tx_messages_total", stats["txmsgs"], map[string]string{})
+			metrics.Gauge("kafka_tx_messages_bytes_total", stats["txmsg_bytes"], map[string]string{})
 			for _, broker := range brokers {
 				brokerStats := broker.(map[string]interface{})
 				rttValue := brokerStats["rtt"].(map[string]interface{})
 				nodeName := strings.Split(brokerStats["nodename"].(string), ":")[0]
 
-				metrics.Gauge("kafka_brokers_tx_total", brokerStats["tx"], fmt.Sprintf("broker=%s", nodeName))
-				metrics.Gauge("kafka_brokers_tx_bytes_total", brokerStats["txbytes"], fmt.Sprintf("broker=%s", nodeName))
-				metrics.Gauge("kafka_brokers_rtt_average_milliseconds", rttValue["avg"], fmt.Sprintf("broker=%s", nodeName))
+				metrics.Gauge("kafka_brokers_tx_total", brokerStats["tx"], map[string]string{"broker": nodeName})
+				metrics.Gauge("kafka_brokers_tx_bytes_total", brokerStats["txbytes"], map[string]string{"broker": nodeName})
+				metrics.Gauge("kafka_brokers_rtt_average_milliseconds", rttValue["avg"], map[string]string{"broker": nodeName})
 			}
 
 		default:

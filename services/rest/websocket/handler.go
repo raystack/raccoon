@@ -84,10 +84,10 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 				websocket.CloseNoStatusReceived,
 				websocket.CloseAbnormalClosure) {
 				logger.Error(fmt.Sprintf("[websocket.Handler] %s closed abruptly: %v", conn.Identifier, err))
-				metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=closeerror,conn_group=%s", conn.Identifier.Group))
+				metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "closeerror", "conn_group": conn.Identifier.Group})
 				break
 			}
-			metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=unknown,conn_group=%s", conn.Identifier.Group))
+			metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "unknown", "conn_group": conn.Identifier.Group})
 			logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed. Unknown failure for %s: %v", conn.Identifier, err)) //no connection issue here
 			break
 		}
@@ -98,21 +98,21 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		d, s := serde.deserializer, serde.serializer
 		if err := d(message, payload); err != nil {
 			logger.Error(fmt.Sprintf("[websocket.Handler] reading message failed for %s: %v", conn.Identifier, err))
-			metrics.Increment("batches_read_total", fmt.Sprintf("status=failed,reason=serde,conn_group=%s", conn.Identifier.Group))
+			metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "serde", "conn_group": conn.Identifier.Group})
 			writeBadRequestResponse(conn, s, messageType, payload.ReqGuid, err)
 			continue
 		}
 		if config.Server.DedupEnabled {
 			// avoiding processing the same active connection's duplicate events.
 			if h.upgrader.Table.HasBatch(conn.Identifier, payload.ReqGuid) {
-				metrics.Increment("events_duplicate_total", fmt.Sprintf("reason=duplicate,conn_group=%s", conn.Identifier.Group))
+				metrics.Increment("events_duplicate_total", map[string]string{"reason": "duplicate", "conn_group": conn.Identifier.Group})
 				writeSuccessResponse(conn, s, messageType, payload.ReqGuid)
 				continue
 			}
 			h.upgrader.Table.StoreBatch(conn.Identifier, payload.ReqGuid)
 		}
 
-		metrics.Increment("batches_read_total", fmt.Sprintf("status=success,conn_group=%s", conn.Identifier.Group))
+		metrics.Increment("batches_read_total", map[string]string{"status": "success", "conn_group": conn.Identifier.Group})
 		h.sendEventCounters(payload.Events, conn.Identifier.Group)
 
 		h.collector.Collect(r.Context(), &collection.CollectRequest{
@@ -154,8 +154,8 @@ func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serializa
 
 func (h *Handler) sendEventCounters(events []*pb.Event, group string) {
 	for _, e := range events {
-		metrics.Count("events_rx_bytes_total", len(e.EventBytes), fmt.Sprintf("conn_group=%s,event_type=%s", group, e.Type))
-		metrics.Increment("events_rx_total", fmt.Sprintf("conn_group=%s,event_type=%s", group, e.Type))
+		metrics.Count("events_rx_bytes_total", int64(len(e.EventBytes)), map[string]string{"conn_group": group, "event_type": e.Type})
+		metrics.Increment("events_rx_total", map[string]string{"conn_group": group, "event_type": e.Type})
 	}
 }
 

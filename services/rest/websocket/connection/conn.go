@@ -1,7 +1,6 @@
 package connection
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -32,7 +31,7 @@ func (c *Conn) Ping(writeWaitInterval time.Duration) error {
 func (c *Conn) Close() {
 	if err := c.conn.Close(); err != nil {
 		logger.Errorf("[Connection Error] %v", err)
-		metrics.Increment("conn_close_err_count", "")
+		metrics.Increment("conn_close_err_count", map[string]string{})
 	}
 	c.calculateSessionTime()
 	c.closeHook(*c)
@@ -41,5 +40,5 @@ func (c *Conn) Close() {
 func (c *Conn) calculateSessionTime() {
 	connectionTime := time.Since(c.connectedAt)
 	logger.Debugf("[websocket.calculateSessionTime] %s, total time connected in minutes: %v", c.Identifier, connectionTime.Minutes())
-	metrics.Timing("user_session_duration_milliseconds", connectionTime.Milliseconds(), fmt.Sprintf("conn_group=%s", c.Identifier.Group))
+	metrics.Histogram("user_session_duration_milliseconds", connectionTime.Milliseconds(), map[string]string{"conn_group": c.Identifier.Group})
 }

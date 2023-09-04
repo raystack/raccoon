@@ -35,7 +35,7 @@ func initPrometheusCollector() (*PrometheusCollector, error) {
 		return nil, err
 	}
 	http.Handle(config.MetricPrometheus.Path, promhttp.HandlerFor(p.registry, promhttp.HandlerOpts{Registry: p.registry}))
-	server.ListenAndServe()
+	go server.ListenAndServe()
 	return p, nil
 
 }

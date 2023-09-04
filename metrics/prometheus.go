@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -80,24 +79,24 @@ func (p *PrometheusCollector) Histogram(metricName string, value int64, labels m
 }
 
 func (p *PrometheusCollector) Register() error {
-	for key, counter := range p.counters {
+	for _, counter := range p.counters {
 		err := p.registry.Register(counter)
 		if err != nil {
-			return errors.Join(err, fmt.Errorf("error registering %s", key))
+			return err
 		}
 		return nil
 	}
-	for key, gauge := range p.gauges {
+	for _, gauge := range p.gauges {
 		err := p.registry.Register(gauge)
 		if err != nil {
-			return errors.Join(err, fmt.Errorf("error registering %s", key))
+			return err
 		}
 		return nil
 	}
-	for key, histogram := range p.histogram {
+	for _, histogram := range p.histogram {
 		err := p.registry.Register(histogram)
 		if err != nil {
-			return errors.Join(err, fmt.Errorf("error registering %s", key))
+			return err
 		}
 		return nil
 	}

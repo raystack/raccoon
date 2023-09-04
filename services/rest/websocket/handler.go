@@ -45,7 +45,7 @@ func NewHandler(pingC chan connection.Conn, collector collection.Collector) *Han
 	ugConfig := connection.UpgraderConfig{
 		ReadBufferSize:    config.ServerWs.ReadBufferSize,
 		WriteBufferSize:   config.ServerWs.WriteBufferSize,
-		CheckOrigin:       config.ServerWs.CheckOrigin,
+		CheckOrigin:       !config.ServerCors.Enabled,
 		MaxUser:           config.ServerWs.ServerMaxConn,
 		PongWaitInterval:  config.ServerWs.PongWaitInterval,
 		WriteWaitInterval: config.ServerWs.WriteWaitInterval,

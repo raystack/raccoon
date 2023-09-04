@@ -21,7 +21,6 @@ type serverWs struct {
 	ServerMaxConn     int
 	ReadBufferSize    int
 	WriteBufferSize   int
-	CheckOrigin       bool
 	PingInterval      time.Duration
 	PongWaitInterval  time.Duration
 	WriteWaitInterval time.Duration
@@ -83,7 +82,6 @@ func serverWsConfigLoader() {
 	viper.SetDefault("SERVER_WEBSOCKET_MAX_CONN", 30000)
 	viper.SetDefault("SERVER_WEBSOCKET_READ_BUFFER_SIZE", 10240)
 	viper.SetDefault("SERVER_WEBSOCKET_WRITE_BUFFER_SIZE", 10240)
-	viper.SetDefault("SERVER_CORS_ENABLED", false)
 	viper.SetDefault("SERVER_WEBSOCKET_PING_INTERVAL_MS", "30000")
 	viper.SetDefault("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", "60000") //should be more than the ping period
 	viper.SetDefault("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS", "5000")
@@ -96,7 +94,6 @@ func serverWsConfigLoader() {
 		ServerMaxConn:     util.MustGetInt("SERVER_WEBSOCKET_MAX_CONN"),
 		ReadBufferSize:    util.MustGetInt("SERVER_WEBSOCKET_READ_BUFFER_SIZE"),
 		WriteBufferSize:   util.MustGetInt("SERVER_WEBSOCKET_WRITE_BUFFER_SIZE"),
-		CheckOrigin:       !util.MustGetBool("SERVER_CORS_ENABLED"),
 		PingInterval:      util.MustGetDuration("SERVER_WEBSOCKET_PING_INTERVAL_MS", time.Millisecond),
 		PongWaitInterval:  util.MustGetDuration("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", time.Millisecond),
 		WriteWaitInterval: util.MustGetDuration("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS", time.Millisecond),

@@ -81,15 +81,24 @@ func (p *PrometheusCollector) Histogram(metricName string, value int64, labels m
 func (p *PrometheusCollector) Register() error {
 	for key, counter := range p.counters {
 		err := p.registry.Register(counter)
-		return errors.Join(err, fmt.Errorf("error registering %s", key))
+		if err != nil {
+			return errors.Join(err, fmt.Errorf("error registering %s", key))
+		}
+		return nil
 	}
 	for key, gauge := range p.gauges {
 		err := p.registry.Register(gauge)
-		return errors.Join(err, fmt.Errorf("error registering %s", key))
+		if err != nil {
+			return errors.Join(err, fmt.Errorf("error registering %s", key))
+		}
+		return nil
 	}
 	for key, histogram := range p.histogram {
 		err := p.registry.Register(histogram)
-		return errors.Join(err, fmt.Errorf("error registering %s", key))
+		if err != nil {
+			return errors.Join(err, fmt.Errorf("error registering %s", key))
+		}
+		return nil
 	}
 	return nil
 }

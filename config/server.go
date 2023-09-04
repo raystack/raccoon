@@ -52,8 +52,8 @@ func serverConfigLoader() {
 
 func serverCorsConfigLoader() {
 	viper.SetDefault("SERVER_CORS_ENABLED", false)
-	viper.SetDefault("SERVER_CORS_ALLOWED_ORIGIN", "*")
-	viper.SetDefault("SERVER_CORS_ALLOWED_METHODS", []string{"GET", "HEAD", "POST"})
+	viper.SetDefault("SERVER_CORS_ALLOWED_ORIGIN", "")
+	viper.SetDefault("SERVER_CORS_ALLOWED_METHODS", []string{"GET", "HEAD", "POST", "OPTIONS"})
 	viper.SetDefault("SERVER_CORS_ALLOWED_HEADERS", "")
 	viper.SetDefault("SERVER_CORS_ALLOW_CREDENTIALS", false)
 	viper.SetDefault("SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS", 0)

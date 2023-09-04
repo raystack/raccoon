@@ -79,7 +79,7 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string, deliveryChann
 		m := d.(*kafka.Message)
 		if m.TopicPartition.Error != nil {
 			eventType := events[i].Type
-			// metrics.Decrement("kafka_messages_delivered_total", fmt.Sprintf("success=true,conn_group=%s,event_type=%s", connGroup, eventType)) // TODO: remove this decrement call
+			metrics.Increment("kafka_messages_undelivered_total", map[string]string{"success": "true", "conn_group": connGroup, "event_type": eventType})
 			metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "false", "conn_group": connGroup, "event_type": eventType})
 			order := m.Opaque.(int)
 			errors[order] = m.TopicPartition.Error

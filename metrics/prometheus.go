@@ -123,6 +123,9 @@ func getCounterMap() map[string]*prometheus.CounterVec {
 	counters["kafka_messages_delivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "kafka_messages_delivered_total",
 		Help: "Number of delivered events to Kafka"}, []string{"success", "conn_group", "event_type"})
+	counters["kafka_messages_undelivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "kafka_messages_undelivered_total",
+		Help: "Number of delivered events to Kafka which failed while reading delivery report"}, []string{"success", "conn_group", "event_type"})
 	counters["events_rx_bytes_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "events_rx_bytes_total",
 		Help: "Total byte receieved in requests"}, []string{"conn_group", "event_type"})

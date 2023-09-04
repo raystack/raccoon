@@ -90,12 +90,46 @@ Number of goroutine spawn to Ping clients.
 - Type `Optional`
 - Default value: `1`
 
-### `SERVER_WEBSOCKET_CHECK_ORIGIN`
+### `SERVER_CORS_ENABLED`
 
-Toggle CORS check function. Set `true` to check each request origin. Set `false` to disable check origin and allow every request. Check origin function check against `Origin` header.
+The server decides whether to enable the cors middleware and thus allow CORS requests. Enabling it also disables the same origin check in websocket Handler.
 
-- Type: `Optional`
+Type `Optional`
 - Default value: `true`
+
+### `SERVER_CORS_ALLOWED_ORIGIN`
+
+The server decides which origin to allow. The configuration is expected to space separated. Multiple values are supported. The value requies `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
+
+Type `Optional`
+- Default Value `*`
+
+### `SERVER_CORS_ALLOWED_METHODS`
+
+The http methods allowed when it's a cross origin request. The http methods are expected to be space separated. 
+
+Type `Optional`
+- Default Value `GET HEAD POST OPTIONS`
+
+### `SERVER_CORS_ALLOWED_HEADERS`
+
+The http request headers which are allowed when request is cross origin. The input expects to add any additional headers which is going to be sent by the client ex: `Authorization`. Headers which are essential for the functioning of Raccoon like Content-Type, Connection-Id & Group headers.
+
+Type `Optional`
+- Default Value ``
+
+### `SERVER_CORS_ALLOW_CREDENTIALS`
+
+AllowCredentials can be used to specify that the user agent may pass authentication details along with the request. 
+
+Type `Optional`
+Default Value `false`
+
+### `SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS`
+
+Replies with a header for clients on how long to cache the response of the preflight request. It's not enforceable. The max value is 600s
+Type `Optional`
+Default Value `0`
 
 ### `SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED`
 

@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/raystack/raccoon/config"
+	"github.com/raystack/raccoon/logger"
 	"github.com/spf13/cast"
 )
 
@@ -105,7 +106,11 @@ func (p *PrometheusCollector) Register() error {
 
 func (p *PrometheusCollector) Close() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
-	p.server.Shutdown(ctx)
+	logger.Info("shutting down prometheus metric server")
+	err := p.server.Shutdown(ctx)
+	if err != nil {
+		logger.Warn("error shutting down logger")
+	}
 	defer cancel()
 }
 

@@ -37,13 +37,18 @@ func NewRestService(c collection.Collector) *Service {
 	subRouter.HandleFunc("/events", restHandler.RESTAPIHandler).Methods(http.MethodPost).Name("events")
 
 	server := &http.Server{
-		Handler: middleware.Apply(router),
+		Handler: applyMiddleware(router),
 		Addr:    ":" + config.ServerWs.AppPort,
 	}
 	return &Service{
 		s:         server,
 		Collector: c,
 	}
+}
+
+func applyMiddleware(router http.Handler) http.Handler {
+	h := middleware.GetCors()(router)
+	return h
 }
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {

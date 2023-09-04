@@ -51,13 +51,10 @@ func serverConfigLoader() {
 }
 
 func serverCorsConfigLoader() {
-	allowedHeaders := []string{"Content-Type"}
-	allowedHeaders = setAllowedHeaders(allowedHeaders, "SERVER_WEBSOCKET_CONN_GROUP_HEADER")
-	allowedHeaders = setAllowedHeaders(allowedHeaders, "SERVER_WEBSOCKET_CONN_ID_HEADER")
 	viper.SetDefault("SERVER_CORS_ENABLED", false)
 	viper.SetDefault("SERVER_CORS_ALLOWED_ORIGIN", "*")
 	viper.SetDefault("SERVER_CORS_ALLOWED_METHODS", []string{"GET", "HEAD", "POST"})
-	viper.SetDefault("SERVER_CORS_ALLOWED_HEADERS", allowedHeaders)
+	viper.SetDefault("SERVER_CORS_ALLOWED_HEADERS", "")
 	viper.SetDefault("SERVER_CORS_ALLOW_CREDENTIALS", false)
 	viper.SetDefault("SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS", 0)
 	ServerCors = serverCors{
@@ -65,9 +62,22 @@ func serverCorsConfigLoader() {
 		AllowedOrigin:    viper.GetStringSlice("SERVER_CORS_ALLOWED_ORIGIN"),
 		AllowedMethods:   viper.GetStringSlice("SERVER_CORS_ALLOWED_METHODS"),
 		AllowCredentials: util.MustGetBool("SERVER_CORS_ALLOW_CREDENTIALS"),
-		AllowedHeaders:   viper.GetStringSlice("SERVER_CORS_ALLOWED_HEADERS"),
+		AllowedHeaders:   getAllowedHeaders(),
 		MaxAge:           util.MustGetInt("SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS"),
 	}
+}
+
+func getAllowedHeaders() []string {
+	allowedHeaders := []string{"Content-Type"}
+	allowedHeaders = setAllowedHeaders(allowedHeaders, "SERVER_WEBSOCKET_CONN_GROUP_HEADER")
+	allowedHeaders = setAllowedHeaders(allowedHeaders, "SERVER_WEBSOCKET_CONN_ID_HEADER")
+	inputHeaders := viper.GetStringSlice("SERVER_CORS_ALLOWED_HEADERS")
+	for _, input := range inputHeaders {
+		if input != "" && !util.Contains(input, inputHeaders) {
+			allowedHeaders = append(allowedHeaders, input)
+		}
+	}
+	return allowedHeaders
 }
 
 func setAllowedHeaders(allowedHeaders []string, envKey string) []string {

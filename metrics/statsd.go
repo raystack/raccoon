@@ -14,7 +14,6 @@ type Statsd struct {
 }
 
 func initStatsd() (*Statsd, error) {
-
 	c, err := client.New(
 		client.Address(config.MetricStatsd.Address),
 		client.FlushPeriod(config.MetricStatsd.FlushPeriodMs))
@@ -37,10 +36,6 @@ func (s *Statsd) timing(bucket string, t int64, tags string) {
 
 func (s *Statsd) increment(bucket string, tags string) {
 	s.c.Increment(withTags(bucket, tags))
-}
-
-func (s *Statsd) decrement(bucket string, tags string) {
-	s.c.Count(withTags(bucket, tags), -1)
 }
 
 func (s *Statsd) gauge(bucket string, val interface{}, tags string) {
@@ -81,13 +76,6 @@ func (s *Statsd) Increment(bucket string, labels map[string]string) error {
 	s.increment(bucket, tags)
 	return nil
 }
-
-// func Decrement(bucket string, tags string) {
-// 	err := Setup()
-// 	if err == nil {
-// 		instance.decrement(bucket, tags)
-// 	}
-// }
 
 func (s *Statsd) Gauge(metricName string, value interface{}, labels map[string]string) error {
 	tags := translateLabelIntoTags(labels)

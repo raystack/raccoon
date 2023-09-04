@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/raystack/raccoon/config"
+	"github.com/raystack/raccoon/logger"
 )
 
 var instrument MetricInstrument
@@ -17,18 +18,34 @@ type MetricInstrument interface {
 }
 
 func Increment(metricName string, labels map[string]string) error {
+	if instrument == nil {
+		logger.Warn("instrumentation is not set for logging")
+		return errors.New("instrumentation is not set for logging")
+	}
 	return instrument.Increment(metricName, labels)
 }
 
 func Count(metricName string, count int64, labels map[string]string) error {
+	if instrument == nil {
+		logger.Warn("instrumentation is not set for logging")
+		return errors.New("instrumentation is not set for logging")
+	}
 	return instrument.Count(metricName, count, labels)
 }
 
 func Gauge(metricName string, value interface{}, labels map[string]string) error {
+	if instrument == nil {
+		logger.Warn("instrumentation is not set for logging")
+		return errors.New("instrumentation is not set for logging")
+	}
 	return instrument.Gauge(metricName, value, labels)
 }
 
 func Histogram(metricName string, value int64, labels map[string]string) error {
+	if instrument == nil {
+		logger.Warn("instrumentation is not set for logging")
+		return errors.New("instrumentation is not set for logging")
+	}
 	return instrument.Histogram(metricName, value, labels)
 }
 

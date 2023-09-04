@@ -9,6 +9,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/prometheus/client_golang v1.16.0
 	github.com/sirupsen/logrus v1.6.0
+	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.8.0
 	google.golang.org/grpc v1.46.0

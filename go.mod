@@ -1,6 +1,6 @@
 module github.com/raystack/raccoon
 
-go 1.14
+go 1.15
 
 require (
 	github.com/confluentinc/confluent-kafka-go v1.9.3-RC3

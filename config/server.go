@@ -74,7 +74,7 @@ func getAllowedHeaders() []string {
 	allowedHeaders = setAllowedHeaders(allowedHeaders, "SERVER_WEBSOCKET_CONN_ID_HEADER")
 	inputHeaders := viper.GetStringSlice("SERVER_CORS_ALLOWED_HEADERS")
 	for _, input := range inputHeaders {
-		if input != "" && !util.Contains(input, inputHeaders) {
+		if input != "" && !util.Contains(input, allowedHeaders) {
 			allowedHeaders = append(allowedHeaders, input)
 		}
 	}

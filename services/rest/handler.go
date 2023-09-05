@@ -59,7 +59,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	serde, ok := h.serDeMap[contentType]
 
 	if !ok {
-		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "unknowncontentype"})
+		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "unknowncontentype", "conn_group": "NA"})
 		logger.Errorf("[rest.GetRESTAPIHandler] invalid content type %s", contentType)
 		rw.WriteHeader(http.StatusBadRequest)
 		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("invalid content type").
@@ -124,7 +124,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metrics.Increment("batches_read_total", map[string]string{"status": "success", "conn_group": identifier.Group})
+	metrics.Increment("batches_read_total", map[string]string{"status": "success", "conn_group": identifier.Group, "reason": "NA"})
 	h.sendEventCounters(req.Events, identifier.Group)
 
 	resChannel := make(chan struct{}, 1)

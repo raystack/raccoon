@@ -45,7 +45,7 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.
 
 	timeConsumed := time.Now()
 
-	metrics.Increment("batches_read_total", map[string]string{"status": "success", "conn_group": identifier.Group})
+	metrics.Increment("batches_read_total", map[string]string{"status": "success", "conn_group": identifier.Group, "reason": "NA"})
 	h.sendEventCounters(req.Events, identifier.Group)
 
 	responseChannel := make(chan *pb.SendEventResponse, 1)

@@ -237,7 +237,7 @@ func getHistogramMap() map[string]*prometheus.HistogramVec {
 	histogram["worker_processing_duration_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name: "worker_processing_duration_milliseconds",
 		Help: "Duration from the time request is processed to the time events are published. This metric is calculated per event by following formula (PublishedTime - ProcessedTime)/CountEvents",
-	}, []string{})
+	}, []string{"worker"})
 	histogram["server_processing_latency_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name: "server_processing_latency_milliseconds",
 		Help: "Duration from the time request is receieved to the time events are published. This metric is calculated per event by following formula`(PublishedTime - ReceievedTime)/CountEvents`",

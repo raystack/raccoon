@@ -112,7 +112,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 			h.upgrader.Table.StoreBatch(conn.Identifier, payload.ReqGuid)
 		}
 
-		metrics.Increment("batches_read_total", map[string]string{"status": "success", "conn_group": conn.Identifier.Group})
+		metrics.Increment("batches_read_total", map[string]string{"status": "success", "conn_group": conn.Identifier.Group, "reason": "NA"})
 		h.sendEventCounters(payload.Events, conn.Identifier.Group)
 
 		h.collector.Collect(r.Context(), &collection.CollectRequest{

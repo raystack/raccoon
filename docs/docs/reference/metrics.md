@@ -64,7 +64,7 @@ Number of connection close errors encountered
 
 ### `kafka_messages_delivered_total`
 
-Number of delivered events to Kafka. The metric also contains false increments. To find the true value, one should use the difference between this and `kafka_messages_undelivered_total` metric for the same tag.
+Number of delivered events to Kafka. The metric also contains false increments. To find the true value, one should use the difference between this and `kafka_messages_undelivered_total` metric for the same tag/labels.
 
 - Type: `Count`
 - Tags: `success=false` `success=true` `conn_group=*` `event_type=*`

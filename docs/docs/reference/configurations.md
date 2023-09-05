@@ -256,6 +256,7 @@ Flag to enable export of statsd metric
 
 - Type `Optional`
 - Default value: `false`
+
 ### `METRIC_STATSD_ADDRESS`
 
 Address to reports the service metrics.

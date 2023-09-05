@@ -457,43 +457,43 @@ func TestIntegration(t *testing.T) {
 		}
 	})
 
-	// t.Run("Should accept connections with same user id with different connection group", func(t *testing.T) {
-	// 	done := make(chan int)
-	// 	_, _, err := websocket.DefaultDialer.Dial(wsurl, http.Header{
-	// 		"X-User-ID":    []string{"1234"},
-	// 		"X-User-Group": []string{"viewer"},
-	// 	})
+	t.Run("Should accept connections with same user id with different connection group", func(t *testing.T) {
+		done := make(chan int)
+		_, _, err := websocket.DefaultDialer.Dial(wsurl, http.Header{
+			"X-User-ID":    []string{"1234"},
+			"X-User-Group": []string{"viewer"},
+		})
 
-	// 	assert.NoError(t, err)
+		assert.NoError(t, err)
 
-	// 	secondWss, _, err := websocket.DefaultDialer.Dial(wsurl, http.Header{
-	// 		"X-User-ID":    []string{"1234"},
-	// 		"X-User-Group": []string{"editor"},
-	// 	})
+		secondWss, _, err := websocket.DefaultDialer.Dial(wsurl, http.Header{
+			"X-User-ID":    []string{"1234"},
+			"X-User-Group": []string{"editor"},
+		})
 
-	// 	assert.NoError(t, err)
+		assert.NoError(t, err)
 
-	// 	go func() {
-	// 		for {
-	// 			_, _, err := secondWss.ReadMessage()
-	// 			assert.NoError(t, err)
-	// 			if err != nil {
-	// 				close(done)
-	// 				break
-	// 			}
-	// 		}
-	// 	}()
-	// 	select {
-	// 	case <-time.After(timeout):
-	// 		assert.Fail(t, "Timeout. Expecting second connection to close")
-	// 		break
-	// 	case <-time.After(3 * time.Second):
-	// 		// Second connection is established and there is no error
-	// 		break
-	// 	case <-done:
-	// 		break
-	// 	}
-	// })
+		go func() {
+			for {
+				_, _, err := secondWss.ReadMessage()
+				assert.NoError(t, err)
+				if err != nil {
+					close(done)
+					break
+				}
+			}
+		}()
+		select {
+		case <-time.After(timeout):
+			assert.Fail(t, "Timeout. Expecting second connection to close")
+			break
+		case <-time.After(3 * time.Second):
+			// Second connection is established and there is no error
+			break
+		case <-done:
+			break
+		}
+	})
 
 	t.Run("Should respond with correct Access-Control-Allow-Origin Header when whitelisted origin makes a request", func(t *testing.T) {
 		client := &http.Client{}

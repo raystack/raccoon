@@ -53,14 +53,28 @@ Duration of alive connection per session per connection
 - Type: `Timing`
 - Tags: `conn_group=*`
 
+### `conn_close_err_count`
+
+Number of connection close errors encountered
+
+- Type: `Count`
+- Tags: NA
+
 ## Kafka Publisher
 
 ### `kafka_messages_delivered_total`
 
-Number of delivered events to Kafka
+Number of delivered events to Kafka. The metric also contains false increments. To find the true value, one should use the difference between this and `kafka_messages_undelivered_total` metric for the same tag.
 
 - Type: `Count`
 - Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+
+### `kafka_messages_undelivered_total`
+
+- Type: `Count`
+- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+
+### 
 
 ### `kafka_unknown_topic_failure_total`
 
@@ -101,6 +115,29 @@ Broker latency / round-trip time in microseconds
 
 - Type: `Gauge`
 - Tags: `broker=broker_nodes`
+
+### `ack_event_rtt_ms`
+
+Time taken from ack function called by kafka producer to processed by the ack handler.
+
+- Type: `Timing`
+- Tags: NA
+
+### `event_rtt_ms`
+
+Time taken from event is consumed from the queue to be acked by the ack handler.
+
+- Type: `Timing`
+- Tags: NA
+
+### `kafka_producebulk_tt_ms`
+
+Response time of produce batch method of the kafka producer
+
+- Type `Timing`
+- Tags: NA
+
+
 
 ## Resource Usage
 
@@ -177,6 +214,13 @@ Number of events received in requests
 
 - Type: `Count`
 - Tags: `conn_group=*` `event_type=*`
+
+### `events_duplicate_total`
+
+Number of duplicate events
+
+- Type: `Count`
+- Tags: `conn_group=*` `reason=*`
 
 ### `batches_read_total`
 

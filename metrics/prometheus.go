@@ -228,12 +228,12 @@ func getHistogramMap() map[string]*prometheus.HistogramVec {
 	histogram["event_processing_duration_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "event_processing_duration_milliseconds",
 		Help:    "Duration from the time request is sent to the time events are published. This metric is calculated per event by following formula (PublishedTime - SentTime)/CountEvents",
-		Buckets: []float64{1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
+		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{"conn_group"})
 	histogram["worker_processing_duration_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "worker_processing_duration_milliseconds",
 		Help:    "Duration from the time request is processed to the time events are published. This metric is calculated per event by following formula (PublishedTime - ProcessedTime)/CountEvents",
-		Buckets: []float64{1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
+		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{"worker"})
 	histogram["server_processing_latency_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "server_processing_latency_milliseconds",

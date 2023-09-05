@@ -90,6 +90,13 @@ Number of goroutine spawn to Ping clients.
 - Type `Optional`
 - Default value: `1`
 
+### `SERVER_WEBSOCKET_CHECK_ORIGIN`
+
+Toggle CORS check function. Set `true` to check each request origin. Set `false` to disable check origin and allow every request. Check origin function check against `Origin` header.
+
+- Type: `Optional`
+- Default value: `true`
+
 ### `SERVER_CORS_ENABLED`
 
 The server decides whether to enable the cors middleware and thus allow CORS requests. Enabling it also disables the same origin check in websocket Handler.

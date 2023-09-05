@@ -28,6 +28,7 @@ type serverWs struct {
 	ConnIDHeader      string
 	ConnGroupHeader   string
 	ConnGroupDefault  string
+	CheckOrigin       bool
 }
 
 type serverGRPC struct {
@@ -88,6 +89,7 @@ func setAllowedHeaders(allowedHeaders []string, envKey string) []string {
 }
 
 func serverWsConfigLoader() {
+	viper.SetDefault("SERVER_WEBSOCKET_CHECK_ORIGIN", true)
 	viper.SetDefault("SERVER_WEBSOCKET_PORT", "8080")
 	viper.SetDefault("SERVER_WEBSOCKET_MAX_CONN", 30000)
 	viper.SetDefault("SERVER_WEBSOCKET_READ_BUFFER_SIZE", 10240)
@@ -111,6 +113,7 @@ func serverWsConfigLoader() {
 		ConnIDHeader:      util.MustGetString("SERVER_WEBSOCKET_CONN_ID_HEADER"),
 		ConnGroupHeader:   util.MustGetString("SERVER_WEBSOCKET_CONN_GROUP_HEADER"),
 		ConnGroupDefault:  util.MustGetString("SERVER_WEBSOCKET_CONN_GROUP_DEFAULT"),
+		CheckOrigin:       util.MustGetBool("SERVER_WEBSOCKET_CHECK_ORIGIN"),
 	}
 }
 

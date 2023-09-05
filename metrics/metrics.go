@@ -42,7 +42,11 @@ func Increment(metricName string, labels map[string]string) error {
 		logger.Warn("instrumentation is not set for logging")
 		return errors.New("instrumentation is not set for logging")
 	}
-	return instrument.Increment(metricName, labels)
+	err := instrument.Increment(metricName, labels)
+	if err != nil {
+		logger.Warn(err)
+	}
+	return err
 }
 
 func Count(metricName string, count int64, labels map[string]string) error {
@@ -50,7 +54,11 @@ func Count(metricName string, count int64, labels map[string]string) error {
 		logger.Warn("instrumentation is not set for logging")
 		return errors.New("instrumentation is not set for logging")
 	}
-	return instrument.Count(metricName, count, labels)
+	err := instrument.Count(metricName, count, labels)
+	if err != nil {
+		logger.Warn(err)
+	}
+	return err
 }
 
 func Gauge(metricName string, value interface{}, labels map[string]string) error {
@@ -58,7 +66,11 @@ func Gauge(metricName string, value interface{}, labels map[string]string) error
 		logger.Warn("instrumentation is not set for logging")
 		return errors.New("instrumentation is not set for logging")
 	}
-	return instrument.Gauge(metricName, value, labels)
+	err := instrument.Gauge(metricName, value, labels)
+	if err != nil {
+		logger.Warn(err)
+	}
+	return err
 }
 
 func Histogram(metricName string, value int64, labels map[string]string) error {
@@ -66,7 +78,11 @@ func Histogram(metricName string, value int64, labels map[string]string) error {
 		logger.Warn("instrumentation is not set for logging")
 		return errors.New("instrumentation is not set for logging")
 	}
-	return instrument.Histogram(metricName, value, labels)
+	err := instrument.Histogram(metricName, value, labels)
+	if err != nil {
+		logger.Warn(err)
+	}
+	return err
 }
 
 func Setup() error {

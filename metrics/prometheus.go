@@ -211,36 +211,41 @@ func getGaugeMap() map[string]*prometheus.GaugeVec {
 func getHistogramMap() map[string]*prometheus.HistogramVec {
 	histogram := make(map[string]*prometheus.HistogramVec)
 	histogram["ack_event_rtt_ms"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "ack_event_rtt_ms",
+		Name:    "ack_event_rtt_ms",
+		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{})
 	histogram["event_rtt_ms"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "event_rtt_ms",
-	}, []string{})
-	histogram["ack_event_rtt_ms"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "ack_event_rtt_ms",
+		Name:    "event_rtt_ms",
+		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{})
 	histogram["user_session_duration_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "user_session_duration_milliseconds",
-		Help: "Duration of alive connection per session per connection",
+		Name:    "user_session_duration_milliseconds",
+		Help:    "Duration of alive connection per session per connection",
+		Buckets: []float64{1000, 10000, 100000, 600000, 3600000},
 	}, []string{"conn_group"})
 	histogram["batch_idle_in_channel_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "batch_idle_in_channel_milliseconds",
-		Help: "Duration from when the request is received to when the request is processed. High value of this metric indicates the publisher is slow.",
+		Name:    "batch_idle_in_channel_milliseconds",
+		Help:    "Duration from when the request is received to when the request is processed. High value of this metric indicates the publisher is slow.",
+		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{"worker"})
 	histogram["kafka_producebulk_tt_ms"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "kafka_producebulk_tt_ms",
+		Name:    "kafka_producebulk_tt_ms",
+		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{})
 	histogram["event_processing_duration_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "event_processing_duration_milliseconds",
-		Help: "Duration from the time request is sent to the time events are published. This metric is calculated per event by following formula (PublishedTime - SentTime)/CountEvents",
+		Name:    "event_processing_duration_milliseconds",
+		Help:    "Duration from the time request is sent to the time events are published. This metric is calculated per event by following formula (PublishedTime - SentTime)/CountEvents",
+		Buckets: []float64{1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{"conn_group"})
 	histogram["worker_processing_duration_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "worker_processing_duration_milliseconds",
-		Help: "Duration from the time request is processed to the time events are published. This metric is calculated per event by following formula (PublishedTime - ProcessedTime)/CountEvents",
+		Name:    "worker_processing_duration_milliseconds",
+		Help:    "Duration from the time request is processed to the time events are published. This metric is calculated per event by following formula (PublishedTime - ProcessedTime)/CountEvents",
+		Buckets: []float64{1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{"worker"})
 	histogram["server_processing_latency_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name: "server_processing_latency_milliseconds",
-		Help: "Duration from the time request is receieved to the time events are published. This metric is calculated per event by following formula`(PublishedTime - ReceievedTime)/CountEvents`",
+		Name:    "server_processing_latency_milliseconds",
+		Help:    "Duration from the time request is receieved to the time events are published. This metric is calculated per event by following formula`(PublishedTime - ReceievedTime)/CountEvents`",
+		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{"conn_group"})
 	return histogram
 }

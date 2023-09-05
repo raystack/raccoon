@@ -249,6 +249,13 @@ Upon shutdown, the publisher will try to finish processing events in buffer befo
 
 ## Metric
 
+
+### `METRIC_STATSD_ENABLED`
+
+Flag to enable export of statsd metric
+
+- Type `Optional`
+- Default value: `false`
 ### `METRIC_STATSD_ADDRESS`
 
 Address to reports the service metrics.
@@ -262,6 +269,23 @@ Interval for the service to push metrics.
 
 - Type `Optional`
 - Default value: `10000`
+
+### `METRIC_PROMETHEUS_ENABLED`
+
+Flag to enable a prometheus http server to expose metrics.
+
+- Type `Optional`
+- Default value: `false`
+
+### `METRIC_PROMETHEUS_PATH`
+
+- Type `Optional`
+- Default value: `/metrics`
+
+### `METRIC_PROMETHEUS_PORT`
+
+- Type `Optional`
+- Default value: `9090`
 
 ## Log
 

@@ -17,6 +17,26 @@ type MetricInstrument interface {
 	Close()
 }
 
+type voidInstrument struct{}
+
+func (v voidInstrument) Increment(metricName string, labels map[string]string) error {
+	return nil
+}
+
+func (v voidInstrument) Count(metricName string, count int64, labels map[string]string) error {
+	return nil
+}
+
+func (v voidInstrument) Gauge(metricName string, value interface{}, labels map[string]string) error {
+	return nil
+}
+
+func (v voidInstrument) Histogram(metricName string, value int64, labels map[string]string) error {
+	return nil
+}
+
+func (v voidInstrument) Close() {}
+
 func Increment(metricName string, labels map[string]string) error {
 	if instrument == nil {
 		logger.Warn("instrumentation is not set for logging")
@@ -73,12 +93,7 @@ func Setup() error {
 }
 
 func SetVoid() {
-	if config.MetricPrometheus.Enabled {
-		setPrometheusVoid()
-	}
-	if config.MetricStatsd.Enabled {
-		setStatsDVoid()
-	}
+	instrument = voidInstrument{}
 }
 
 func Close() {

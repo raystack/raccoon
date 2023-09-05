@@ -113,10 +113,6 @@ func (p *PrometheusCollector) Close() {
 	defer cancel()
 }
 
-func setPrometheusVoid() {
-
-}
-
 func getCounterMap() map[string]*prometheus.CounterVec {
 	counters := make(map[string]*prometheus.CounterVec)
 	counters["kafka_messages_delivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{

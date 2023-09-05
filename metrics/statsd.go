@@ -83,13 +83,6 @@ func (s *Statsd) Gauge(metricName string, value interface{}, labels map[string]s
 	return nil
 }
 
-func setStatsDVoid() {
-	c, _ := client.New(client.Mute(true))
-	instrument = &Statsd{
-		c: c,
-	}
-}
-
 func translateLabelIntoTags(labels map[string]string) string {
 	labelArr := make([]string, len(labels))
 	for key, value := range labels {

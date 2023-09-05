@@ -1,4 +1,4 @@
-FROM golang:1.14
+FROM golang:1.18
 
 WORKDIR /app
 RUN apt-get update && apt-get install unzip  --no-install-recommends --assume-yes

@@ -10,7 +10,7 @@ RUN PROTOC_ZIP=protoc-3.17.3-linux-x86_64.zip && \
 COPY . .
 RUN  make build
 
-FROM debian:buster-slim
+FROM debian:buster
 WORKDIR /app
 COPY --from=0 /app/raccoon ./raccoon
 COPY . .

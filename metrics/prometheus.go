@@ -84,21 +84,18 @@ func (p *PrometheusCollector) Register() error {
 		if err != nil {
 			return err
 		}
-		return nil
 	}
 	for _, gauge := range p.gauges {
 		err := p.registry.Register(gauge)
 		if err != nil {
 			return err
 		}
-		return nil
 	}
 	for _, histogram := range p.histogram {
 		err := p.registry.Register(histogram)
 		if err != nil {
 			return err
 		}
-		return nil
 	}
 	return nil
 }

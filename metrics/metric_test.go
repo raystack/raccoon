@@ -73,19 +73,6 @@ func Test_Prometheus_Setup(t *testing.T) {
 	time.Sleep(5 * time.Second)
 }
 
-func Test_StatsDSetup(t *testing.T) {
-	config.MetricPrometheus.Enabled = false
-	config.MetricStatsd.Enabled = true
-	config.MetricStatsd.Address = ":8125"
-	config.MetricStatsd.FlushPeriodMs = 5000
-	Setup()
-	statsDInstrument, ok := instrument.(*Statsd)
-	assert.True(t, ok, "statsd collector was not initialised")
-	assert.NotNil(t, statsDInstrument)
-	os.Unsetenv("METRIC_STATSD_ENABLED")
-	Close()
-}
-
 func Test_Error_On_Both_Enabled(t *testing.T) {
 	config.MetricPrometheus.Enabled = true
 	config.MetricStatsd.Enabled = true

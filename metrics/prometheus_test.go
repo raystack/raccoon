@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -238,10 +238,11 @@ func TestPrometheusSuite(t *testing.T) {
 }
 
 func (suite *PrometheusTestSuite) SetupTest() {
-	os.Setenv("METRIC_PROMETHEUS_ENABLED", "true")
-	os.Setenv("METRIC_PROMETHEUS_PATH", prometheusPath)
-	os.Setenv("METRIC_PROMETHEUS_PORT", prometheusPort)
-	config.Load()
+	var err error
+	config.MetricPrometheus.Enabled = true
+	config.MetricPrometheus.Path = prometheusPath
+	config.MetricPrometheus.Port, err = strconv.Atoi(prometheusPort)
+	assert.NoError(suite.T(), err)
 }
 
 func (promSuite *PrometheusTestSuite) TearDownTest() {

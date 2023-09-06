@@ -3,6 +3,7 @@ package metrics
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/raystack/raccoon/config"
 	"github.com/stretchr/testify/assert"
@@ -59,33 +60,39 @@ func (m *mockMetricInstrument) Close() {
 }
 
 func Test_Prometheus_Setup(t *testing.T) {
-	os.Setenv("METRIC_STATSD_ENABLED", "false")
-	os.Setenv("METRIC_PROMETHEUS_ENABLED", "true")
-	config.Load()
+	config.MetricPrometheus.Enabled = true
+	config.MetricStatsd.Enabled = false
+	config.MetricPrometheus.Path = "/metrics"
+	config.MetricPrometheus.Port = 8080
 	Setup()
 	prometheusInstrument, ok := instrument.(*PrometheusCollector)
 	assert.True(t, ok, "prometheus collector was not initialised")
 	assert.NotNil(t, prometheusInstrument)
 	os.Unsetenv("METRIC_PROMETHEUS_ENABLED")
 	Close()
+	time.Sleep(5 * time.Second)
 }
 
 func Test_StatsDSetup(t *testing.T) {
-	os.Setenv("METRIC_PROMETHEUS_ENABLED", "false") // to ensure env is set according to test scenario
-	os.Setenv("METRIC_STATSD_ENABLED", "true")
-	config.Load()
+	config.MetricPrometheus.Enabled = false
+	config.MetricStatsd.Enabled = true
+	config.MetricStatsd.Address = ":8125"
+	config.MetricStatsd.FlushPeriodMs = 5000
 	Setup()
 	statsDInstrument, ok := instrument.(*Statsd)
 	assert.True(t, ok, "statsd collector was not initialised")
 	assert.NotNil(t, statsDInstrument)
 	os.Unsetenv("METRIC_STATSD_ENABLED")
+	Close()
 }
 
 func Test_Error_On_Both_Enabled(t *testing.T) {
-	os.Setenv("METRIC_STATSD_ENABLED", "true")
-	os.Setenv("METRIC_PROMETHEUS_ENABLED", "true")
-	config.Load()
+	config.MetricPrometheus.Enabled = true
+	config.MetricStatsd.Enabled = true
 	assert.Error(t, Setup())
+	os.Setenv("METRIC_STATSD_ENABLED", "false")
+	os.Setenv("METRIC_PROMETHEUS_ENABLED", "false")
+	defer Close()
 }
 
 func Test_Count_Calls_Instrument_Count(t *testing.T) {
@@ -140,6 +147,7 @@ func Test_Close_Does_Not_Panic_On_Nil_Instrument(t *testing.T) {
 }
 
 func Test_ReturnsErrWhenCalledithNilInstrument(t *testing.T) {
+	instrument = nil
 	metricName := "abcd"
 	countValue := int64(9000)
 	labels := map[string]string{"xyz": "ques", "alpha": "beta"}

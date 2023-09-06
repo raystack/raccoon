@@ -147,6 +147,7 @@ func (promSuite *PrometheusTestSuite) Test_Prometheus_Collector_MetricServer_Ini
 	promSuite.instrument, err = initPrometheusCollector()
 	assert.NoError(promSuite.T(), err)
 	client := http.Client{Timeout: 5 * time.Second}
+	time.Sleep(2 * time.Second)
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://:%s%s", prometheusPort, prometheusPath), nil)
 	assert.NoError(promSuite.T(), err)
 	res, err := client.Do(req)

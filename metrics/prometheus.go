@@ -13,16 +13,35 @@ import (
 	"github.com/spf13/cast"
 )
 
+type CounterVec interface {
+	With(labels prometheus.Labels) prometheus.Counter
+	Collect(chan<- prometheus.Metric)
+	Describe(chan<- *prometheus.Desc)
+}
+
+type GaugeVec interface {
+	With(labels prometheus.Labels) prometheus.Gauge
+	Collect(chan<- prometheus.Metric)
+	Describe(chan<- *prometheus.Desc)
+}
+
+type HistogramVec interface {
+	With(labels prometheus.Labels) prometheus.Observer
+	Collect(chan<- prometheus.Metric)
+	Describe(chan<- *prometheus.Desc)
+}
+
 type PrometheusCollector struct {
 	registry  *prometheus.Registry
-	counters  map[string]*prometheus.CounterVec
-	gauges    map[string]*prometheus.GaugeVec
-	histogram map[string]*prometheus.HistogramVec
+	counters  map[string]CounterVec
+	gauges    map[string]GaugeVec
+	histogram map[string]HistogramVec
 	server    *http.Server
 }
 
 func initPrometheusCollector() (*PrometheusCollector, error) {
-	server := &http.Server{Addr: fmt.Sprintf(":%d", config.MetricPrometheus.Port)}
+	serveMux := &http.ServeMux{}
+	server := &http.Server{Addr: fmt.Sprintf(":%d", config.MetricPrometheus.Port), Handler: serveMux}
 	p := &PrometheusCollector{
 		counters:  getCounterMap(),
 		gauges:    getGaugeMap(),
@@ -34,7 +53,7 @@ func initPrometheusCollector() (*PrometheusCollector, error) {
 	if err != nil {
 		return nil, err
 	}
-	http.Handle(config.MetricPrometheus.Path, promhttp.HandlerFor(p.registry, promhttp.HandlerOpts{Registry: p.registry}))
+	serveMux.Handle(config.MetricPrometheus.Path, promhttp.HandlerFor(p.registry, promhttp.HandlerOpts{Registry: p.registry}))
 	go server.ListenAndServe()
 	return p, nil
 
@@ -110,8 +129,8 @@ func (p *PrometheusCollector) Close() {
 	defer cancel()
 }
 
-func getCounterMap() map[string]*prometheus.CounterVec {
-	counters := make(map[string]*prometheus.CounterVec)
+func getCounterMap() map[string]CounterVec {
+	counters := make(map[string]CounterVec)
 	counters["kafka_messages_delivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "kafka_messages_delivered_total",
 		Help: "Number of delivered events to Kafka"}, []string{"success", "conn_group", "event_type"})
@@ -151,8 +170,8 @@ func getCounterMap() map[string]*prometheus.CounterVec {
 	return counters
 }
 
-func getGaugeMap() map[string]*prometheus.GaugeVec {
-	gauges := make(map[string]*prometheus.GaugeVec)
+func getGaugeMap() map[string]GaugeVec {
+	gauges := make(map[string]GaugeVec)
 	gauges["server_go_routines_count_current"] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "server_go_routines_count_current",
 		Help: "Number of goroutine spawn in a single flush"}, []string{})
@@ -201,8 +220,8 @@ func getGaugeMap() map[string]*prometheus.GaugeVec {
 	return gauges
 }
 
-func getHistogramMap() map[string]*prometheus.HistogramVec {
-	histogram := make(map[string]*prometheus.HistogramVec)
+func getHistogramMap() map[string]HistogramVec {
+	histogram := make(map[string]HistogramVec)
 	histogram["ack_event_rtt_ms"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "ack_event_rtt_ms",
 		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},

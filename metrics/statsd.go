@@ -26,22 +26,6 @@ func initStatsd() (*Statsd, error) {
 	}, nil
 }
 
-func (s *Statsd) count(bucket string, i int, tags string) {
-	s.c.Count(withTags(bucket, tags), i)
-}
-
-func (s *Statsd) timing(bucket string, t int64, tags string) {
-	s.c.Timing(withTags(bucket, tags), t)
-}
-
-func (s *Statsd) increment(bucket string, tags string) {
-	s.c.Increment(withTags(bucket, tags))
-}
-
-func (s *Statsd) gauge(bucket string, val interface{}, tags string) {
-	s.c.Gauge(withTags(bucket, tags), val)
-}
-
 func (s *Statsd) Close() {
 	s.c.Close()
 }
@@ -51,35 +35,27 @@ func withTags(bucket, tags string) string {
 }
 
 func (s *Statsd) Count(metricName string, count int64, labels map[string]string) error {
-	err := Setup()
-	if err != nil {
-		return err
-	}
 	tags := translateLabelIntoTags(labels)
-	s.count(metricName, int(count), tags)
+	s.c.Count(withTags(metricName, tags), int(count))
 	return nil
 
 }
 
 func (s *Statsd) Histogram(metricName string, value int64, labels map[string]string) error {
-	err := Setup()
-	if err != nil {
-		return err
-	}
 	tags := translateLabelIntoTags(labels)
-	s.timing(metricName, value, tags)
+	s.c.Timing(withTags(metricName,tags), value)
 	return nil
 }
 
-func (s *Statsd) Increment(bucket string, labels map[string]string) error {
+func (s *Statsd) Increment(metricName string, labels map[string]string) error {
 	tags := translateLabelIntoTags(labels)
-	s.increment(bucket, tags)
+	s.c.Increment(withTags(metricName, tags))
 	return nil
 }
 
 func (s *Statsd) Gauge(metricName string, value interface{}, labels map[string]string) error {
 	tags := translateLabelIntoTags(labels)
-	s.gauge(metricName, value, tags)
+	s.c.Gauge(withTags(metricName, tags), value)
 	return nil
 }
 

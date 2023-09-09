@@ -25,6 +25,7 @@ func Load() {
 	serverConfigLoader()
 	serverWsConfigLoader()
 	serverGRPCConfigLoader()
+	serverCorsConfigLoader()
 	workerConfigLoader()
 	metricStatsdConfigLoader()
 	eventDistributionConfigLoader()

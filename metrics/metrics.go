@@ -39,8 +39,8 @@ func (v voidInstrument) Close() {}
 
 func Increment(metricName string, labels map[string]string) error {
 	if instrument == nil {
-		logger.Warn("instrumentation is not set for logging")
-		return errors.New("instrumentation is not set for logging")
+		logger.Warn("instrumentation is not set for recording metrics")
+		return errors.New("instrumentation is not set for recording metrics")
 	}
 	err := instrument.Increment(metricName, labels)
 	if err != nil {
@@ -51,8 +51,8 @@ func Increment(metricName string, labels map[string]string) error {
 
 func Count(metricName string, count int64, labels map[string]string) error {
 	if instrument == nil {
-		logger.Warn("instrumentation is not set for logging")
-		return errors.New("instrumentation is not set for logging")
+		logger.Warn("instrumentation is not set for recording metrics")
+		return errors.New("instrumentation is not set for recording metrics")
 	}
 	err := instrument.Count(metricName, count, labels)
 	if err != nil {
@@ -63,8 +63,8 @@ func Count(metricName string, count int64, labels map[string]string) error {
 
 func Gauge(metricName string, value interface{}, labels map[string]string) error {
 	if instrument == nil {
-		logger.Warn("instrumentation is not set for logging")
-		return errors.New("instrumentation is not set for logging")
+		logger.Warn("instrumentation is not set for recording metrics")
+		return errors.New("instrumentation is not set for recording metrics")
 	}
 	err := instrument.Gauge(metricName, value, labels)
 	if err != nil {
@@ -75,8 +75,8 @@ func Gauge(metricName string, value interface{}, labels map[string]string) error
 
 func Histogram(metricName string, value int64, labels map[string]string) error {
 	if instrument == nil {
-		logger.Warn("instrumentation is not set for logging")
-		return errors.New("instrumentation is not set for logging")
+		logger.Warn("instrumentation is not set for recording metrics")
+		return errors.New("instrumentation is not set for recording metrics")
 	}
 	err := instrument.Histogram(metricName, value, labels)
 	if err != nil {

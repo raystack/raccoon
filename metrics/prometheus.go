@@ -224,10 +224,12 @@ func getHistogramMap() map[string]HistogramVec {
 	histogram := make(map[string]HistogramVec)
 	histogram["ack_event_rtt_ms"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "ack_event_rtt_ms",
+		Help: "Time taken from ack function called by kafka producer to processed by the ack handler.",
 		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{})
 	histogram["event_rtt_ms"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "event_rtt_ms",
+		Help: "Time taken from event is consumed from the queue to be acked by the ack handler.",
 		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{})
 	histogram["user_session_duration_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{

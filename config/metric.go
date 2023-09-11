@@ -53,6 +53,6 @@ func metricPrometheusConfigLoader() {
 func metricCommonConfigLoader() {
 	viper.SetDefault("METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS", 10000)
 	MetricInfo = metricInfoCfg{
-		RuntimeStatsRecordInterval: util.MustGetDuration("METRIC_RUNTIME_MEMSTATS_RECORD_INTERVAL_MS", time.Millisecond),
+		RuntimeStatsRecordInterval: util.MustGetDuration("METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS", time.Millisecond),
 	}
 }

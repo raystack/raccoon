@@ -181,8 +181,10 @@ func (promSuite *PrometheusTestSuite) Test_Prometheus_Counter_Working() {
 	mockCounter1.On("Add", float64(callArg1))
 	mockCounterVec2.On("With", promLabels2).Return(&mockCounter2)
 	mockCounter2.On("Inc")
-	promSuite.instrument.Count(sampleCounterMetric1, int64(callArg1), labels1)
-	promSuite.instrument.Increment(sampleCounterMetric2, labels2)
+	err = promSuite.instrument.Count(sampleCounterMetric1, int64(callArg1), labels1)
+	assert.NoError(promSuite.T(), err)
+	err = promSuite.instrument.Increment(sampleCounterMetric2, labels2)
+	assert.NoError(promSuite.T(), err)
 	mockCounterVec1.AssertCalled(promSuite.T(), "With", promLabels1)
 	mockCounterVec2.AssertCalled(promSuite.T(), "With", promLabels2)
 	mockCounterVec1.AssertNumberOfCalls(promSuite.T(), "With", 1)
@@ -206,7 +208,8 @@ func (promSuite *PrometheusTestSuite) Test_Prometheus_Gauge_Working() {
 	promSuite.instrument.gauges[sampleGaugeMetric] = &mockGaugeVec
 	mockGaugeVec.On("With", promLabels).Return(&mockGauge)
 	mockGauge.On("Set", float64(callArg))
-	promSuite.instrument.Gauge(sampleGaugeMetric, int64(callArg), labels)
+	err = promSuite.instrument.Gauge(sampleGaugeMetric, int64(callArg), labels)
+	assert.NoError(promSuite.T(), err)
 	mockGaugeVec.AssertCalled(promSuite.T(), "With", promLabels)
 	mockGaugeVec.AssertNumberOfCalls(promSuite.T(), "With", 1)
 	mockGauge.AssertNumberOfCalls(promSuite.T(), "Set", 1)
@@ -226,11 +229,26 @@ func (promSuite *PrometheusTestSuite) Test_Prometheus_Histogram_Working() {
 	promSuite.instrument.histogram[sampleHistogramMetric] = &mockHistogramVec
 	mockHistogramVec.On("With", promLabels).Return(&mockObserver)
 	mockObserver.On("Observe", float64(callArg))
-	promSuite.instrument.Histogram(sampleHistogramMetric, callArg, labels)
+	err = promSuite.instrument.Histogram(sampleHistogramMetric, callArg, labels)
+	assert.NoError(promSuite.T(), err)
 	mockHistogramVec.AssertCalled(promSuite.T(), "With", promLabels)
 	mockHistogramVec.AssertNumberOfCalls(promSuite.T(), "With", 1)
 	mockObserver.AssertCalled(promSuite.T(), "Observe", float64(callArg))
 	mockObserver.AssertNumberOfCalls(promSuite.T(), "Observe", 1)
+}
+
+func (promSuite *PrometheusTestSuite) Test_Prometheus_Gauge_Error_On_Invalid_Input() {
+	sampleGaugeMetric := "server_go_routines_count_current"
+	mockGaugeVec := mockGaugeVec{}
+	callArg := "abc"
+	labels := map[string]string{"topic": "test", "event_type": "abc"}
+	var err error
+	promSuite.instrument, err = initPrometheusCollector()
+	assert.NoError(promSuite.T(), err)
+	promSuite.instrument.gauges[sampleGaugeMetric] = &mockGaugeVec
+	err = promSuite.instrument.Gauge(sampleGaugeMetric, callArg, labels)
+	assert.Error(promSuite.T(), err)
+	mockGaugeVec.AssertNotCalled(promSuite.T(), "With")
 }
 
 func TestPrometheusSuite(t *testing.T) {

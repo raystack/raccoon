@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"math"
 	"net/http"
 	"time"
 
@@ -86,6 +87,9 @@ func (p *PrometheusCollector) Gauge(metricName string, value interface{}, labels
 	if err != nil {
 		return err
 	}
+	if math.IsNaN(floatVal){
+		return fmt.Errorf("nan value was requested to be instrumented for %s", metricName)
+	}
 	gauge.With(labels).Set(floatVal)
 	return nil
 }
@@ -95,10 +99,7 @@ func (p *PrometheusCollector) Histogram(metricName string, value int64, labels m
 	if !ok {
 		return fmt.Errorf("invalid histogram metric %s", metricName)
 	}
-	floatVal, err := cast.ToFloat64E(value)
-	if err != nil {
-		return err
-	}
+	floatVal := float64(value)
 	histogram.With(labels).Observe(floatVal)
 	return nil
 }

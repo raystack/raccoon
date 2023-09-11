@@ -82,7 +82,10 @@ func (p *PrometheusCollector) Gauge(metricName string, value interface{}, labels
 	if !ok {
 		return fmt.Errorf("invalid gauge metric %s", metricName)
 	}
-	floatVal := cast.ToFloat64(value)
+	floatVal, err := cast.ToFloat64E(value)
+	if err != nil {
+		return err
+	}
 	gauge.With(labels).Set(floatVal)
 	return nil
 }
@@ -92,7 +95,10 @@ func (p *PrometheusCollector) Histogram(metricName string, value int64, labels m
 	if !ok {
 		return fmt.Errorf("invalid histogram metric %s", metricName)
 	}
-	floatVal := cast.ToFloat64(value)
+	floatVal, err := cast.ToFloat64E(value)
+	if err != nil {
+		return err
+	}
 	histogram.With(labels).Observe(floatVal)
 	return nil
 }

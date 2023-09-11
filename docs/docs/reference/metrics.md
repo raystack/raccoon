@@ -71,10 +71,11 @@ Number of delivered events to Kafka. The metric also contains false increments. 
 
 ### `kafka_messages_undelivered_total`
 
+The count of false increments done by `kafka_messages_delivered_total`. To be used in conjunction with the former for accurate metrics.
+
 - Type: `Count`
 - Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
 
-### 
 
 ### `kafka_unknown_topic_failure_total`
 

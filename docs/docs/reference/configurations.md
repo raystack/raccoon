@@ -280,10 +280,14 @@ Flag to enable a prometheus http server to expose metrics.
 
 ### `METRIC_PROMETHEUS_PATH`
 
+The path at which prometheus server should serve metrics.
+
 - Type `Optional`
 - Default value: `/metrics`
 
 ### `METRIC_PROMETHEUS_PORT`
+
+The port number on which prometheus server will be listening for metric scraping requests.
 
 - Type `Optional`
 - Default value: `9090`

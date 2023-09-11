@@ -73,7 +73,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 }
 
 func reportProcMetrics() {
-	t := time.Tick(config.MetricStatsd.FlushPeriodMs)
+	t := time.Tick(config.MetricInfo.RuntimeStatsRecordInterval)
 	m := &runtime.MemStats{}
 	for {
 		<-t

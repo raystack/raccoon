@@ -249,6 +249,12 @@ Upon shutdown, the publisher will try to finish processing events in buffer befo
 
 ## Metric
 
+### `METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS`
+
+The time interval between recording runtime stats of the application in the insturmentation. It's recommended to keep this value equivalent to flush interval when using statsd and your collector's scrape interval when using prometheus as your instrumentation.
+
+- Type `Optional`
+- Default Value: `10000`
 
 ### `METRIC_STATSD_ENABLED`
 

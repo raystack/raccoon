@@ -28,6 +28,7 @@ func Load() {
 	serverGRPCConfigLoader()
 	serverCorsConfigLoader()
 	workerConfigLoader()
+	metricCommonConfigLoader()
 	metricStatsdConfigLoader()
 	metricPrometheusConfigLoader()
 	eventDistributionConfigLoader()

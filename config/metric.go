@@ -10,6 +10,7 @@ import (
 
 var MetricStatsd metricStatsdCfg
 var MetricPrometheus metricPrometheusCfg
+var MetricInfo metricInfoCfg
 
 type metricStatsdCfg struct {
 	Enabled       bool
@@ -21,6 +22,10 @@ type metricPrometheusCfg struct {
 	Enabled bool
 	Port    int
 	Path    string
+}
+
+type metricInfoCfg struct {
+	RuntimeStatsRecordInterval time.Duration
 }
 
 func metricStatsdConfigLoader() {
@@ -42,5 +47,12 @@ func metricPrometheusConfigLoader() {
 		Enabled: util.MustGetBool("METRIC_PROMETHEUS_ENABLED"),
 		Port:    util.MustGetInt("METRIC_PROMETHEUS_PORT"),
 		Path:    util.MustGetString("METRIC_PROMETHEUS_PATH"),
+	}
+}
+
+func metricCommonConfigLoader() {
+	viper.SetDefault("METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS", 10000)
+	MetricInfo = metricInfoCfg{
+		RuntimeStatsRecordInterval: util.MustGetDuration("METRIC_RUNTIME_MEMSTATS_RECORD_INTERVAL_MS", time.Millisecond),
 	}
 }

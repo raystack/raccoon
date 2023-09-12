@@ -16,3 +16,4 @@ coverage
 raccoon
 .temp
 node_modules
+__debug.*

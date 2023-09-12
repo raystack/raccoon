@@ -97,6 +97,48 @@ Toggle CORS check function. Set `true` to check each request origin. Set `false`
 - Type: `Optional`
 - Default value: `true`
 
+### `SERVER_CORS_ENABLED`
+
+The config decides whether to enable the cors middleware and thus allow CORS requests. This config only enables CORS for rest services. For websocket, refer `SERVER_WEBSOCKET_CHECK_ORIGIN`
+
+- Type `Optional`
+- Default value: `false`
+
+### `SERVER_CORS_ALLOWED_ORIGIN`
+
+The server decides which origin to allow. The configuration is expected to space separated. Multiple values are supported. The value requies `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
+
+- Type `Optional`
+- Default Value ``
+
+### `SERVER_CORS_ALLOWED_METHODS`
+
+The http methods allowed when it's a cross origin request. The http methods are expected to be space separated. 
+
+- Type `Optional`
+- Default Value `GET HEAD POST OPTIONS`
+
+### `SERVER_CORS_ALLOWED_HEADERS`
+
+The http request headers which are allowed when request is cross origin. The input expects to add any additional headers which is going to be sent by the client ex: `Authorization`. Headers which are essential for the functioning of Raccoon like Content-Type, Connection-Id & Group headers are added by default and need not be passed as configuration.
+
+- Type `Optional`
+- Default Value ``
+
+### `SERVER_CORS_ALLOW_CREDENTIALS`
+
+AllowCredentials can be used to specify that the user agent may pass authentication details along with the request. 
+
+- Type `Optional`
+- Default Value `false`
+
+### `SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS`
+
+Replies with a header for clients on how long to cache the response of the preflight request. It's not enforceable. The max value is 600s
+
+- Type `Optional`
+- Default Value `0`
+
 ### `SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED`
 
 The server decides whether or not to handle duplicate batches for the active connection. If a batch is sent with a duplicate ReqGUID, the server uses best attempts to discard the duplicate batches. Set `true` to enable the setting.
@@ -207,6 +249,20 @@ Upon shutdown, the publisher will try to finish processing events in buffer befo
 
 ## Metric
 
+### `METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS`
+
+The time interval between recording runtime stats of the application in the insturmentation. It's recommended to keep this value equivalent to flush interval when using statsd and your collector's scrape interval when using prometheus as your instrumentation.
+
+- Type `Optional`
+- Default Value: `10000`
+
+### `METRIC_STATSD_ENABLED`
+
+Flag to enable export of statsd metric
+
+- Type `Optional`
+- Default value: `false`
+
 ### `METRIC_STATSD_ADDRESS`
 
 Address to reports the service metrics.
@@ -220,6 +276,27 @@ Interval for the service to push metrics.
 
 - Type `Optional`
 - Default value: `10000`
+
+### `METRIC_PROMETHEUS_ENABLED`
+
+Flag to enable a prometheus http server to expose metrics.
+
+- Type `Optional`
+- Default value: `false`
+
+### `METRIC_PROMETHEUS_PATH`
+
+The path at which prometheus server should serve metrics.
+
+- Type `Optional`
+- Default value: `/metrics`
+
+### `METRIC_PROMETHEUS_PORT`
+
+The port number on which prometheus server will be listening for metric scraping requests.
+
+- Type `Optional`
+- Default value: `9090`
 
 ## Log
 

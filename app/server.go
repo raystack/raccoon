@@ -63,7 +63,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			Until then we fall back to approximation */
 			eventsInChannel := len(bufferChannel) * 7
 			logger.Info(fmt.Sprintf("Outstanding unprocessed events in the channel, data lost ~ (No batches %d * 5 events) = ~%d", len(bufferChannel), eventsInChannel))
-			metrics.Count("kafka_messages_delivered_total", eventsInChannel+eventsInProducer, "success=false")
+			metrics.Count("kafka_messages_delivered_total", int64(eventsInChannel+eventsInProducer), map[string]string{"success": "false", "conn_group": "NA", "event_type": "NA"})
 			logger.Info("Exiting server")
 			cancel()
 		default:
@@ -73,20 +73,19 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 }
 
 func reportProcMetrics() {
-	t := time.Tick(config.MetricStatsd.FlushPeriodMs)
+	t := time.Tick(config.MetricInfo.RuntimeStatsRecordInterval)
 	m := &runtime.MemStats{}
 	for {
 		<-t
-		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), "")
-
+		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), map[string]string{})
 		runtime.ReadMemStats(m)
-		metrics.Gauge("server_mem_heap_alloc_bytes_current", m.HeapAlloc, "")
-		metrics.Gauge("server_mem_heap_inuse_bytes_current", m.HeapInuse, "")
-		metrics.Gauge("server_mem_heap_objects_total_current", m.HeapObjects, "")
-		metrics.Gauge("server_mem_stack_inuse_bytes_current", m.StackInuse, "")
-		metrics.Gauge("server_mem_gc_triggered_current", m.LastGC/1000, "")
-		metrics.Gauge("server_mem_gc_pauseNs_current", m.PauseNs[(m.NumGC+255)%256]/1000, "")
-		metrics.Gauge("server_mem_gc_count_current", m.NumGC, "")
-		metrics.Gauge("server_mem_gc_pauseTotalNs_current", m.PauseTotalNs, "")
+		metrics.Gauge("server_mem_heap_alloc_bytes_current", m.HeapAlloc, map[string]string{})
+		metrics.Gauge("server_mem_heap_inuse_bytes_current", m.HeapInuse, map[string]string{})
+		metrics.Gauge("server_mem_heap_objects_total_current", m.HeapObjects, map[string]string{})
+		metrics.Gauge("server_mem_stack_inuse_bytes_current", m.StackInuse, map[string]string{})
+		metrics.Gauge("server_mem_gc_triggered_current", m.LastGC/1000, map[string]string{})
+		metrics.Gauge("server_mem_gc_pauseNs_current", m.PauseNs[(m.NumGC+255)%256]/1000, map[string]string{})
+		metrics.Gauge("server_mem_gc_count_current", m.NumGC, map[string]string{})
+		metrics.Gauge("server_mem_gc_pauseTotalNs_current", m.PauseTotalNs, map[string]string{})
 	}
 }

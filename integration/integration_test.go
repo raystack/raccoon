@@ -495,4 +495,150 @@ func TestIntegration(t *testing.T) {
 		}
 	})
 
+	t.Run("Should respond with correct Access-Control-Allow-Origin Header when whitelisted origin makes a request", func(t *testing.T) {
+		client := &http.Client{}
+		var events []*pb.Event
+
+		eEvent1 := &pb.Event{
+			EventBytes: []byte("event_1"),
+			Type:       "type_a",
+		}
+		eEvent2 := &pb.Event{
+			EventBytes: []byte("event_2"),
+			Type:       "type_b",
+		}
+		events = append(events, eEvent1)
+		events = append(events, eEvent2)
+		req := &pb.SendEventRequest{
+			ReqGuid:  "1234",
+			SentTime: timestamppb.Now(),
+			Events:   events,
+		}
+		buf := &bytes.Buffer{}
+		json.NewEncoder(buf).Encode(req)
+
+		request, err := http.NewRequest(http.MethodPost, url, buf)
+		if err != nil {
+			assert.Fail(t, fmt.Sprintf("failed to create http request. %v", err))
+			os.Exit(1)
+		}
+		request.Header.Add("Content-Type", "application/json")
+		request.Header.Add("Origin", "http://localhost:3000")
+		request.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36")
+
+		res, err := client.Do(request)
+		if err != nil {
+			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
+			os.Exit(1)
+		}
+		defer io.Copy(ioutil.Discard, res.Body)
+		defer res.Body.Close()
+		r := &pb.SendEventResponse{}
+		err = json.NewDecoder(res.Body).Decode(r)
+		assert.Empty(t, err)
+		assert.Equal(t, pb.Code_CODE_OK, r.Code)
+		assert.Equal(t, pb.Status_STATUS_SUCCESS, r.Status)
+		assert.Equal(t, r.Reason, "")
+		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
+		assert.Contains(t, res.Header, "Access-Control-Allow-Origin")
+		assert.Equal(t, res.Header["Access-Control-Allow-Origin"][0], "http://localhost:3000")
+	})
+
+	t.Run("Should respond with no Access-Control-Allow-Origin Header when non whitelisted origin makes a request", func(t *testing.T) {
+		client := &http.Client{}
+		var events []*pb.Event
+
+		eEvent1 := &pb.Event{
+			EventBytes: []byte("event_1"),
+			Type:       "type_a",
+		}
+		eEvent2 := &pb.Event{
+			EventBytes: []byte("event_2"),
+			Type:       "type_b",
+		}
+		events = append(events, eEvent1)
+		events = append(events, eEvent2)
+		req := &pb.SendEventRequest{
+			ReqGuid:  "1234",
+			SentTime: timestamppb.Now(),
+			Events:   events,
+		}
+		buf := &bytes.Buffer{}
+		json.NewEncoder(buf).Encode(req)
+
+		request, err := http.NewRequest(http.MethodPost, url, buf)
+		if err != nil {
+			assert.Fail(t, fmt.Sprintf("failed to create http request. %v", err))
+			os.Exit(1)
+		}
+		request.Header.Add("Content-Type", "application/json")
+		request.Header.Add("Origin", "http://localhost:5050")
+		request.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36")
+
+		res, err := client.Do(request)
+		if err != nil {
+			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
+			os.Exit(1)
+		}
+		defer io.Copy(ioutil.Discard, res.Body)
+		defer res.Body.Close()
+		r := &pb.SendEventResponse{}
+		err = json.NewDecoder(res.Body).Decode(r)
+		assert.Empty(t, err)
+		assert.Equal(t, pb.Code_CODE_OK, r.Code)
+		assert.Equal(t, pb.Status_STATUS_SUCCESS, r.Status)
+		assert.Equal(t, r.Reason, "")
+		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
+		assert.NotContains(t, res.Header, "Access-Control-Allow-Origin")
+	})
+
+	t.Run("Should respond with correct Access-Control-Allow-Origin Header when whitelisted Header is added in a request", func(t *testing.T) {
+		client := &http.Client{}
+		request, err := http.NewRequest(http.MethodOptions, url, nil)
+		if err != nil {
+			assert.Fail(t, fmt.Sprintf("failed to create http request. %v", err))
+			os.Exit(1)
+		}
+		request.Header.Add("Referer", "http://localhost:3000/")
+		request.Header.Add("Access-Control-Request-Method", "POST")
+		request.Header.Add("Origin", "http://localhost:3000")
+		request.Header.Add("Access-Control-Request-Headers", "content-type,x-user-id")
+		request.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36")
+
+		res, err := client.Do(request)
+		if err != nil {
+			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
+			os.Exit(1)
+		}
+		defer io.Copy(ioutil.Discard, res.Body)
+		defer res.Body.Close()
+		assert.Equal(t, res.StatusCode, http.StatusOK)
+		assert.Contains(t, res.Header, "Access-Control-Allow-Origin")
+		assert.Equal(t, res.Header["Access-Control-Allow-Origin"][0], "http://localhost:3000")
+	})
+
+	t.Run("Should respond with Forbidden status code when non whitelisted Header is requested to be allowed", func(t *testing.T) {
+		client := &http.Client{}
+		request, err := http.NewRequest(http.MethodOptions, url, nil)
+		if err != nil {
+			assert.Fail(t, fmt.Sprintf("failed to create http request. %v", err))
+			os.Exit(1)
+		}
+		request.Header.Add("Referer", "http://localhost:3000/")
+		request.Header.Add("Access-Control-Request-Method", "POST")
+		request.Header.Add("Origin", "http://localhost:3000")
+		request.Header.Add("Access-Control-Request-Headers", "content-type,x-user-id,fake-header")
+		request.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36")
+
+		res, err := client.Do(request)
+		if err != nil {
+			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
+			os.Exit(1)
+		}
+		defer io.Copy(ioutil.Discard, res.Body)
+		defer res.Body.Close()
+		assert.Equal(t, res.StatusCode, http.StatusForbidden)
+		assert.NotContains(t, res.Header, "Access-Control-Allow-Origin")
+	})
+
 }

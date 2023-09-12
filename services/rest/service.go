@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/raystack/raccoon/collection"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/metrics"
+	"github.com/raystack/raccoon/middleware"
 	"github.com/raystack/raccoon/services/rest/websocket"
 	"github.com/raystack/raccoon/services/rest/websocket/connection"
 )
@@ -36,7 +36,7 @@ func NewRestService(c collection.Collector) *Service {
 	subRouter.HandleFunc("/events", restHandler.RESTAPIHandler).Methods(http.MethodPost).Name("events")
 
 	server := &http.Server{
-		Handler: router,
+		Handler: applyMiddleware(router),
 		Addr:    ":" + config.ServerWs.AppPort,
 	}
 	return &Service{
@@ -45,17 +45,22 @@ func NewRestService(c collection.Collector) *Service {
 	}
 }
 
+func applyMiddleware(router http.Handler) http.Handler {
+	h := middleware.GetCors()(router)
+	return h
+}
+
 func pingHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("pong"))
 }
 
 func reportConnectionMetrics(conn connection.Table) {
-	t := time.Tick(config.MetricStatsd.FlushPeriodMs)
+	t := time.Tick(config.MetricInfo.RuntimeStatsRecordInterval)
 	for {
 		<-t
 		for k, v := range conn.TotalConnectionPerGroup() {
-			metrics.Gauge("connections_count_current", v, fmt.Sprintf("conn_group=%s", k))
+			metrics.Gauge("connections_count_current", v, map[string]string{"conn_group": k})
 		}
 	}
 }

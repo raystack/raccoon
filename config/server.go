@@ -10,6 +10,7 @@ import (
 var Server server
 var ServerWs serverWs
 var ServerGRPC serverGRPC
+var ServerCors serverCors
 
 type server struct {
 	DedupEnabled bool
@@ -20,7 +21,6 @@ type serverWs struct {
 	ServerMaxConn     int
 	ReadBufferSize    int
 	WriteBufferSize   int
-	CheckOrigin       bool
 	PingInterval      time.Duration
 	PongWaitInterval  time.Duration
 	WriteWaitInterval time.Duration
@@ -28,10 +28,20 @@ type serverWs struct {
 	ConnIDHeader      string
 	ConnGroupHeader   string
 	ConnGroupDefault  string
+	CheckOrigin       bool
 }
 
 type serverGRPC struct {
 	Port string
+}
+
+type serverCors struct {
+	Enabled          bool
+	AllowedOrigin    []string
+	AllowedMethods   []string
+	AllowedHeaders   []string
+	AllowCredentials bool
+	MaxAge           int
 }
 
 func serverConfigLoader() {
@@ -41,12 +51,49 @@ func serverConfigLoader() {
 	}
 }
 
+func serverCorsConfigLoader() {
+	viper.SetDefault("SERVER_CORS_ENABLED", false)
+	viper.SetDefault("SERVER_CORS_ALLOWED_ORIGIN", "")
+	viper.SetDefault("SERVER_CORS_ALLOWED_METHODS", []string{"GET", "HEAD", "POST", "OPTIONS"})
+	viper.SetDefault("SERVER_CORS_ALLOWED_HEADERS", "")
+	viper.SetDefault("SERVER_CORS_ALLOW_CREDENTIALS", false)
+	viper.SetDefault("SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS", 0)
+	ServerCors = serverCors{
+		Enabled:          util.MustGetBool("SERVER_CORS_ENABLED"),
+		AllowedOrigin:    viper.GetStringSlice("SERVER_CORS_ALLOWED_ORIGIN"),
+		AllowedMethods:   viper.GetStringSlice("SERVER_CORS_ALLOWED_METHODS"),
+		AllowCredentials: util.MustGetBool("SERVER_CORS_ALLOW_CREDENTIALS"),
+		AllowedHeaders:   getAllowedHeaders(),
+		MaxAge:           util.MustGetInt("SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS"),
+	}
+}
+
+func getAllowedHeaders() []string {
+	allowedHeaders := []string{"Content-Type"}
+	allowedHeaders = setAllowedHeaders(allowedHeaders, "SERVER_WEBSOCKET_CONN_GROUP_HEADER")
+	allowedHeaders = setAllowedHeaders(allowedHeaders, "SERVER_WEBSOCKET_CONN_ID_HEADER")
+	inputHeaders := viper.GetStringSlice("SERVER_CORS_ALLOWED_HEADERS")
+	for _, input := range inputHeaders {
+		if input != "" && !util.Contains(input, allowedHeaders) {
+			allowedHeaders = append(allowedHeaders, input)
+		}
+	}
+	return allowedHeaders
+}
+
+func setAllowedHeaders(allowedHeaders []string, envKey string) []string {
+	if header := viper.GetString(envKey); header != "" {
+		allowedHeaders = append(allowedHeaders, header)
+	}
+	return allowedHeaders
+}
+
 func serverWsConfigLoader() {
+	viper.SetDefault("SERVER_WEBSOCKET_CHECK_ORIGIN", true)
 	viper.SetDefault("SERVER_WEBSOCKET_PORT", "8080")
 	viper.SetDefault("SERVER_WEBSOCKET_MAX_CONN", 30000)
 	viper.SetDefault("SERVER_WEBSOCKET_READ_BUFFER_SIZE", 10240)
 	viper.SetDefault("SERVER_WEBSOCKET_WRITE_BUFFER_SIZE", 10240)
-	viper.SetDefault("SERVER_WEBSOCKET_CHECK_ORIGIN", true)
 	viper.SetDefault("SERVER_WEBSOCKET_PING_INTERVAL_MS", "30000")
 	viper.SetDefault("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", "60000") //should be more than the ping period
 	viper.SetDefault("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS", "5000")
@@ -59,7 +106,6 @@ func serverWsConfigLoader() {
 		ServerMaxConn:     util.MustGetInt("SERVER_WEBSOCKET_MAX_CONN"),
 		ReadBufferSize:    util.MustGetInt("SERVER_WEBSOCKET_READ_BUFFER_SIZE"),
 		WriteBufferSize:   util.MustGetInt("SERVER_WEBSOCKET_WRITE_BUFFER_SIZE"),
-		CheckOrigin:       util.MustGetBool("SERVER_WEBSOCKET_CHECK_ORIGIN"),
 		PingInterval:      util.MustGetDuration("SERVER_WEBSOCKET_PING_INTERVAL_MS", time.Millisecond),
 		PongWaitInterval:  util.MustGetDuration("SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS", time.Millisecond),
 		WriteWaitInterval: util.MustGetDuration("SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS", time.Millisecond),
@@ -67,6 +113,7 @@ func serverWsConfigLoader() {
 		ConnIDHeader:      util.MustGetString("SERVER_WEBSOCKET_CONN_ID_HEADER"),
 		ConnGroupHeader:   util.MustGetString("SERVER_WEBSOCKET_CONN_GROUP_HEADER"),
 		ConnGroupDefault:  util.MustGetString("SERVER_WEBSOCKET_CONN_GROUP_DEFAULT"),
+		CheckOrigin:       util.MustGetBool("SERVER_WEBSOCKET_CHECK_ORIGIN"),
 	}
 }
 

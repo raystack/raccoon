@@ -1,4 +1,4 @@
-FROM golang:1.14
+FROM golang:1.18
 
 WORKDIR /app
 RUN apt-get update && apt-get install unzip  --no-install-recommends --assume-yes
@@ -10,7 +10,8 @@ RUN PROTOC_ZIP=protoc-3.17.3-linux-x86_64.zip && \
 COPY . .
 RUN  make build
 
-FROM debian:buster-slim
+
+FROM debian:bookworm-slim
 WORKDIR /app
 COPY --from=0 /app/raccoon ./raccoon
 COPY . .

@@ -77,7 +77,7 @@ You can consume the published events from the host machine by using `localhost:9
 
 Prerequisite:
 
-- You need to have [GO](https://golang.org/) 1.14 or above installed
+- You need to have [GO](https://golang.org/) 1.18 or above installed
 - You need `protoc` [installed](https://github.com/protocolbuffers/protobuf#protocol-compiler-installation)
 
 ```sh

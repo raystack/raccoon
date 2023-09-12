@@ -64,7 +64,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 
 	conn, err := u.gorillaUg.Upgrade(w, r, nil)
 	if err != nil {
-		metrics.Increment("user_connection_failure_total", fmt.Sprintf("reason=ugfailure,conn_group=%s", identifier.Group))
+		metrics.Increment("user_connection_failure_total", map[string]string{"reason": "ugfailure", "conn_group": identifier.Group})
 		return Conn{}, fmt.Errorf("failed to upgrade %s: %v", identifier, err)
 	}
 	err = u.Table.Store(identifier)
@@ -74,7 +74,7 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 
 		conn.WriteMessage(websocket.BinaryMessage, duplicateConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "duplicate connection: "+identifier.ID))
-		metrics.Increment("user_connection_failure_total", fmt.Sprintf("reason=exists,conn_group=%s", identifier.Group))
+		metrics.Increment("user_connection_failure_total", map[string]string{"reason": "exists", "conn_group": identifier.Group})
 		conn.Close()
 		return Conn{}, fmt.Errorf("disconnecting connection %s: already connected", identifier)
 	}
@@ -83,13 +83,13 @@ func (u *Upgrader) Upgrade(w http.ResponseWriter, r *http.Request) (Conn, error)
 		maxConnResp := createEmptyErrorResponse(pb.Code_CODE_MAX_CONNECTION_LIMIT_REACHED, err.Error())
 		conn.WriteMessage(websocket.BinaryMessage, maxConnResp)
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(1008, "Max connection reached"))
-		metrics.Increment("user_connection_failure_total", fmt.Sprintf("reason=serverlimit,conn_group=%s", identifier.Group))
+		metrics.Increment("user_connection_failure_total", map[string]string{"reason": "serverlimit", "conn_group": identifier.Group})
 		conn.Close()
 		return Conn{}, fmt.Errorf("max connection reached")
 	}
 
 	u.setUpControlHandlers(conn, identifier)
-	metrics.Increment("user_connection_success_total", fmt.Sprintf("conn_group=%s", identifier.Group))
+	metrics.Increment("user_connection_success_total", map[string]string{"conn_group": identifier.Group})
 
 	return Conn{
 		Identifier:  identifier,
@@ -112,7 +112,7 @@ func (u *Upgrader) setUpControlHandlers(conn *websocket.Conn, identifier identif
 	conn.SetPingHandler(func(s string) error {
 		logger.Debug(fmt.Sprintf("Client %s pinged", identifier))
 		if err := conn.WriteControl(websocket.PongMessage, []byte(s), time.Now().Add(u.writeWaitInterval)); err != nil {
-			metrics.Increment("server_pong_failure_total", fmt.Sprintf("conn_group=%s", identifier.Group))
+			metrics.Increment("server_pong_failure_total", map[string]string{"conn_group": identifier.Group})
 			logger.Debug(fmt.Sprintf("Failed to send pong event %s: %v", identifier, err))
 		}
 		return nil

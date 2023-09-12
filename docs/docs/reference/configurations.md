@@ -249,6 +249,20 @@ Upon shutdown, the publisher will try to finish processing events in buffer befo
 
 ## Metric
 
+### `METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS`
+
+The time interval between recording runtime stats of the application in the insturmentation. It's recommended to keep this value equivalent to flush interval when using statsd and your collector's scrape interval when using prometheus as your instrumentation.
+
+- Type `Optional`
+- Default Value: `10000`
+
+### `METRIC_STATSD_ENABLED`
+
+Flag to enable export of statsd metric
+
+- Type `Optional`
+- Default value: `false`
+
 ### `METRIC_STATSD_ADDRESS`
 
 Address to reports the service metrics.
@@ -262,6 +276,27 @@ Interval for the service to push metrics.
 
 - Type `Optional`
 - Default value: `10000`
+
+### `METRIC_PROMETHEUS_ENABLED`
+
+Flag to enable a prometheus http server to expose metrics.
+
+- Type `Optional`
+- Default value: `false`
+
+### `METRIC_PROMETHEUS_PATH`
+
+The path at which prometheus server should serve metrics.
+
+- Type `Optional`
+- Default value: `/metrics`
+
+### `METRIC_PROMETHEUS_PORT`
+
+The port number on which prometheus server will be listening for metric scraping requests.
+
+- Type `Optional`
+- Default value: `9090`
 
 ## Log
 

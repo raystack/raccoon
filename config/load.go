@@ -21,13 +21,16 @@ func Load() {
 	viper.ReadInConfig()
 
 	logConfigLoader()
+
 	publisherKafkaConfigLoader()
 	serverConfigLoader()
 	serverWsConfigLoader()
 	serverGRPCConfigLoader()
 	serverCorsConfigLoader()
 	workerConfigLoader()
+	metricCommonConfigLoader()
 	metricStatsdConfigLoader()
+	metricPrometheusConfigLoader()
 	eventDistributionConfigLoader()
 	eventConfigLoader()
 }

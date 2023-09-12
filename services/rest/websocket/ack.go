@@ -23,16 +23,16 @@ type AckInfo struct {
 func AckHandler(ch <-chan AckInfo) {
 	for c := range ch {
 		ackTim := time.Since(c.AckTimeConsumed)
-		metrics.Timing("ack_event_rtt_ms", ackTim.Milliseconds(), "")
+		metrics.Histogram("ack_event_rtt_ms", ackTim.Milliseconds(), map[string]string{})
 
 		tim := time.Since(c.TimeConsumed)
 		if c.Err != nil {
-			metrics.Timing("event_rtt_ms", tim.Milliseconds(), "")
+			metrics.Histogram("event_rtt_ms", tim.Milliseconds(), map[string]string{})
 			writeFailedResponse(c.Conn, c.serializer, c.MessageType, c.RequestGuid, c.Err)
 			continue
 		}
 
-		metrics.Timing("event_rtt_ms", tim.Milliseconds(), "")
+		metrics.Histogram("event_rtt_ms", tim.Milliseconds(), map[string]string{})
 		writeSuccessResponse(c.Conn, c.serializer, c.MessageType, c.RequestGuid)
 	}
 }

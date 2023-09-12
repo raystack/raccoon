@@ -3,6 +3,7 @@ version: '3.9'
 networks:
   cs-network:
 
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:5.1.2
@@ -41,14 +42,14 @@ services:
   cs:
     build:
       context: .
-    command: ["/bin/sh", "-c", "./raccoon"]
+    command: [ "/bin/sh", "-c", "./raccoon" ]
     hostname: cs
     container_name: cs
     stdin_open: true
     tty: true
     depends_on:
       - kafka
-      - telegraf
+      # - telegraf
     environment:
       SERVER_WEBSOCKET_PORT: "8080"
       SERVER_WEBSOCKET_CHECK_ORIGIN: "true"
@@ -74,6 +75,7 @@ services:
       PUBLISHER_KAFKA_CLIENT_STATISTICS_INTERVAL_MS: 5000
       PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES: 100000
       PUBLISHER_KAFKA_FLUSH_INTERVAL_MS: 1000
+      METRIC_PROMETHEUS_ENABLED: "true"
       METRIC_STATSD_ADDRESS: "telegraf:8125"
       METRIC_STATSD_FLUSH_PERIOD_MS: 100
       LOG_LEVEL: "info"
@@ -82,11 +84,11 @@ services:
       - "8081:8081"
     networks:
       - cs-network
-  telegraf:
-    image: telegraf
-    volumes:
-    - ./.telegraf.sample.conf:/etc/telegraf/telegraf.conf:ro
-    ports:
-      - "8125:8125"
-    networks:
-      - cs-network
+  # telegraf:
+  #   image: telegraf
+  #   volumes:
+  #     - ./.telegraf.sample.conf:/etc/telegraf/telegraf.conf:ro
+  #   ports:
+  #     - "8125:8125"
+  #   networks:
+  #     - cs-network

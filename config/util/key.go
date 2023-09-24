@@ -37,3 +37,14 @@ func mustHave(key string) {
 		panic(fmt.Sprintf("key %s is not set", key))
 	}
 }
+
+func Contains(key string, slice []string) bool {
+	for _, v := range slice {
+		if v == key {
+			return true
+		}
+	}
+
+	return false
+
+}

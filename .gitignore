@@ -15,4 +15,5 @@ coverage
 *.idea/
 raccoon
 .temp
+node_modules
 __debug.*

@@ -95,6 +95,7 @@ class RestClientTest(unittest.TestCase):
     max_retries = 3
     serialiser = Serialiser.JSON
     wire_type = WireType.JSON
+    headers = {"X-Sample": "working"}
 
     def test_client_creation_success(self):
         client_config = (
@@ -104,6 +105,7 @@ class RestClientTest(unittest.TestCase):
             .with_retry_count(self.max_retries)
             .with_wire_type(self.wire_type)
             .with_timeout(2.0)
+            .with_headers(self.headers)
             .build()
         )
         rest_client = RestClient(client_config)
@@ -130,6 +132,7 @@ class RestClientTest(unittest.TestCase):
         self.assertEqual(
             rest_client.http_config.timeout, 2.0, "timeout is configured incorrectly"
         )
+        self.assertEqual(rest_client.http_config.headers, {"Content-Type": "application/json", "X-Sample": "working"})
 
     def test_client_creation_success_with_protobuf(self):
         client_config = (
@@ -139,6 +142,7 @@ class RestClientTest(unittest.TestCase):
             .with_retry_count(self.max_retries)
             .with_wire_type(WireType.PROTOBUF)
             .with_timeout(2.0)
+            .with_headers({})
             .build()
         )
         rest_client = RestClient(client_config)
@@ -164,6 +168,9 @@ class RestClientTest(unittest.TestCase):
         )
         self.assertEqual(
             rest_client.http_config.timeout, 2.0, "timeout is configured incorrectly"
+        )
+        self.assertEqual(
+            rest_client.http_config.headers, {"Content-Type": "application/proto"}
         )
 
     def test_client_creation_failure(self):

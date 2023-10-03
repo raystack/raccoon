@@ -68,7 +68,7 @@ class RestClient(Client):  # pylint: disable=too-few-public-methods
         req.sent_time.FromNanoseconds(time.time_ns())
         return req
 
-    def _set_content_type_header(self, headers):
+    def _set_content_type_header(self, headers: dict):
         headers[CONTENT_TYPE_HEADER_KEY] = self.wire.get_content_type()
         return headers
 

@@ -44,11 +44,11 @@ class RestClientConfigBuilder:
     def __init__(self):
         self.config = RestClientConfig()
 
-    def with_url(self, url):
+    def with_url(self, url: str):
         self.config.http.url = url
         return self
 
-    def with_retry_count(self, retry_count):
+    def with_retry_count(self, retry_count: int):
         if not isinstance(retry_count, int):
             raise ValueError("retry_count should be an integer")
         if retry_count > 10:
@@ -56,23 +56,23 @@ class RestClientConfigBuilder:
         self.config.http.max_retries = retry_count
         return self
 
-    def with_serialiser(self, content_type):
+    def with_serialiser(self, content_type: Serialiser):
         if not isinstance(content_type, Serialiser):
             raise ValueError("invalid  serialiser/deserialiser type")
         self.config.serialiser = content_type
         return self
 
-    def with_headers(self, headers):
+    def with_headers(self, headers: dict):
         self.config.http.headers = headers
         return self
 
-    def with_wire_type(self, wire_type):
+    def with_wire_type(self, wire_type: WireType):
         if not isinstance(wire_type, WireType):
             raise ValueError("invalid  serialiser/deserialiser type")
         self.config.wire_type = wire_type
         return self
 
-    def with_timeout(self, timeout):
+    def with_timeout(self, timeout: float):
         if not isinstance(timeout, float):
             raise ValueError
         if timeout > 10:

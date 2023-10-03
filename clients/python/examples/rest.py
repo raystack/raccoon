@@ -36,7 +36,7 @@ def example_protobuf_serialiser_protobuf_wire():
         .with_wire_type(WireType.PROTOBUF)
         .with_timeout(10.0)
         .with_retry_count(3)
-        .with_headers({"Authorization", "TOKEN"})
+        .with_headers({"Authorization": "TOKEN"})
         .build()
     )  # other parameters supported by the config builder can be checked in its method definition.
     rest_client = RestClient(config)

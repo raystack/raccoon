@@ -132,7 +132,10 @@ class RestClientTest(unittest.TestCase):
         self.assertEqual(
             rest_client.http_config.timeout, 2.0, "timeout is configured incorrectly"
         )
-        self.assertEqual(rest_client.http_config.headers, {"Content-Type": "application/json", "X-Sample": "working"})
+        self.assertEqual(
+            rest_client.http_config.headers,
+            {"Content-Type": "application/json", "X-Sample": "working"},
+        )
 
     def test_client_creation_success_with_protobuf(self):
         client_config = (

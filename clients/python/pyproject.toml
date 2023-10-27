@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "raccoon_client"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 requests = "^2.31.0"
 protobuf = "^4.23.4"
 google = "^3.0.0"

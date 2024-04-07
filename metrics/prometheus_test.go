@@ -168,8 +168,8 @@ func (promSuite *PrometheusTestSuite) Test_Prometheus_Counter_Working() {
 	mockCounter1 := mockCounter{}
 	mockCounter2 := mockCounter{}
 	callArg1 := int64(35)
-	labels1 := map[string]string{"topic": "test", "event_type": "abc"}
-	promLabels1 := prometheus.Labels{"topic": "test", "event_type": "abc"}
+	labels1 := map[string]string{"topic": "test", "event_type": "abc", "conn_group": "--default--"}
+	promLabels1 := prometheus.Labels{"topic": "test", "event_type": "abc", "conn_group": "--default--"}
 	labels2 := map[string]string{"status": "success", "reason": "unknown", "conn_group": "abc"}
 	promLabels2 := prometheus.Labels{"status": "success", "reason": "unknown", "conn_group": "abc"}
 	var err error

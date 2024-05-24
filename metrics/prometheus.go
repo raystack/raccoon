@@ -152,7 +152,7 @@ func getCounterMap() map[string]CounterVec {
 		Help: "Number of events received in requests"}, []string{"conn_group", "event_type"})
 	counters["kafka_unknown_topic_failure_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "kafka_unknown_topic_failure_total",
-		Help: "Number of delivery failure caused by topic does not exist in kafka."}, []string{"topic", "event_type"})
+		Help: "Number of delivery failure caused by topic does not exist in kafka."}, []string{"topic", "event_type", "conn_group"})
 	counters["batches_read_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "batches_read_total",
 		Help: "Request count"}, []string{"status", "reason", "conn_group"})

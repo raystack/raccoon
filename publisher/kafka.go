@@ -18,12 +18,16 @@ func NewKafka() (*Kafka, error) {
 	if err != nil {
 		return &Kafka{}, err
 	}
-	return &Kafka{
+	k := &Kafka{
 		kp:                  kp,
 		flushInterval:       config.PublisherKafka.FlushInterval,
 		topicFormat:         config.EventDistribution.PublisherPattern,
 		deliveryChannelSize: config.Worker.DeliveryChannelSize,
-	}, nil
+	}
+
+	go k.ReportStats()
+
+	return k, nil
 }
 
 func NewKafkaFromClient(client Client, flushInterval int, topicFormat string, deliveryChannelSize int) *Kafka {

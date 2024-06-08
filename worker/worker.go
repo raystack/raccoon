@@ -38,7 +38,7 @@ func CreateWorkerPool(size int, eventsChannel <-chan collection.CollectRequest, 
 	}
 }
 
-func (w *Pool) newWorker(name string) {
+func (w *Pool) worker(name string) {
 
 	logger.Info("Running worker: " + name)
 	for request := range w.EventsChannel {
@@ -98,7 +98,7 @@ func (w *Pool) newWorker(name string) {
 func (w *Pool) StartWorkers() {
 	w.wg.Add(w.Size)
 	for i := 0; i < w.Size; i++ {
-		w.newWorker(fmt.Sprintf("worker-%d", i))
+		go w.worker(fmt.Sprintf("worker-%d", i))
 	}
 }
 

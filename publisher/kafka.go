@@ -13,43 +13,41 @@ import (
 	pb "github.com/raystack/raccoon/proto"
 )
 
-// KafkaProducer Produce data to kafka synchronously
-type KafkaProducer interface {
-	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
-	ProduceBulk(events []*pb.Event, connGroup string, deliveryChannel chan kafka.Event) error
-}
-
 func NewKafka() (*Kafka, error) {
 	kp, err := newKafkaClient(config.PublisherKafka.ToKafkaConfigMap())
 	if err != nil {
 		return &Kafka{}, err
 	}
 	return &Kafka{
-		kp:            kp,
-		flushInterval: config.PublisherKafka.FlushInterval,
-		topicFormat:   config.EventDistribution.PublisherPattern,
+		kp:                  kp,
+		flushInterval:       config.PublisherKafka.FlushInterval,
+		topicFormat:         config.EventDistribution.PublisherPattern,
+		deliveryChannelSize: config.Worker.DeliveryChannelSize,
 	}, nil
 }
 
-func NewKafkaFromClient(client Client, flushInterval int, topicFormat string) *Kafka {
+func NewKafkaFromClient(client Client, flushInterval int, topicFormat string, deliveryChannelSize int) *Kafka {
 	return &Kafka{
-		kp:            client,
-		flushInterval: flushInterval,
-		topicFormat:   topicFormat,
+		kp:                  client,
+		flushInterval:       flushInterval,
+		topicFormat:         topicFormat,
+		deliveryChannelSize: deliveryChannelSize,
 	}
 }
 
 type Kafka struct {
-	kp            Client
-	flushInterval int
-	topicFormat   string
+	kp                  Client
+	flushInterval       int
+	topicFormat         string
+	deliveryChannelSize int
 }
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
 // DeliveryChannel needs to be exclusive. DeliveryChannel is exposed for recyclability purpose.
-func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string, deliveryChannel chan kafka.Event) error {
+func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 	errors := make([]error, len(events))
 	totalProcessed := 0
+	deliveryChannel := make(chan kafka.Event, pr.deliveryChannelSize)
 	for order, event := range events {
 		topic := fmt.Sprintf(pr.topicFormat, event.Type)
 		message := &kafka.Message{

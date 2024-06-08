@@ -36,7 +36,7 @@ func TestWorker(t *testing.T) {
 				Size:                1,
 				deliveryChannelSize: 0,
 				EventsChannel:       bc,
-				kafkaProducer:       &kp,
+				producer:            &kp,
 				wg:                  sync.WaitGroup{},
 			}
 			worker.StartWorkers()
@@ -63,7 +63,7 @@ func TestWorker(t *testing.T) {
 				Size:                1,
 				deliveryChannelSize: 100,
 				EventsChannel:       bc,
-				kafkaProducer:       &kp,
+				producer:            &kp,
 				wg:                  sync.WaitGroup{},
 			}
 			worker.StartWorkers()

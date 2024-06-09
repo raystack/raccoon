@@ -75,6 +75,7 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 
 		totalProcessed++
 	}
+
 	// Wait for deliveryChannel as many as processed
 	for i := 0; i < totalProcessed; i++ {
 		d := <-deliveryChannel

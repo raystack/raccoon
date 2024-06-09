@@ -1,8 +1,9 @@
 module github.com/raystack/raccoon
 
-go 1.18
+go 1.21
 
 require (
+	cloud.google.com/go/pubsub v1.38.0
 	github.com/confluentinc/confluent-kafka-go v1.9.3-RC3
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
@@ -23,7 +24,6 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	cloud.google.com/go/iam v1.1.7 // indirect
-	cloud.google.com/go/pubsub v1.38.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

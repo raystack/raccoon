@@ -11,7 +11,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: "1.18"
+          go-version: "1.21"
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
@@ -27,7 +27,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: "1.18"
+          go-version: "1.21"
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
       - uses: actions/checkout@v2

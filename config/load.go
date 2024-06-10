@@ -22,7 +22,7 @@ func Load() {
 
 	logConfigLoader()
 
-	publisherKafkaConfigLoader()
+	publisherConfigLoader()
 	serverConfigLoader()
 	serverWsConfigLoader()
 	serverGRPCConfigLoader()

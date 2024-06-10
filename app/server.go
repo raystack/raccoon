@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"runtime"
@@ -18,29 +19,34 @@ import (
 	"github.com/raystack/raccoon/worker"
 )
 
+type Publisher interface {
+	worker.Producer
+	io.Closer
+}
+
 // StartServer starts the server
 func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	bufferChannel := make(chan collection.CollectRequest, config.Worker.ChannelSize)
 	httpServices := services.Create(bufferChannel)
 	logger.Info("Start Server -->")
 	httpServices.Start(ctx, cancel)
-	logger.Info("Start publisher -->")
-	kPublisher, err := publisher.NewKafka()
+	logger.Infof("Start publisher --> %s", config.Publisher)
+	publisher, err := initPublisher()
 	if err != nil {
-		logger.Error("Error creating kafka producer", err)
+		logger.Errorf("Error creating %q publisher: %v\n", config.Publisher, err)
 		logger.Info("Exiting server")
 		os.Exit(0)
 	}
 
 	logger.Info("Start worker -->")
-	workerPool := worker.CreateWorkerPool(config.Worker.WorkersPoolSize, bufferChannel, config.Worker.DeliveryChannelSize, kPublisher)
+	workerPool := worker.CreateWorkerPool(config.Worker.WorkersPoolSize, bufferChannel, config.Worker.DeliveryChannelSize, publisher)
 	workerPool.StartWorkers()
 
 	go reportProcMetrics()
-	go shutDownServer(ctx, cancel, httpServices, bufferChannel, workerPool, kPublisher)
+	go shutDownServer(ctx, cancel, httpServices, bufferChannel, workerPool, publisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, kp *publisher.Kafka) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, kp Publisher) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
@@ -57,7 +63,18 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			flushInterval := config.PublisherKafka.FlushInterval
 			logger.Info("Closing Kafka producer")
 			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
-			eventsInProducer := kp.Close()
+			eventsInProducer := 0
+
+			err := kp.Close()
+			if err != nil {
+				switch e := err.(type) {
+				case *publisher.UnflushedEventsError:
+					eventsInProducer = e.Count
+				default:
+					logger.Errorf("error closing %q publisher: %v", config.Publisher, err)
+				}
+			}
+
 			/**
 			@TODO - should compute the actual no., of events per batch and therefore the total. We can do this only when we close all the active connections
 			Until then we fall back to approximation */
@@ -73,10 +90,8 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 }
 
 func reportProcMetrics() {
-	t := time.Tick(config.MetricInfo.RuntimeStatsRecordInterval)
 	m := &runtime.MemStats{}
-	for {
-		<-t
+	for range time.Tick(config.MetricInfo.RuntimeStatsRecordInterval) {
 		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), map[string]string{})
 		runtime.ReadMemStats(m)
 		metrics.Gauge("server_mem_heap_alloc_bytes_current", m.HeapAlloc, map[string]string{})
@@ -87,5 +102,19 @@ func reportProcMetrics() {
 		metrics.Gauge("server_mem_gc_pauseNs_current", m.PauseNs[(m.NumGC+255)%256]/1000, map[string]string{})
 		metrics.Gauge("server_mem_gc_count_current", m.NumGC, map[string]string{})
 		metrics.Gauge("server_mem_gc_pauseTotalNs_current", m.PauseTotalNs, map[string]string{})
+	}
+}
+
+func initPublisher() (Publisher, error) {
+	switch config.Publisher {
+	case "kafka":
+		return publisher.NewKafka()
+	case "pubsub":
+		return publisher.NewPubSub(
+			config.PublisherPubSub.ProjectId,
+			config.EventDistribution.PublisherPattern,
+		)
+	default:
+		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)
 	}
 }

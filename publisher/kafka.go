@@ -122,11 +122,12 @@ func (pr *Kafka) ReportStats() {
 }
 
 // Close wait for outstanding messages to be delivered within given flush interval timeout.
-func (pr *Kafka) Close() int {
+// TODO(turtledev): make this comply with io.Closer interface
+func (pr *Kafka) Close() error {
 	remaining := pr.kp.Flush(pr.flushInterval)
 	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
 	pr.kp.Close()
-	return remaining
+	return &UnflushedEventsError{remaining}
 }
 
 func allNil(errors []error) bool {
@@ -157,4 +158,12 @@ func (b BulkError) Error() string {
 		err += mErr.Error()
 	}
 	return err
+}
+
+type UnflushedEventsError struct {
+	Count int
+}
+
+func (e *UnflushedEventsError) Error() string {
+	return fmt.Sprintf("%d events were not flushed", e.Count)
 }

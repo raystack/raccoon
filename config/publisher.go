@@ -10,8 +10,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+var Publisher string
 var PublisherKafka publisherKafka
+var PublisherPubSub publisherPubSub
 var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
+
+type publisherPubSub struct {
+	ProjectId string
+}
 
 type publisherKafka struct {
 	FlushInterval int
@@ -47,5 +53,28 @@ func publisherKafkaConfigLoader() {
 
 	PublisherKafka = publisherKafka{
 		FlushInterval: util.MustGetInt("PUBLISHER_KAFKA_FLUSH_INTERVAL_MS"),
+	}
+}
+
+func publisherPubSubLoader() {
+	PublisherPubSub = publisherPubSub{
+		ProjectId: util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
+	}
+}
+
+func publisherConfigLoader() {
+
+	viper.SetDefault("PUBLISHER_TYPE", "kafka")
+
+	Publisher = util.MustGetString("PUBLISHER_TYPE")
+	Publisher = strings.ToLower(
+		strings.TrimSpace(Publisher),
+	)
+
+	switch Publisher {
+	case "kafka":
+		publisherKafkaConfigLoader()
+	case "pubsub":
+		publisherPubSubLoader()
 	}
 }

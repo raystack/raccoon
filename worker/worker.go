@@ -63,15 +63,19 @@ func (w *Pool) worker(name string) {
 
 		totalErr := 0
 		if err != nil {
-			// WARN(turtledev): this can panic if returned error is not of
-			// type publisher.BulkError
-			for _, err := range err.(publisher.BulkError).Errors {
-				if err != nil {
-					logger.Errorf("[worker] Fail to publish message to kafka %v", err)
-					totalErr++
+			switch et := err.(type) {
+			case publisher.BulkError:
+				for _, e := range et.Errors {
+					if e != nil {
+						logger.Errorf("[worker] Fail to publish message to kafka %v", e)
+						totalErr++
+					}
 				}
+			default:
+				logger.Errorf("[worker] Failed to publish message: %v", et)
 			}
 		}
+
 		lenBatch := int64(len(request.GetEvents()))
 		logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch-int64(totalErr)))
 		if lenBatch > 0 {

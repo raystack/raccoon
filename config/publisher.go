@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"strings"
+	"time"
 
 	confluent "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/raystack/raccoon/config/util"
@@ -16,9 +17,9 @@ var PublisherPubSub publisherPubSub
 var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
 
 type publisherPubSub struct {
-	ProjectId              string
-	TopicAutoCreate        bool
-	TopicRetentionDuration int
+	ProjectId            string
+	TopicAutoCreate      bool
+	TopicRetentionPeriod time.Duration
 }
 
 type publisherKafka struct {
@@ -60,14 +61,14 @@ func publisherKafkaConfigLoader() {
 
 func publisherPubSubLoader() {
 	envTopicAutoCreate := "PUBLISHER_PUBSUB_TOPIC_AUTOCREATE"
-	envTopicRetentionDuration := "PUBLISHER_PUBSUB_TOPIC_RETENTION_DURATION"
+	envTopicRetentionDuration := "PUBLISHER_PUBSUB_TOPIC_RETENTION_MS"
 
 	viper.SetDefault(envTopicAutoCreate, "false")
-	viper.SetDefault(envTopicRetentionDuration, "0s")
+	viper.SetDefault(envTopicRetentionDuration, "0")
 	PublisherPubSub = publisherPubSub{
-		ProjectId:              util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
-		TopicAutoCreate:        util.MustGetBool(envTopicAutoCreate),
-		TopicRetentionDuration: util.MustGetInt(envTopicRetentionDuration),
+		ProjectId:            util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
+		TopicAutoCreate:      util.MustGetBool(envTopicAutoCreate),
+		TopicRetentionPeriod: util.MustGetDuration(envTopicRetentionDuration, time.Millisecond),
 	}
 }
 

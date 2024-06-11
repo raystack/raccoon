@@ -26,6 +26,7 @@ type PubSub struct {
 	topics                 map[string]*pubsub.Topic
 	autoCreateTopic        bool
 	topicRetentionDuration time.Duration
+	publishSettings        pubsub.PublishSettings
 }
 
 func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
@@ -179,6 +180,12 @@ func WithPubSubTopicRetentionDuration(duration time.Duration) PubSubOpt {
 	}
 }
 
+func WithPubSubDelayThreshold(duration time.Duration) PubSubOpt {
+	return func(pub *PubSub) {
+		pub.publishSettings.DelayThreshold = duration
+	}
+}
+
 // NewPubSub creates a new PubSub publisher
 // uses default application credentials
 // https://cloud.google.com/docs/authentication/application-default-credentials
@@ -189,10 +196,11 @@ func NewPubSub(projectId string, topicFormat string, opts ...PubSubOpt) (*PubSub
 	}
 
 	p := &PubSub{
-		client:      c,
-		topicFormat: topicFormat,
-		topicLock:   sync.RWMutex{},
-		topics:      make(map[string]*pubsub.Topic),
+		client:          c,
+		topicFormat:     topicFormat,
+		topicLock:       sync.RWMutex{},
+		topics:          make(map[string]*pubsub.Topic),
+		publishSettings: pubsub.DefaultPublishSettings,
 	}
 
 	for _, opt := range opts {

@@ -123,6 +123,7 @@ func initPublisher() (Publisher, error) {
 			config.EventDistribution.PublisherPattern,
 			publisher.WithPubSubTopicAutocreate(config.PublisherPubSub.TopicAutoCreate),
 			publisher.WithPubSubTopicRetentionDuration(config.PublisherPubSub.TopicRetentionPeriod),
+			publisher.WithPubSubDelayThreshold(config.PublisherPubSub.PublisherDelayThreshold),
 		)
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)

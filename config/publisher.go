@@ -21,6 +21,7 @@ type publisherPubSub struct {
 	TopicAutoCreate         bool
 	TopicRetentionPeriod    time.Duration
 	PublisherDelayThreshold time.Duration
+	PublisherCountThreshold int
 }
 
 type publisherKafka struct {
@@ -64,15 +65,19 @@ func publisherPubSubLoader() {
 	envTopicAutoCreate := "PUBLISHER_PUBSUB_TOPIC_AUTOCREATE"
 	envTopicRetentionDuration := "PUBLISHER_PUBSUB_TOPIC_RETENTION_MS"
 	envPublishDelayThreshold := "PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS"
+	envPublishCountThreshold := "PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD"
 
 	viper.SetDefault(envTopicAutoCreate, "false")
 	viper.SetDefault(envTopicRetentionDuration, "0")
 	viper.SetDefault(envPublishDelayThreshold, "10")
+	viper.SetDefault(envPublishCountThreshold, "100")
+
 	PublisherPubSub = publisherPubSub{
 		ProjectId:               util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
 		TopicAutoCreate:         util.MustGetBool(envTopicAutoCreate),
 		TopicRetentionPeriod:    util.MustGetDuration(envTopicRetentionDuration, time.Millisecond),
 		PublisherDelayThreshold: util.MustGetDuration(envPublishDelayThreshold, time.Millisecond),
+		PublisherCountThreshold: util.MustGetInt(envPublishCountThreshold),
 	}
 }
 

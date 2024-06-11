@@ -186,6 +186,12 @@ func WithPubSubDelayThreshold(duration time.Duration) PubSubOpt {
 	}
 }
 
+func WithPubSubCountThreshold(count int) PubSubOpt {
+	return func(pub *PubSub) {
+		pub.publishSettings.CountThreshold = count
+	}
+}
+
 // NewPubSub creates a new PubSub publisher
 // uses default application credentials
 // https://cloud.google.com/docs/authentication/application-default-credentials

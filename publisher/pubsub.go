@@ -192,6 +192,12 @@ func WithPubSubCountThreshold(count int) PubSubOpt {
 	}
 }
 
+func WithPubSubByteThreshold(bytes int) PubSubOpt {
+	return func(pub *PubSub) {
+		pub.publishSettings.ByteThreshold = bytes
+	}
+}
+
 // NewPubSub creates a new PubSub publisher
 // uses default application credentials
 // https://cloud.google.com/docs/authentication/application-default-credentials

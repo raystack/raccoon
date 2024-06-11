@@ -17,11 +17,12 @@ var PublisherPubSub publisherPubSub
 var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
 
 type publisherPubSub struct {
-	ProjectId               string
-	TopicAutoCreate         bool
-	TopicRetentionPeriod    time.Duration
-	PublisherDelayThreshold time.Duration
-	PublisherCountThreshold int
+	ProjectId             string
+	TopicAutoCreate       bool
+	TopicRetentionPeriod  time.Duration
+	PublishDelayThreshold time.Duration
+	PublishCountThreshold int
+	PublishByteThreshold  int
 }
 
 type publisherKafka struct {
@@ -66,18 +67,21 @@ func publisherPubSubLoader() {
 	envTopicRetentionDuration := "PUBLISHER_PUBSUB_TOPIC_RETENTION_MS"
 	envPublishDelayThreshold := "PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS"
 	envPublishCountThreshold := "PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD"
+	envPublishByteThreshold := "PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD"
 
 	viper.SetDefault(envTopicAutoCreate, "false")
 	viper.SetDefault(envTopicRetentionDuration, "0")
 	viper.SetDefault(envPublishDelayThreshold, "10")
 	viper.SetDefault(envPublishCountThreshold, "100")
+	viper.SetDefault(envPublishByteThreshold, "1000000")
 
 	PublisherPubSub = publisherPubSub{
-		ProjectId:               util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
-		TopicAutoCreate:         util.MustGetBool(envTopicAutoCreate),
-		TopicRetentionPeriod:    util.MustGetDuration(envTopicRetentionDuration, time.Millisecond),
-		PublisherDelayThreshold: util.MustGetDuration(envPublishDelayThreshold, time.Millisecond),
-		PublisherCountThreshold: util.MustGetInt(envPublishCountThreshold),
+		ProjectId:             util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
+		TopicAutoCreate:       util.MustGetBool(envTopicAutoCreate),
+		TopicRetentionPeriod:  util.MustGetDuration(envTopicRetentionDuration, time.Millisecond),
+		PublishDelayThreshold: util.MustGetDuration(envPublishDelayThreshold, time.Millisecond),
+		PublishCountThreshold: util.MustGetInt(envPublishCountThreshold),
+		PublishByteThreshold:  util.MustGetInt(envPublishByteThreshold),
 	}
 }
 

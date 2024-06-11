@@ -126,6 +126,7 @@ func initPublisher() (Publisher, error) {
 			publisher.WithPubSubDelayThreshold(config.PublisherPubSub.PublishDelayThreshold),
 			publisher.WithPubSubCountThreshold(config.PublisherPubSub.PublishCountThreshold),
 			publisher.WithPubSubByteThreshold(config.PublisherPubSub.PublishByteThreshold),
+			publisher.WithPubSubTimeout(config.PublisherPubSub.PublishTimeout),
 		)
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)

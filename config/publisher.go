@@ -20,6 +20,7 @@ type publisherPubSub struct {
 	ProjectId             string
 	TopicAutoCreate       bool
 	TopicRetentionPeriod  time.Duration
+	PublishTimeout        time.Duration
 	PublishDelayThreshold time.Duration
 	PublishCountThreshold int
 	PublishByteThreshold  int
@@ -68,17 +69,20 @@ func publisherPubSubLoader() {
 	envPublishDelayThreshold := "PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS"
 	envPublishCountThreshold := "PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD"
 	envPublishByteThreshold := "PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD"
+	envPublishTimeout := "PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS"
 
 	viper.SetDefault(envTopicAutoCreate, "false")
 	viper.SetDefault(envTopicRetentionDuration, "0")
 	viper.SetDefault(envPublishDelayThreshold, "10")
 	viper.SetDefault(envPublishCountThreshold, "100")
-	viper.SetDefault(envPublishByteThreshold, "1000000")
+	viper.SetDefault(envPublishByteThreshold, "1000000") // ~1mb
+	viper.SetDefault(envPublishTimeout, "60000")         // 1 minute
 
 	PublisherPubSub = publisherPubSub{
 		ProjectId:             util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
 		TopicAutoCreate:       util.MustGetBool(envTopicAutoCreate),
 		TopicRetentionPeriod:  util.MustGetDuration(envTopicRetentionDuration, time.Millisecond),
+		PublishTimeout:        util.MustGetDuration(envPublishTimeout, time.Millisecond),
 		PublishDelayThreshold: util.MustGetDuration(envPublishDelayThreshold, time.Millisecond),
 		PublishCountThreshold: util.MustGetInt(envPublishCountThreshold),
 		PublishByteThreshold:  util.MustGetInt(envPublishByteThreshold),

@@ -198,6 +198,12 @@ func WithPubSubByteThreshold(bytes int) PubSubOpt {
 	}
 }
 
+func WithPubSubTimeout(timeout time.Duration) PubSubOpt {
+	return func(pub *PubSub) {
+		pub.publishSettings.Timeout = timeout
+	}
+}
+
 // NewPubSub creates a new PubSub publisher
 // uses default application credentials
 // https://cloud.google.com/docs/authentication/application-default-credentials

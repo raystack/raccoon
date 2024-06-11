@@ -37,7 +37,15 @@ func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
 		topic, err := p.topic(ctx, topicId)
 		if err != nil {
 			metrics.Increment(
-				"pubsub_topic_failure_total",
+				"pubsub_messages_delivered_total",
+				map[string]string{
+					"success":    "false",
+					"conn_group": connGroup,
+					"event_type": event.Type,
+				},
+			)
+			metrics.Increment(
+				"pubsub_unknown_topic_failure_total",
 				map[string]string{
 					"topic":      topicId,
 					"conn_group": connGroup,
@@ -51,6 +59,15 @@ func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
 		results[order] = topic.Publish(ctx, &pubsub.Message{
 			Data: event.EventBytes,
 		})
+
+		metrics.Increment(
+			"pubsub_messages_delivered_total",
+			map[string]string{
+				"success":    "true",
+				"conn_group": connGroup,
+				"event_type": event.Type,
+			},
+		)
 	}
 
 	for order, result := range results {
@@ -58,15 +75,23 @@ func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
 			continue
 		}
 		_, err := result.Get(ctx)
-		metrics.Increment(
-			"pubsub_messages_delivered_total",
-			map[string]string{
-				"success":    fmt.Sprintf("%t", err == nil),
-				"conn_group": connGroup,
-				"event_type": events[order].Type,
-			},
-		)
 		if err != nil {
+			metrics.Increment(
+				"pubsub_messages_delivered_total",
+				map[string]string{
+					"success":    "false",
+					"conn_group": connGroup,
+					"event_type": events[order].Type,
+				},
+			)
+			metrics.Increment(
+				"pubsub_messages_undelivered_total",
+				map[string]string{
+					"success":    "true",
+					"conn_group": connGroup,
+					"event_type": events[order].Type,
+				},
+			)
 			errors[order] = err
 			continue
 		}

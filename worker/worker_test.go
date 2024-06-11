@@ -42,6 +42,7 @@ func TestWorker(t *testing.T) {
 			worker.StartWorkers()
 
 			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Twice()
+			kp.On("Name").Return("kafka")
 			bc <- *request
 			bc <- *request
 			time.Sleep(10 * time.Millisecond)
@@ -68,6 +69,7 @@ func TestWorker(t *testing.T) {
 			}
 			worker.StartWorkers()
 			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)
+			kp.On("Name").Return("kafka")
 			bc <- *request
 			bc <- *request
 			bc <- *request

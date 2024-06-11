@@ -16,6 +16,10 @@ func (m *mockKafkaPublisher) ProduceBulk(events []*pb.Event, connGroup string) e
 	return mock.Error(0)
 }
 
+func (m *mockKafkaPublisher) Name() string {
+	return m.Called().String(0)
+}
+
 type mockMetric struct {
 	mock.Mock
 }

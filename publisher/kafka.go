@@ -71,7 +71,14 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 			}
 			continue
 		}
-		metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "true", "conn_group": connGroup, "event_type": event.Type})
+		metrics.Increment(
+			"kafka_messages_delivered_total",
+			map[string]string{
+				"success":    "true",
+				"conn_group": connGroup,
+				"event_type": event.Type,
+			},
+		)
 
 		totalProcessed++
 	}
@@ -122,12 +129,15 @@ func (pr *Kafka) ReportStats() {
 }
 
 // Close wait for outstanding messages to be delivered within given flush interval timeout.
-// TODO(turtledev): make this comply with io.Closer interface
 func (pr *Kafka) Close() error {
 	remaining := pr.kp.Flush(pr.flushInterval)
 	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
 	pr.kp.Close()
 	return &UnflushedEventsError{remaining}
+}
+
+func (pr *Kafka) Name() string {
+	return "kafka"
 }
 
 func allNil(errors []error) bool {

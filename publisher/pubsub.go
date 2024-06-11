@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
 )
 
@@ -26,8 +27,6 @@ type PubSub struct {
 
 func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
 
-	// TODO(turtledev): instrument metrics
-
 	ctx := context.Background()
 	errors := make([]error, len(events))
 	results := make([]*pubsub.PublishResult, len(events))
@@ -37,6 +36,14 @@ func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
 
 		topic, err := p.topic(ctx, topicId)
 		if err != nil {
+			metrics.Increment(
+				"pubsub_topic_failure_total",
+				map[string]string{
+					"topic":      topicId,
+					"conn_group": connGroup,
+					"event_type": event.Type,
+				},
+			)
 			errors[order] = err
 			continue
 		}
@@ -51,10 +58,18 @@ func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
 			continue
 		}
 		_, err := result.Get(ctx)
+		metrics.Increment(
+			"pubsub_messages_delivered_total",
+			map[string]string{
+				"success":    fmt.Sprintf("%t", err == nil),
+				"conn_group": connGroup,
+				"event_type": events[order].Type,
+			},
+		)
 		if err != nil {
 			errors[order] = err
+			continue
 		}
-
 	}
 
 	if allNil(errors) {
@@ -87,7 +102,7 @@ func (p *PubSub) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
 	topic = p.client.Topic(id)
 	exists, err := topic.Exists(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error verifying existence of Topic %q: %w", id, err)
+		return nil, fmt.Errorf("error verifying existence of topic %q: %w", id, err)
 	}
 
 	if !exists {
@@ -107,6 +122,10 @@ func (p *PubSub) Close() error {
 		topic.Stop()
 	}
 	return p.client.Close()
+}
+
+func (p *PubSub) Name() string {
+	return "pubsub"
 }
 
 // NewPubSub creates a new PubSub publisher

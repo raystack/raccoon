@@ -16,6 +16,9 @@ import (
 type Producer interface {
 	// ProduceBulk message to a sink. Blocks until all messages are sent. Returns slice of error.
 	ProduceBulk(events []*pb.Event, connGroup string) error
+
+	// Name returns the name of the producer
+	Name() string
 }
 
 // Pool spawn goroutine as much as Size that will listen to EventsChannel. On Close, wait for all data in EventsChannel to be processed.
@@ -53,9 +56,12 @@ func (w *Pool) worker(name string) {
 
 		err := w.producer.ProduceBulk(request.GetEvents(), request.ConnectionIdentifier.Group)
 
-		// TODO(turtledev): instrument this for individual sinks
-		// produceTime := time.Since(batchReadTime)
-		// metrics.Histogram("kafka_producebulk_tt_ms", produceTime.Milliseconds(), map[string]string{})
+		produceTime := time.Since(batchReadTime)
+		metrics.Histogram(
+			fmt.Sprintf("%s_producebulk_tt_ms", w.producer.Name()),
+			produceTime.Milliseconds(),
+			map[string]string{},
+		)
 
 		if request.AckFunc != nil {
 			request.AckFunc(err)

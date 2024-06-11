@@ -61,7 +61,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 				logger.Info(fmt.Sprintf("WorkerPool flush timedout %t", timedOut))
 			}
 			flushInterval := config.PublisherKafka.FlushInterval
-			logger.Info("Closing Kafka producer")
+			logger.Info("Closing %q producer", kp.Name())
 			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
 			eventsInProducer := 0
 
@@ -71,7 +71,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 				case *publisher.UnflushedEventsError:
 					eventsInProducer = e.Count
 				default:
-					logger.Errorf("error closing %q publisher: %v", config.Publisher, err)
+					logger.Errorf("error closing %q publisher: %v", kp.Name(), err)
 				}
 			}
 
@@ -80,7 +80,15 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			Until then we fall back to approximation */
 			eventsInChannel := len(bufferChannel) * 7
 			logger.Info(fmt.Sprintf("Outstanding unprocessed events in the channel, data lost ~ (No batches %d * 5 events) = ~%d", len(bufferChannel), eventsInChannel))
-			metrics.Count("kafka_messages_delivered_total", int64(eventsInChannel+eventsInProducer), map[string]string{"success": "false", "conn_group": "NA", "event_type": "NA"})
+			metrics.Count(
+				fmt.Sprintf("%s_messages_delivered_total", kp.Name()),
+				int64(eventsInChannel+eventsInProducer),
+				map[string]string{
+					"success":    "false",
+					"conn_group": "NA",
+					"event_type": "NA",
+				},
+			)
 			logger.Info("Exiting server")
 			cancel()
 		default:

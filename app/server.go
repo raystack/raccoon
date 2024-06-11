@@ -61,7 +61,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 				logger.Info(fmt.Sprintf("WorkerPool flush timedout %t", timedOut))
 			}
 			flushInterval := config.PublisherKafka.FlushInterval
-			logger.Info("Closing %q producer", kp.Name())
+			logger.Infof("Closing %q producer\n", kp.Name())
 			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
 			eventsInProducer := 0
 

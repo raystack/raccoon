@@ -113,6 +113,7 @@ func initPublisher() (Publisher, error) {
 		return publisher.NewPubSub(
 			config.PublisherPubSub.ProjectId,
 			config.EventDistribution.PublisherPattern,
+			publisher.WithPubSubTopicAutocreate(config.PublisherPubSub.TopicAutoCreate),
 		)
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)

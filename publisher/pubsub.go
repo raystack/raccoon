@@ -21,8 +21,9 @@ type PubSub struct {
 	//  * every time a topic is added, it acquires a global lock.
 	//    This causes readers of other topics to get blocked as well,
 	//    which is not optimal for performance.
-	topicLock sync.RWMutex
-	topics    map[string]*pubsub.Topic
+	topicLock       sync.RWMutex
+	topics          map[string]*pubsub.Topic
+	autoCreateTopic bool
 }
 
 func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
@@ -131,11 +132,15 @@ func (p *PubSub) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
 	}
 
 	if !exists {
+		if !p.autoCreateTopic {
+			return nil, fmt.Errorf("topic %q doesn't exist in %q project", topic, p.client.Project())
+		}
 		topic, err = p.client.CreateTopic(ctx, id)
 		if err != nil {
-			return nil, fmt.Errorf("error creating topic: %w", err)
+			return nil, fmt.Errorf("error creating topic %q: %w", topic, err)
 		}
 	}
+
 	p.topics[id] = topic
 	return topic, nil
 }
@@ -153,19 +158,33 @@ func (p *PubSub) Name() string {
 	return "pubsub"
 }
 
+type PubSubOpt func(*PubSub)
+
+func WithPubSubTopicAutocreate(autocreate bool) PubSubOpt {
+	return func(pub *PubSub) {
+		pub.autoCreateTopic = autocreate
+	}
+}
+
 // NewPubSub creates a new PubSub publisher
 // uses default application credentials
 // https://cloud.google.com/docs/authentication/application-default-credentials
-func NewPubSub(projectId string, topicFormat string) (*PubSub, error) {
+func NewPubSub(projectId string, topicFormat string, opts ...PubSubOpt) (*PubSub, error) {
 	c, err := pubsub.NewClient(context.Background(), projectId)
 	if err != nil {
 		return nil, fmt.Errorf("NewPubSub: error creating client: %v", err)
 	}
 
-	return &PubSub{
+	p := &PubSub{
 		client:      c,
 		topicFormat: topicFormat,
 		topicLock:   sync.RWMutex{},
 		topics:      make(map[string]*pubsub.Topic),
-	}, nil
+	}
+
+	for _, opt := range opts {
+		opt(p)
+	}
+
+	return p, nil
 }

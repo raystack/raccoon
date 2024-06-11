@@ -16,7 +16,8 @@ var PublisherPubSub publisherPubSub
 var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
 
 type publisherPubSub struct {
-	ProjectId string
+	ProjectId       string
+	TopicAutoCreate bool
 }
 
 type publisherKafka struct {
@@ -57,8 +58,11 @@ func publisherKafkaConfigLoader() {
 }
 
 func publisherPubSubLoader() {
+	envAutoCreate := "PUBLISHER_PUBSUB_TOPIC_AUTOCREATE"
+	viper.SetDefault(envAutoCreate, "false")
 	PublisherPubSub = publisherPubSub{
-		ProjectId: util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
+		ProjectId:       util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
+		TopicAutoCreate: util.MustGetBool(envAutoCreate),
 	}
 }
 

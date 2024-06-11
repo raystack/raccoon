@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/raystack/raccoon/metrics"
@@ -21,9 +22,10 @@ type PubSub struct {
 	//  * every time a topic is added, it acquires a global lock.
 	//    This causes readers of other topics to get blocked as well,
 	//    which is not optimal for performance.
-	topicLock       sync.RWMutex
-	topics          map[string]*pubsub.Topic
-	autoCreateTopic bool
+	topicLock              sync.RWMutex
+	topics                 map[string]*pubsub.Topic
+	autoCreateTopic        bool
+	topicRetentionDuration time.Duration
 }
 
 func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
@@ -133,9 +135,14 @@ func (p *PubSub) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
 
 	if !exists {
 		if !p.autoCreateTopic {
-			return nil, fmt.Errorf("topic %q doesn't exist in %q project", topic, p.client.Project())
+			return nil, fmt.Errorf(
+				"topic %q doesn't exist in %q project", topic, p.client.Project(),
+			)
 		}
-		topic, err = p.client.CreateTopic(ctx, id)
+
+		topic, err = p.client.CreateTopicWithConfig(ctx, id, &pubsub.TopicConfig{
+			RetentionDuration: p.topicRetentionDuration,
+		})
 		if err != nil {
 			return nil, fmt.Errorf("error creating topic %q: %w", topic, err)
 		}
@@ -163,6 +170,12 @@ type PubSubOpt func(*PubSub)
 func WithPubSubTopicAutocreate(autocreate bool) PubSubOpt {
 	return func(pub *PubSub) {
 		pub.autoCreateTopic = autocreate
+	}
+}
+
+func WithPubSubTopicRetentionDuration(duration time.Duration) PubSubOpt {
+	return func(pub *PubSub) {
+		pub.topicRetentionDuration = duration
 	}
 }
 

@@ -16,8 +16,9 @@ var PublisherPubSub publisherPubSub
 var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
 
 type publisherPubSub struct {
-	ProjectId       string
-	TopicAutoCreate bool
+	ProjectId              string
+	TopicAutoCreate        bool
+	TopicRetentionDuration int
 }
 
 type publisherKafka struct {
@@ -58,11 +59,15 @@ func publisherKafkaConfigLoader() {
 }
 
 func publisherPubSubLoader() {
-	envAutoCreate := "PUBLISHER_PUBSUB_TOPIC_AUTOCREATE"
-	viper.SetDefault(envAutoCreate, "false")
+	envTopicAutoCreate := "PUBLISHER_PUBSUB_TOPIC_AUTOCREATE"
+	envTopicRetentionDuration := "PUBLISHER_PUBSUB_TOPIC_RETENTION_DURATION"
+
+	viper.SetDefault(envTopicAutoCreate, "false")
+	viper.SetDefault(envTopicRetentionDuration, "0s")
 	PublisherPubSub = publisherPubSub{
-		ProjectId:       util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
-		TopicAutoCreate: util.MustGetBool(envAutoCreate),
+		ProjectId:              util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
+		TopicAutoCreate:        util.MustGetBool(envTopicAutoCreate),
+		TopicRetentionDuration: util.MustGetInt(envTopicRetentionDuration),
 	}
 }
 

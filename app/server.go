@@ -114,6 +114,7 @@ func initPublisher() (Publisher, error) {
 			config.PublisherPubSub.ProjectId,
 			config.EventDistribution.PublisherPattern,
 			publisher.WithPubSubTopicAutocreate(config.PublisherPubSub.TopicAutoCreate),
+			publisher.WithPubSubTopicRetentionDuration(time.Duration(config.PublisherPubSub.TopicRetentionDuration))
 		)
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)

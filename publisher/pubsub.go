@@ -147,6 +147,7 @@ func (p *PubSub) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error creating topic %q: %w", topic, err)
 		}
+		topic.PublishSettings = p.publishSettings
 	}
 
 	p.topics[id] = topic

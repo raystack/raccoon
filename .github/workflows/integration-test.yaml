@@ -8,8 +8,10 @@ jobs:
   kafka-test:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
       - name: setup integration environment
-        uses: ./.github/workflows/integration-test-setup.yaml
+        uses: ./.github/workflows/integration-test-setup
       - name: Copy integration config
         run: cp .env.test .env
       - name: Run Raccoon

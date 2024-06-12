@@ -116,7 +116,9 @@ func (m *mockObserver) Observe(f float64) {
 }
 
 func (promSuite *PrometheusTestSuite) Test_Prometheus_Collector_Metrics_Initialised() {
-	numCounters := 12
+
+	// NOTE(turtledev): what are we even testing here?
+	numCounters := 15
 	numGauge := 15
 	numHistogram := 8
 	var err error

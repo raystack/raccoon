@@ -24,6 +24,7 @@ type publisherPubSub struct {
 	PublishDelayThreshold time.Duration
 	PublishCountThreshold int
 	PublishByteThreshold  int
+	CredentialsFile       string
 }
 
 type publisherKafka struct {
@@ -64,12 +65,18 @@ func publisherKafkaConfigLoader() {
 }
 
 func publisherPubSubLoader() {
+	envCredentialsFile := "PUBLISHER_PUBSUB_CREDENTIALS"
 	envTopicAutoCreate := "PUBLISHER_PUBSUB_TOPIC_AUTOCREATE"
 	envTopicRetentionDuration := "PUBLISHER_PUBSUB_TOPIC_RETENTION_MS"
 	envPublishDelayThreshold := "PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS"
 	envPublishCountThreshold := "PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD"
 	envPublishByteThreshold := "PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD"
 	envPublishTimeout := "PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS"
+
+	defaultCredentials := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	if strings.TrimSpace(defaultCredentials) != "" {
+		viper.SetDefault(envCredentialsFile, defaultCredentials)
+	}
 
 	viper.SetDefault(envTopicAutoCreate, "false")
 	viper.SetDefault(envTopicRetentionDuration, "0")
@@ -80,6 +87,7 @@ func publisherPubSubLoader() {
 
 	PublisherPubSub = publisherPubSub{
 		ProjectId:             util.MustGetString("PUBLISHER_PUBSUB_PROJECT_ID"),
+		CredentialsFile:       util.MustGetString(envCredentialsFile),
 		TopicAutoCreate:       util.MustGetBool(envTopicAutoCreate),
 		TopicRetentionPeriod:  util.MustGetDuration(envTopicRetentionDuration, time.Millisecond),
 		PublishTimeout:        util.MustGetDuration(envPublishTimeout, time.Millisecond),

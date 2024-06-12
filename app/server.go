@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"cloud.google.com/go/pubsub"
 	"github.com/raystack/raccoon/collection"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"
@@ -17,6 +18,7 @@ import (
 	"github.com/raystack/raccoon/publisher"
 	"github.com/raystack/raccoon/services"
 	"github.com/raystack/raccoon/worker"
+	"google.golang.org/api/option"
 )
 
 type Publisher interface {
@@ -118,9 +120,18 @@ func initPublisher() (Publisher, error) {
 	case "kafka":
 		return publisher.NewKafka()
 	case "pubsub":
-		return publisher.NewPubSub(
+		client, err := pubsub.NewClient(
+			context.Background(),
 			config.PublisherPubSub.ProjectId,
-			config.EventDistribution.PublisherPattern,
+			option.WithCredentialsFile(config.PublisherPubSub.CredentialsFile),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error creating pubsub client: %w", err)
+		}
+		return publisher.NewPubSub(
+			client,
+			config.PublisherPubSub.ProjectId,
+			publisher.WithPubSubTopicFormat(config.EventDistribution.PublisherPattern),
 			publisher.WithPubSubTopicAutocreate(config.PublisherPubSub.TopicAutoCreate),
 			publisher.WithPubSubTopicRetentionDuration(config.PublisherPubSub.TopicRetentionPeriod),
 			publisher.WithPubSubDelayThreshold(config.PublisherPubSub.PublishDelayThreshold),

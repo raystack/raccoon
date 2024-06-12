@@ -257,6 +257,11 @@ Upon shutdown, the publisher will try to finish processing events in buffer befo
 - Type `Optional`
 - Default value: `1000`
 
+### `PUBLISHER_PUBSUB_CREDENTIALS`
+
+Path to the file containing service account credentials. Defaults to the value of `GOOGLE_APPLICATION_CREDENTIALS` environment variable. This is used to authenticate with Google Cloud Platform.
+
+- Type `Required` (if `PUBLISHER_TYPE=pubsub`, otherwise ignored)
 
 ### `PUBLISHER_PUBSUB_PROJECT_ID`
 

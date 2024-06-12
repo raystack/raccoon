@@ -205,18 +205,18 @@ func WithPubSubTimeout(timeout time.Duration) PubSubOpt {
 	}
 }
 
-// NewPubSub creates a new PubSub publisher
-// uses default application credentials
-// https://cloud.google.com/docs/authentication/application-default-credentials
-func NewPubSub(projectId string, topicFormat string, opts ...PubSubOpt) (*PubSub, error) {
-	c, err := pubsub.NewClient(context.Background(), projectId)
-	if err != nil {
-		return nil, fmt.Errorf("NewPubSub: error creating client: %v", err)
+func WithPubSubTopicFormat(format string) PubSubOpt {
+	return func(pub *PubSub) {
+		pub.topicFormat = format
 	}
+}
+
+// NewPubSub creates a new PubSub publisher
+func NewPubSub(client *pubsub.Client, projectId string, opts ...PubSubOpt) (*PubSub, error) {
 
 	p := &PubSub{
-		client:          c,
-		topicFormat:     topicFormat,
+		client:          client,
+		topicFormat:     "%s",
 		topicLock:       sync.RWMutex{},
 		topics:          make(map[string]*pubsub.Topic),
 		publishSettings: pubsub.DefaultPublishSettings,

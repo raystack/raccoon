@@ -6,8 +6,9 @@ on:
 
 jobs:
   kafka-test:
-    uses: ./.github/workflows/integration-test-setup.yaml
     steps:
+      - name: setup integration environment
+        uses: ./.github/workflows/integration-test-setup.yaml
       - name: Copy integration config
         run: cp .env.test .env
       - name: Run Raccoon

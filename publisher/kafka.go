@@ -133,7 +133,10 @@ func (pr *Kafka) Close() error {
 	remaining := pr.kp.Flush(pr.flushInterval)
 	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
 	pr.kp.Close()
-	return &UnflushedEventsError{remaining}
+	if remaining > 0 {
+		return &UnflushedEventsError{remaining}
+	}
+	return nil
 }
 
 func (pr *Kafka) Name() string {

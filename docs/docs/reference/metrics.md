@@ -139,6 +139,29 @@ Response time of produce batch method of the kafka producer
 - Tags: NA
 
 
+## PubSub Publisher
+
+### `pubsub_messages_delivered_total`
+
+Number of delivered events to PubSub. The metric also contains false increments. To find the true value, one should use the difference between this and `pubsub_messages_undelivered_total` metric for the same tag/labels.
+
+- Type: `Count`
+- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+
+### `pubsub_messages_undelivered_total`
+
+The count of false increments done by `pubsub_messages_delivered_total`. To be used in conjunction with the former for accurate metrics.
+
+- Type: `Count`
+- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+
+
+### `pubsub_unknown_topic_failure_total`
+
+Number of delivery failure caused by topic does not exist in PubSub.
+
+- Type: `Count`
+- Tags: `topic=topicname` `event_type=*` `conn_group=*`
 
 ## Resource Usage
 

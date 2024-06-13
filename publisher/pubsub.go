@@ -141,11 +141,14 @@ func (p *PubSub) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
 			)
 		}
 
-		topic, err = p.client.CreateTopicWithConfig(ctx, id, &pubsub.TopicConfig{
-			RetentionDuration: p.topicRetentionDuration,
-		})
+		cfg := &pubsub.TopicConfig{}
+		if p.topicRetentionDuration > 0 {
+			cfg.RetentionDuration = p.topicRetentionDuration
+		}
+
+		topic, err = p.client.CreateTopicWithConfig(ctx, id, cfg)
 		if err != nil {
-			return nil, fmt.Errorf("error creating topic %q: %w", topic, err)
+			return nil, fmt.Errorf("error creating topic %q: %w", id, err)
 		}
 		topic.PublishSettings = p.publishSettings
 	}
@@ -212,7 +215,7 @@ func WithPubSubTopicFormat(format string) PubSubOpt {
 }
 
 // NewPubSub creates a new PubSub publisher
-func NewPubSub(client *pubsub.Client, projectId string, opts ...PubSubOpt) (*PubSub, error) {
+func NewPubSub(client *pubsub.Client, opts ...PubSubOpt) (*PubSub, error) {
 
 	p := &PubSub{
 		client:          client,

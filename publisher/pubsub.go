@@ -179,7 +179,7 @@ func WithPubSubTopicAutocreate(autocreate bool) PubSubOpt {
 	}
 }
 
-func WithPubSubTopicRetentionDuration(duration time.Duration) PubSubOpt {
+func WithPubSubTopicRetention(duration time.Duration) PubSubOpt {
 	return func(pub *PubSub) {
 		pub.topicRetentionDuration = duration
 	}

@@ -41,7 +41,7 @@ func TestPubSubPublisher(t *testing.T) {
 		pub, err := publisher.NewPubSub(
 			client,
 			publisher.WithPubSubTopicAutocreate(true),
-			publisher.WithPubSubTopicRetentionDuration(10*time.Minute),
+			publisher.WithPubSubTopicRetention(10*time.Minute),
 		)
 		require.NoError(t, err, "unexpected error creating publisher")
 
@@ -102,7 +102,7 @@ func TestPubSubPublisher(t *testing.T) {
 		pub, err := publisher.NewPubSub(
 			client,
 			publisher.WithPubSubTopicAutocreate(true),
-			publisher.WithPubSubTopicRetentionDuration(retention),
+			publisher.WithPubSubTopicRetention(retention),
 		)
 		require.NoError(t, err, "unexpected error creating publisher")
 

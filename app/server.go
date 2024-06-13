@@ -132,7 +132,7 @@ func initPublisher() (Publisher, error) {
 			client,
 			publisher.WithPubSubTopicFormat(config.EventDistribution.PublisherPattern),
 			publisher.WithPubSubTopicAutocreate(config.PublisherPubSub.TopicAutoCreate),
-			publisher.WithPubSubTopicRetentionDuration(config.PublisherPubSub.TopicRetentionPeriod),
+			publisher.WithPubSubTopicRetention(config.PublisherPubSub.TopicRetentionPeriod),
 			publisher.WithPubSubDelayThreshold(config.PublisherPubSub.PublishDelayThreshold),
 			publisher.WithPubSubCountThreshold(config.PublisherPubSub.PublishCountThreshold),
 			publisher.WithPubSubByteThreshold(config.PublisherPubSub.PublishByteThreshold),

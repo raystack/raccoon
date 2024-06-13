@@ -3,8 +3,14 @@ version: '3.9'
 networks:
   cs-network:
 
-
 services:
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:480.0.0
+    hostname: pubsub-emulator
+    container_name: pubsub-emulator
+    ports:
+      - "8085:8085"
+    command: ["gcloud", "beta", "emulators", "pubsub", "start", "--host-port=0.0.0.0:8085"]
   zookeeper:
     image: confluentinc/cp-zookeeper:5.1.2
     hostname: zookeeper

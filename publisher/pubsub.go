@@ -3,6 +3,7 @@ package publisher
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -36,7 +37,7 @@ func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
 	results := make([]*pubsub.PublishResult, len(events))
 
 	for order, event := range events {
-		topicId := fmt.Sprintf(p.topicFormat, event.Type)
+		topicId := strings.Replace(p.topicFormat, "%s", event.Type, 1)
 
 		topic, err := p.topic(ctx, topicId)
 		if err != nil {

@@ -91,4 +91,90 @@ func TestPubSubPublisher(t *testing.T) {
 		err = pub.Close()
 		require.NoError(t, err, "error closing publisher")
 	})
+
+	t.Run("should set retention for a topic correctly", func(t *testing.T) {
+
+		client, err := pubsub.NewClient(context.Background(), testingProject)
+		assert.NoError(t, err, "error creating pubsub client")
+
+		retention := time.Hour
+
+		pub, err := publisher.NewPubSub(
+			client,
+			publisher.WithPubSubTopicAutocreate(true),
+			publisher.WithPubSubTopicRetentionDuration(retention),
+		)
+		require.NoError(t, err, "unexpected error creating publisher")
+
+		err = pub.ProduceBulk([]*raccoonv1.Event{testEvent}, "group")
+		require.NoError(t, err, "error publishing events")
+
+		cfg, err := client.Topic(testEvent.Type).Config(context.Background())
+		require.NoError(t, err, "error obtaining topic config")
+		require.Equal(t, cfg.RetentionDuration, retention)
+
+		err = client.Topic(testEvent.Type).Delete(context.Background())
+		require.NoError(t, err, "error deleting topic")
+
+		err = pub.Close()
+		require.NoError(t, err, "error closing publisher")
+	})
+
+	t.Run("should create the topic using topic format", func(t *testing.T) {
+
+		client, err := pubsub.NewClient(context.Background(), testingProject)
+		assert.NoError(t, err, "error creating pubsub client")
+
+		format := "pre-%s-post"
+		pub, err := publisher.NewPubSub(
+			client,
+			publisher.WithPubSubTopicAutocreate(true),
+			publisher.WithPubSubTopicFormat(format),
+		)
+		require.NoError(t, err, "unexpected error creating publisher")
+
+		err = pub.ProduceBulk([]*raccoonv1.Event{testEvent}, "group")
+		require.NoError(t, err, "error publishing events")
+
+		topic := client.Topic("pre-click-post")
+		exists, err := topic.Exists(context.Background())
+
+		require.NoError(t, err, "error checking existence of topic")
+		require.True(t, exists)
+
+		err = topic.Delete(context.Background())
+		require.NoError(t, err, "error deleting topic")
+
+		err = pub.Close()
+		require.NoError(t, err, "error closing publisher")
+	})
+
+	t.Run("static topic creation test", func(t *testing.T) {
+
+		client, err := pubsub.NewClient(context.Background(), testingProject)
+		assert.NoError(t, err, "error creating pubsub client")
+
+		format := "static-topic"
+		pub, err := publisher.NewPubSub(
+			client,
+			publisher.WithPubSubTopicAutocreate(true),
+			publisher.WithPubSubTopicFormat(format),
+		)
+		require.NoError(t, err, "unexpected error creating publisher")
+
+		err = pub.ProduceBulk([]*raccoonv1.Event{testEvent}, "group")
+		require.NoError(t, err, "error publishing events")
+
+		topic := client.Topic(format)
+		exists, err := topic.Exists(context.Background())
+
+		require.NoError(t, err, "error checking existence of topic")
+		require.True(t, exists)
+
+		err = topic.Delete(context.Background())
+		require.NoError(t, err, "error deleting topic")
+
+		err = pub.Close()
+		require.NoError(t, err, "error closing publisher")
+	})
 }

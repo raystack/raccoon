@@ -130,7 +130,6 @@ func initPublisher() (Publisher, error) {
 		}
 		return publisher.NewPubSub(
 			client,
-			config.PublisherPubSub.ProjectId,
 			publisher.WithPubSubTopicFormat(config.EventDistribution.PublisherPattern),
 			publisher.WithPubSubTopicAutocreate(config.PublisherPubSub.TopicAutoCreate),
 			publisher.WithPubSubTopicRetentionDuration(config.PublisherPubSub.TopicRetentionPeriod),

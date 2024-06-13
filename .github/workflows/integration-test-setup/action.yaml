@@ -7,8 +7,6 @@ runs:
       uses: docker-practice/actions-setup-docker@master
     - name: Install Protoc
       uses: arduino/setup-protoc@v1
-    - name: Checkout repo
-      uses: actions/checkout@v2
     - name: Setup Go
       uses: actions/setup-go@v3
       with:

@@ -53,7 +53,7 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 	totalProcessed := 0
 	deliveryChannel := make(chan kafka.Event, pr.deliveryChannelSize)
 	for order, event := range events {
-		topic := fmt.Sprintf(pr.topicFormat, event.Type)
+		topic := strings.Replace(pr.topicFormat, "%s", event.Type, 1)
 		message := &kafka.Message{
 			Value:          event.EventBytes,
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},

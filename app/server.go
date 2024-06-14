@@ -10,12 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"cloud.google.com/go/pubsub"
+	pubsubsdk "cloud.google.com/go/pubsub"
 	"github.com/raystack/raccoon/collection"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
 	"github.com/raystack/raccoon/publisher"
+	"github.com/raystack/raccoon/publisher/pubsub"
 	"github.com/raystack/raccoon/services"
 	"github.com/raystack/raccoon/worker"
 	"google.golang.org/api/option"
@@ -120,7 +121,7 @@ func initPublisher() (Publisher, error) {
 	case "kafka":
 		return publisher.NewKafka()
 	case "pubsub":
-		client, err := pubsub.NewClient(
+		client, err := pubsubsdk.NewClient(
 			context.Background(),
 			config.PublisherPubSub.ProjectId,
 			option.WithCredentialsFile(config.PublisherPubSub.CredentialsFile),
@@ -128,15 +129,15 @@ func initPublisher() (Publisher, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error creating pubsub client: %w", err)
 		}
-		return publisher.NewPubSub(
+		return pubsub.New(
 			client,
-			publisher.WithPubSubTopicFormat(config.EventDistribution.PublisherPattern),
-			publisher.WithPubSubTopicAutocreate(config.PublisherPubSub.TopicAutoCreate),
-			publisher.WithPubSubTopicRetention(config.PublisherPubSub.TopicRetentionPeriod),
-			publisher.WithPubSubDelayThreshold(config.PublisherPubSub.PublishDelayThreshold),
-			publisher.WithPubSubCountThreshold(config.PublisherPubSub.PublishCountThreshold),
-			publisher.WithPubSubByteThreshold(config.PublisherPubSub.PublishByteThreshold),
-			publisher.WithPubSubTimeout(config.PublisherPubSub.PublishTimeout),
+			pubsub.WithTopicFormat(config.EventDistribution.PublisherPattern),
+			pubsub.WithTopicAutocreate(config.PublisherPubSub.TopicAutoCreate),
+			pubsub.WithTopicRetention(config.PublisherPubSub.TopicRetentionPeriod),
+			pubsub.WithDelayThreshold(config.PublisherPubSub.PublishDelayThreshold),
+			pubsub.WithCountThreshold(config.PublisherPubSub.PublishCountThreshold),
+			pubsub.WithByteThreshold(config.PublisherPubSub.PublishByteThreshold),
+			pubsub.WithTimeout(config.PublisherPubSub.PublishTimeout),
 		)
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)

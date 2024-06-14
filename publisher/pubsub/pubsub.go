@@ -1,6 +1,7 @@
-package publisher
+package pubsub
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"strings"
@@ -10,10 +11,11 @@ import (
 	"cloud.google.com/go/pubsub"
 	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
+	"github.com/raystack/raccoon/publisher"
 )
 
-// PubSub publishes to a Google Cloud Platform PubSub Topic.
-type PubSub struct {
+// Publisher publishes to a Google Cloud Platform PubSub Topic.
+type Publisher struct {
 	client      *pubsub.Client
 	topicFormat string
 
@@ -30,7 +32,7 @@ type PubSub struct {
 	publishSettings        pubsub.PublishSettings
 }
 
-func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
+func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 
 	ctx := context.Background()
 	errors := make([]error, len(events))
@@ -102,14 +104,13 @@ func (p *PubSub) ProduceBulk(events []*pb.Event, connGroup string) error {
 		}
 	}
 
-	if allNil(errors) {
-		return nil
+	if cmp.Or(errors...) != nil {
+		return publisher.BulkError{Errors: errors}
 	}
-
-	return BulkError{errors}
+	return nil
 }
 
-func (p *PubSub) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
+func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
 
 	p.topicLock.RLock()
 	topic, exists := p.topics[id]
@@ -158,7 +159,7 @@ func (p *PubSub) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
 	return topic, nil
 }
 
-func (p *PubSub) Close() error {
+func (p *Publisher) Close() error {
 	p.topicLock.Lock()
 	defer p.topicLock.Unlock()
 	for _, topic := range p.topics {
@@ -167,58 +168,58 @@ func (p *PubSub) Close() error {
 	return p.client.Close()
 }
 
-func (p *PubSub) Name() string {
+func (p *Publisher) Name() string {
 	return "pubsub"
 }
 
-type PubSubOpt func(*PubSub)
+type Opt func(*Publisher)
 
-func WithPubSubTopicAutocreate(autocreate bool) PubSubOpt {
-	return func(pub *PubSub) {
+func WithTopicAutocreate(autocreate bool) Opt {
+	return func(pub *Publisher) {
 		pub.autoCreateTopic = autocreate
 	}
 }
 
-func WithPubSubTopicRetention(duration time.Duration) PubSubOpt {
-	return func(pub *PubSub) {
+func WithTopicRetention(duration time.Duration) Opt {
+	return func(pub *Publisher) {
 		pub.topicRetentionDuration = duration
 	}
 }
 
-func WithPubSubDelayThreshold(duration time.Duration) PubSubOpt {
-	return func(pub *PubSub) {
+func WithDelayThreshold(duration time.Duration) Opt {
+	return func(pub *Publisher) {
 		pub.publishSettings.DelayThreshold = duration
 	}
 }
 
-func WithPubSubCountThreshold(count int) PubSubOpt {
-	return func(pub *PubSub) {
+func WithCountThreshold(count int) Opt {
+	return func(pub *Publisher) {
 		pub.publishSettings.CountThreshold = count
 	}
 }
 
-func WithPubSubByteThreshold(bytes int) PubSubOpt {
-	return func(pub *PubSub) {
+func WithByteThreshold(bytes int) Opt {
+	return func(pub *Publisher) {
 		pub.publishSettings.ByteThreshold = bytes
 	}
 }
 
-func WithPubSubTimeout(timeout time.Duration) PubSubOpt {
-	return func(pub *PubSub) {
+func WithTimeout(timeout time.Duration) Opt {
+	return func(pub *Publisher) {
 		pub.publishSettings.Timeout = timeout
 	}
 }
 
-func WithPubSubTopicFormat(format string) PubSubOpt {
-	return func(pub *PubSub) {
+func WithTopicFormat(format string) Opt {
+	return func(pub *Publisher) {
 		pub.topicFormat = format
 	}
 }
 
 // NewPubSub creates a new PubSub publisher
-func NewPubSub(client *pubsub.Client, opts ...PubSubOpt) (*PubSub, error) {
+func New(client *pubsub.Client, opts ...Opt) (*Publisher, error) {
 
-	p := &PubSub{
+	p := &Publisher{
 		client:          client,
 		topicFormat:     "%s",
 		topicLock:       sync.RWMutex{},

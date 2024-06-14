@@ -1,15 +1,17 @@
-package publisher_test
+package pubsub_test
 
 import (
 	"context"
+	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"cloud.google.com/go/pubsub"
+	pubsubsdk "cloud.google.com/go/pubsub"
+	"github.com/raystack/raccoon/logger"
 	raccoonv1 "github.com/raystack/raccoon/proto"
-	"github.com/raystack/raccoon/publisher"
+	"github.com/raystack/raccoon/publisher/pubsub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,6 +20,11 @@ const (
 	envPubsubEmulator = "PUBSUB_EMULATOR_HOST"
 	testingProject    = "test-project"
 )
+
+var testEvent = &raccoonv1.Event{
+	EventBytes: []byte("EVENT"),
+	Type:       "click",
+}
 
 func TestPubSubPublisher(t *testing.T) {
 	host := os.Getenv(envPubsubEmulator)
@@ -29,19 +36,14 @@ func TestPubSubPublisher(t *testing.T) {
 		return
 	}
 
-	testEvent := &raccoonv1.Event{
-		EventBytes: []byte("EVENT"),
-		Type:       "click",
-	}
-
 	t.Run("should produce message successfully", func(t *testing.T) {
-		client, err := pubsub.NewClient(context.Background(), testingProject)
+		client, err := pubsubsdk.NewClient(context.Background(), testingProject)
 		assert.NoError(t, err, "error creating pubsub client")
 
-		pub, err := publisher.NewPubSub(
+		pub, err := pubsub.New(
 			client,
-			publisher.WithPubSubTopicAutocreate(true),
-			publisher.WithPubSubTopicRetention(10*time.Minute),
+			pubsub.WithTopicAutocreate(true),
+			pubsub.WithTopicRetention(10*time.Minute),
 		)
 		require.NoError(t, err, "unexpected error creating publisher")
 
@@ -51,21 +53,21 @@ func TestPubSubPublisher(t *testing.T) {
 		err = pub.Close()
 		require.NoError(t, err, "error closing publisher")
 
-		// publisher.Close() closes the client, so we create a new one
-		client, err = pubsub.NewClient(context.Background(), testingProject)
+		// pub.Close() closes the client, so we create a new one
+		client, err = pubsubsdk.NewClient(context.Background(), testingProject)
 		require.NoError(t, err)
 
 		sub, err := client.CreateSubscription(
 			context.Background(),
 			"test-consumer",
-			pubsub.SubscriptionConfig{
+			pubsubsdk.SubscriptionConfig{
 				Topic: client.Topic(testEvent.Type),
 			},
 		)
 		require.NoError(t, err, "error creating subscription")
 
 		ctx, cancel := context.WithCancel(context.Background())
-		err = sub.Receive(ctx, func(ctx context.Context, m *pubsub.Message) {
+		err = sub.Receive(ctx, func(ctx context.Context, m *pubsubsdk.Message) {
 			assert.Equal(t, testEvent.EventBytes, m.Data)
 			m.Ack()
 			cancel()
@@ -79,10 +81,10 @@ func TestPubSubPublisher(t *testing.T) {
 
 	t.Run("should return an error if topic doesn't exist and topic autocreate is set to false", func(t *testing.T) {
 
-		client, err := pubsub.NewClient(context.Background(), testingProject)
+		client, err := pubsubsdk.NewClient(context.Background(), testingProject)
 		assert.NoError(t, err, "error creating pubsub client")
 
-		pub, err := publisher.NewPubSub(client)
+		pub, err := pubsub.New(client)
 		require.NoError(t, err, "unexpected error creating publisher")
 
 		err = pub.ProduceBulk([]*raccoonv1.Event{testEvent}, "group")
@@ -94,15 +96,15 @@ func TestPubSubPublisher(t *testing.T) {
 
 	t.Run("should set retention for a topic correctly", func(t *testing.T) {
 
-		client, err := pubsub.NewClient(context.Background(), testingProject)
+		client, err := pubsubsdk.NewClient(context.Background(), testingProject)
 		assert.NoError(t, err, "error creating pubsub client")
 
 		retention := time.Hour
 
-		pub, err := publisher.NewPubSub(
+		pub, err := pubsub.New(
 			client,
-			publisher.WithPubSubTopicAutocreate(true),
-			publisher.WithPubSubTopicRetention(retention),
+			pubsub.WithTopicAutocreate(true),
+			pubsub.WithTopicRetention(retention),
 		)
 		require.NoError(t, err, "unexpected error creating publisher")
 
@@ -122,14 +124,14 @@ func TestPubSubPublisher(t *testing.T) {
 
 	t.Run("should create the topic using topic format", func(t *testing.T) {
 
-		client, err := pubsub.NewClient(context.Background(), testingProject)
+		client, err := pubsubsdk.NewClient(context.Background(), testingProject)
 		assert.NoError(t, err, "error creating pubsub client")
 
 		format := "pre-%s-post"
-		pub, err := publisher.NewPubSub(
+		pub, err := pubsub.New(
 			client,
-			publisher.WithPubSubTopicAutocreate(true),
-			publisher.WithPubSubTopicFormat(format),
+			pubsub.WithTopicAutocreate(true),
+			pubsub.WithTopicFormat(format),
 		)
 		require.NoError(t, err, "unexpected error creating publisher")
 
@@ -151,14 +153,14 @@ func TestPubSubPublisher(t *testing.T) {
 
 	t.Run("static topic creation test", func(t *testing.T) {
 
-		client, err := pubsub.NewClient(context.Background(), testingProject)
+		client, err := pubsubsdk.NewClient(context.Background(), testingProject)
 		assert.NoError(t, err, "error creating pubsub client")
 
 		format := "static-topic"
-		pub, err := publisher.NewPubSub(
+		pub, err := pubsub.New(
 			client,
-			publisher.WithPubSubTopicAutocreate(true),
-			publisher.WithPubSubTopicFormat(format),
+			pubsub.WithTopicAutocreate(true),
+			pubsub.WithTopicFormat(format),
 		)
 		require.NoError(t, err, "unexpected error creating publisher")
 
@@ -177,4 +179,9 @@ func TestPubSubPublisher(t *testing.T) {
 		err = pub.Close()
 		require.NoError(t, err, "error closing publisher")
 	})
+}
+
+func TestMain(m *testing.M) {
+	logger.SetOutput(ioutil.Discard)
+	os.Exit(m.Run())
 }

@@ -1,6 +1,7 @@
-package publisher
+package kafka
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -11,9 +12,10 @@ import (
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
+	"github.com/raystack/raccoon/publisher"
 )
 
-func NewKafka() (*Kafka, error) {
+func New() (*Kafka, error) {
 	kp, err := newKafkaClient(config.PublisherKafka.ToKafkaConfigMap())
 	if err != nil {
 		return &Kafka{}, err
@@ -30,7 +32,7 @@ func NewKafka() (*Kafka, error) {
 	return k, nil
 }
 
-func NewKafkaFromClient(client Client, flushInterval int, topicFormat string, deliveryChannelSize int) *Kafka {
+func NewFromClient(client Client, flushInterval int, topicFormat string, deliveryChannelSize int) *Kafka {
 	return &Kafka{
 		kp:                  client,
 		flushInterval:       flushInterval,
@@ -96,10 +98,11 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 		}
 	}
 
-	if allNil(errors) {
-		return nil
+	if cmp.Or(errors...) != nil {
+		return &publisher.BulkError{Errors: errors}
 	}
-	return BulkError{Errors: errors}
+
+	return nil
 }
 
 func (pr *Kafka) ReportStats() {
@@ -134,7 +137,7 @@ func (pr *Kafka) Close() error {
 	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
 	pr.kp.Close()
 	if remaining > 0 {
-		return &UnflushedEventsError{remaining}
+		return &publisher.UnflushedEventsError{Count: remaining}
 	}
 	return nil
 }
@@ -143,40 +146,7 @@ func (pr *Kafka) Name() string {
 	return "kafka"
 }
 
-func allNil(errors []error) bool {
-	for _, err := range errors {
-		if err != nil {
-			return false
-		}
-	}
-	return true
-}
-
 type ProducerStats struct {
 	EventCounts map[string]int
 	ErrorCounts map[string]int
-}
-
-type BulkError struct {
-	Errors []error
-}
-
-func (b BulkError) Error() string {
-	err := "error when sending messages: "
-	for i, mErr := range b.Errors {
-		if i != 0 {
-			err += fmt.Sprintf(", %v", mErr)
-			continue
-		}
-		err += mErr.Error()
-	}
-	return err
-}
-
-type UnflushedEventsError struct {
-	Count int
-}
-
-func (e *UnflushedEventsError) Error() string {
-	return fmt.Sprintf("%d events were not flushed", e.Count)
 }

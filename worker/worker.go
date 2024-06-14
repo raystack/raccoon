@@ -70,7 +70,7 @@ func (w *Pool) worker(name string) {
 		totalErr := 0
 		if err != nil {
 			switch et := err.(type) {
-			case publisher.BulkError:
+			case *publisher.BulkError:
 				for _, e := range et.Errors {
 					if e != nil {
 						logger.Errorf("[worker] Fail to publish message to kafka %v", e)

@@ -48,7 +48,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	go shutDownServer(ctx, cancel, httpServices, bufferChannel, workerPool, publisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, kp Publisher) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, pub Publisher) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
@@ -63,17 +63,17 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 				logger.Info(fmt.Sprintf("WorkerPool flush timedout %t", timedOut))
 			}
 			flushInterval := config.PublisherKafka.FlushInterval
-			logger.Infof("Closing %q producer\n", kp.Name())
+			logger.Infof("Closing %q producer\n", pub.Name())
 			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
 			eventsInProducer := 0
 
-			err := kp.Close()
+			err := pub.Close()
 			if err != nil {
 				switch e := err.(type) {
 				case *publisher.UnflushedEventsError:
 					eventsInProducer = e.Count
 				default:
-					logger.Errorf("error closing %q publisher: %v", kp.Name(), err)
+					logger.Errorf("error closing %q publisher: %v", pub.Name(), err)
 				}
 			}
 
@@ -83,7 +83,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			eventsInChannel := len(bufferChannel) * 7
 			logger.Info(fmt.Sprintf("Outstanding unprocessed events in the channel, data lost ~ (No batches %d * 5 events) = ~%d", len(bufferChannel), eventsInChannel))
 			metrics.Count(
-				fmt.Sprintf("%s_messages_delivered_total", kp.Name()),
+				fmt.Sprintf("%s_messages_delivered_total", pub.Name()),
 				int64(eventsInChannel+eventsInProducer),
 				map[string]string{
 					"success":    "false",

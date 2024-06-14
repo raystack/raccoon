@@ -107,7 +107,7 @@ func (w *Pool) worker(name string) {
 // StartWorkers initialize worker pool as much as Pool.Size
 func (w *Pool) StartWorkers() {
 	w.wg.Add(w.Size)
-	for i := 0; i < w.Size; i++ {
+	for i := range w.Size {
 		go w.worker(fmt.Sprintf("worker-%d", i))
 	}
 }

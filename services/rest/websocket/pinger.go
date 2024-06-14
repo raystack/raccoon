@@ -12,7 +12,7 @@ import (
 
 // Pinger is worker that pings the connected peers based on ping interval.
 func Pinger(c chan connection.Conn, size int, PingInterval time.Duration, WriteWaitInterval time.Duration) {
-	for i := 0; i < size; i++ {
+	for range size {
 		go func() {
 			cSet := make(map[identification.Identifier]connection.Conn)
 			ticker := time.NewTicker(PingInterval)

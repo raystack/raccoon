@@ -86,7 +86,7 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 	}
 
 	// Wait for deliveryChannel as many as processed
-	for i := 0; i < totalProcessed; i++ {
+	for i := range totalProcessed {
 		d := <-deliveryChannel
 		m := d.(*kafka.Message)
 		if m.TopicPartition.Error != nil {

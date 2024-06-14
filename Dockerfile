@@ -1,4 +1,4 @@
-FROM golang:1.21
+FROM golang:1.22.4
 
 WORKDIR /app
 RUN apt-get update && apt-get install unzip  --no-install-recommends --assume-yes

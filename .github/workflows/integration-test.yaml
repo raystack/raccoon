@@ -28,4 +28,4 @@ jobs:
       - name: start pubsub emulator
         run: docker compose up pubsub-emulator -d
       - name: run integration tests
-        run: PUBSUB_EMULATOR_HOST=localhost:8085 go test ./publisher/ -v -run ^TestPubSubPublisher$
+        run: PUBSUB_EMULATOR_HOST=localhost:8085 go test ./publisher/pubsub -v 

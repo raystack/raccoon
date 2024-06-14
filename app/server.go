@@ -16,6 +16,7 @@ import (
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
 	"github.com/raystack/raccoon/publisher"
+	"github.com/raystack/raccoon/publisher/kafka"
 	"github.com/raystack/raccoon/publisher/pubsub"
 	"github.com/raystack/raccoon/services"
 	"github.com/raystack/raccoon/worker"
@@ -119,7 +120,7 @@ func reportProcMetrics() {
 func initPublisher() (Publisher, error) {
 	switch config.Publisher {
 	case "kafka":
-		return publisher.NewKafka()
+		return kafka.New()
 	case "pubsub":
 		client, err := pubsubsdk.NewClient(
 			context.Background(),

@@ -57,5 +57,5 @@ vendor: ## Update the vendor directory
 	@go mod vendor
 
 docker-run:
-	docker-compose build
-	docker-compose up -d
+	docker compose build
+	docker compose up -d

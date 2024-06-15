@@ -1,6 +1,7 @@
-package publisher
+package kafka
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -11,47 +12,50 @@ import (
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
+	"github.com/raystack/raccoon/publisher"
 )
 
-// KafkaProducer Produce data to kafka synchronously
-type KafkaProducer interface {
-	// ProduceBulk message to kafka. Block until all messages are sent. Return array of error. Order is not guaranteed.
-	ProduceBulk(events []*pb.Event, connGroup string, deliveryChannel chan kafka.Event) error
-}
-
-func NewKafka() (*Kafka, error) {
+func New() (*Kafka, error) {
 	kp, err := newKafkaClient(config.PublisherKafka.ToKafkaConfigMap())
 	if err != nil {
 		return &Kafka{}, err
 	}
-	return &Kafka{
-		kp:            kp,
-		flushInterval: config.PublisherKafka.FlushInterval,
-		topicFormat:   config.EventDistribution.PublisherPattern,
-	}, nil
+	k := &Kafka{
+		kp:                  kp,
+		flushInterval:       config.PublisherKafka.FlushInterval,
+		topicFormat:         config.EventDistribution.PublisherPattern,
+		deliveryChannelSize: config.Worker.DeliveryChannelSize,
+	}
+
+	go k.ReportStats()
+
+	return k, nil
 }
 
-func NewKafkaFromClient(client Client, flushInterval int, topicFormat string) *Kafka {
+func NewFromClient(client Client, flushInterval int, topicFormat string, deliveryChannelSize int) *Kafka {
 	return &Kafka{
-		kp:            client,
-		flushInterval: flushInterval,
-		topicFormat:   topicFormat,
+		kp:                  client,
+		flushInterval:       flushInterval,
+		topicFormat:         topicFormat,
+		deliveryChannelSize: deliveryChannelSize,
 	}
 }
 
 type Kafka struct {
-	kp            Client
-	flushInterval int
-	topicFormat   string
+	kp                  Client
+	flushInterval       int
+	topicFormat         string
+	deliveryChannelSize int
 }
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
 // DeliveryChannel needs to be exclusive. DeliveryChannel is exposed for recyclability purpose.
-func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string, deliveryChannel chan kafka.Event) error {
+func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 	errors := make([]error, len(events))
 	totalProcessed := 0
+	deliveryChannel := make(chan kafka.Event, pr.deliveryChannelSize)
 	for order, event := range events {
-		topic := fmt.Sprintf(pr.topicFormat, event.Type)
+		topic := strings.Replace(pr.topicFormat, "%s", event.Type, 1)
 		message := &kafka.Message{
 			Value:          event.EventBytes,
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
@@ -69,12 +73,20 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string, deliveryChann
 			}
 			continue
 		}
-		metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "true", "conn_group": connGroup, "event_type": event.Type})
+		metrics.Increment(
+			"kafka_messages_delivered_total",
+			map[string]string{
+				"success":    "true",
+				"conn_group": connGroup,
+				"event_type": event.Type,
+			},
+		)
 
 		totalProcessed++
 	}
+
 	// Wait for deliveryChannel as many as processed
-	for i := 0; i < totalProcessed; i++ {
+	for i := range totalProcessed {
 		d := <-deliveryChannel
 		m := d.(*kafka.Message)
 		if m.TopicPartition.Error != nil {
@@ -86,10 +98,11 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string, deliveryChann
 		}
 	}
 
-	if allNil(errors) {
-		return nil
+	if cmp.Or(errors...) != nil {
+		return &publisher.BulkError{Errors: errors}
 	}
-	return BulkError{Errors: errors}
+
+	return nil
 }
 
 func (pr *Kafka) ReportStats() {
@@ -119,39 +132,21 @@ func (pr *Kafka) ReportStats() {
 }
 
 // Close wait for outstanding messages to be delivered within given flush interval timeout.
-func (pr *Kafka) Close() int {
+func (pr *Kafka) Close() error {
 	remaining := pr.kp.Flush(pr.flushInterval)
 	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
 	pr.kp.Close()
-	return remaining
+	if remaining > 0 {
+		return &publisher.UnflushedEventsError{Count: remaining}
+	}
+	return nil
 }
 
-func allNil(errors []error) bool {
-	for _, err := range errors {
-		if err != nil {
-			return false
-		}
-	}
-	return true
+func (pr *Kafka) Name() string {
+	return "kafka"
 }
 
 type ProducerStats struct {
 	EventCounts map[string]int
 	ErrorCounts map[string]int
-}
-
-type BulkError struct {
-	Errors []error
-}
-
-func (b BulkError) Error() string {
-	err := "error when sending messages: "
-	for i, mErr := range b.Errors {
-		if i != 0 {
-			err += fmt.Sprintf(", %v", mErr)
-			continue
-		}
-		err += mErr.Error()
-	}
-	return err
 }

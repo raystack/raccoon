@@ -5,22 +5,27 @@ on:
   - pull_request
 
 jobs:
-  test:
+  kafka-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Docker
-        uses: docker-practice/actions-setup-docker@master
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
       - name: Checkout repo
         uses: actions/checkout@v2
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.18"
+      - name: setup integration environment
+        uses: ./.github/workflows/integration-test-setup
       - name: Copy integration config
         run: cp .env.test .env
       - name: Run Raccoon
         run: make docker-run
       - name: Invoking go test
         run: INTEGTEST_BOOTSTRAP_SERVER=localhost:9094 INTEGTEST_HOST=localhost:8080 INTEGTEST_TOPIC_FORMAT="clickstream-%s-log" GRPC_SERVER_ADDR="localhost:8081" go test ./integration -v
+  pubsub-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: setup integration environment
+        uses: ./.github/workflows/integration-test-setup
+      - name: start pubsub emulator
+        run: docker compose up pubsub-emulator -d
+      - name: run integration tests
+        run: PUBSUB_EMULATOR_HOST=localhost:8085 go test ./publisher/pubsub -v 

@@ -191,6 +191,16 @@ You can also route the events to single topic irrespective of the type. To do th
 
 ## Publisher
 
+### `PUBLISHER_TYPE`
+
+The publisher to use for transmitting events.
+
+Publisher specific configuration follows the pattern `PUBLISHER_${TYPE}_*` where `${TYPE}` is the publisher type in upper case.
+
+- Type `Optional`
+- Default value: `kafka`
+- Possible values: `kafka`, `pubsub`
+
 ### `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`
 
 Kafka brokers IP address where the events are published.
@@ -246,6 +256,62 @@ Upon shutdown, the publisher will try to finish processing events in buffer befo
 
 - Type `Optional`
 - Default value: `1000`
+
+### `PUBLISHER_PUBSUB_CREDENTIALS`
+
+Path to the file containing service account credentials. Defaults to the value of `GOOGLE_APPLICATION_CREDENTIALS` environment variable. This is used to authenticate with Google Cloud Platform.
+
+- Type `Required` (if `PUBLISHER_TYPE=pubsub`, otherwise ignored)
+
+### `PUBLISHER_PUBSUB_PROJECT_ID`
+
+Destination Google Cloud Project ID. Messages will be transmitted to the PubSub topics under this project.
+
+- Type `Required` (if `PUBLISHER_TYPE=pubsub`, otherwise ignored)
+
+### `PUBLISHER_PUBSUB_TOPIC_AUTOCREATE`
+
+Whether Raccoon should create a topic if it doesn't exist.
+
+- Type `Optional`
+- Default value `false`
+
+### `PUBLISHER_PUBSUB_TOPIC_RETENTION_MS`
+
+How long PubSub should retain messages in a topic (in milliseconds). Valid values must be between 10 minutes and 31 days.
+
+see [pubsub docs](https://cloud.google.com/pubsub/docs/create-topic) for more information.
+
+- Type `Optional`
+- Default value `0`
+
+### `PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS`
+
+Maximum time to wait for before publishing a batch of messages.
+
+- Type `Optional`
+- Default value `10`
+
+### `PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD`
+
+Maximum number of message to accumulate before transmission.
+
+- Type `Optional`
+- Default value `100`
+
+### `PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD`
+
+Maximum buffer size (in bytes)
+
+- Type `Optional`
+- Default value `1000000` (~1MB)
+
+### `PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS`
+
+How long to wait before aborting a publish operation.
+
+- Type `Optional`
+- Default value `60000` (1 Minute)
 
 ## Metric
 

@@ -116,9 +116,11 @@ func (m *mockObserver) Observe(f float64) {
 }
 
 func (promSuite *PrometheusTestSuite) Test_Prometheus_Collector_Metrics_Initialised() {
-	numCounters := 12
+
+	// NOTE(turtledev): what are we even testing here?
+	numCounters := 15
 	numGauge := 15
-	numHistogram := 8
+	numHistogram := 9
 	var err error
 	promSuite.instrument, err = initPrometheusCollector()
 	assert.NoError(promSuite.T(), err, "error while initialising prometheus collector")

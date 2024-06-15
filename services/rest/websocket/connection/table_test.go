@@ -148,7 +148,7 @@ func TestStoreBatch(t *testing.T) {
 
 func BenchmarkStoreBatch(b *testing.B) {
 	table := NewTable(b.N)
-	for i := 0; i < b.N; i++ {
+	for i := range b.N {
 		go func(x int) {
 			userId := fmt.Sprintf("%s-%d", "user", x)
 			batchId := fmt.Sprintf("%s-%d", "equest-id-", x)

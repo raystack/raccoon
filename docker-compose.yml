@@ -4,6 +4,14 @@ networks:
   cs-network:
 
 services:
+  localstack:
+    image: localstack/localstack:3.5.0
+    container_name: localstack-main
+    ports:
+      - "0.0.0.0:4566:4566"
+      # - "4510-4599"
+    volumes:
+      - "./var/run/docker.sock:/var/run/docker.sock"
   pubsub-emulator:
     image: gcr.io/google.com/cloudsdktool/google-cloud-cli:480.0.0
     hostname: pubsub-emulator

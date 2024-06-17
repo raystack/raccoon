@@ -36,7 +36,7 @@ func TestKinesisProducer(t *testing.T) {
 
 	localstackHost := os.Getenv(envLocalstackHost)
 	if strings.TrimSpace(localstackHost) == "" {
-		t.Logf("cannot run tests because %s env variable is not set", envLocalstackHost)
+		t.Errorf("cannot run tests because %s env variable is not set", envLocalstackHost)
 		return
 	}
 	cfg, err := config.LoadDefaultConfig(context.Background())

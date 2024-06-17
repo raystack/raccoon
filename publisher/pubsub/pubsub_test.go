@@ -29,8 +29,8 @@ var testEvent = &raccoonv1.Event{
 func TestPubSubPublisher(t *testing.T) {
 	host := os.Getenv(envPubsubEmulator)
 	if strings.TrimSpace(host) == "" {
-		t.Logf(
-			"skipping pubsub tests, because %s env variable is not set",
+		t.Errorf(
+			"cannot run tests because %s env variable is not set",
 			envPubsubEmulator,
 		)
 		return

@@ -2,7 +2,7 @@ package pubsub_test
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -182,6 +182,6 @@ func TestPubSubPublisher(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	logger.SetOutput(ioutil.Discard)
+	logger.SetOutput(io.Discard)
 	os.Exit(m.Run())
 }

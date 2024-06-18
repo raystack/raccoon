@@ -20,7 +20,6 @@ changelog:
 
 builds:
   - main: ./main.go
-    id: "linux"
     binary: raccoon
     flags: [-a]
     ldflags:

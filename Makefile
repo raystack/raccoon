@@ -1,13 +1,10 @@
 NAME="github.com/raystack/raccoon"
-COMMIT := $(shell git rev-parse --short HEAD)
-TAG := "$(shell git rev-list --tags --max-count=1)"
 VERSION := "$(shell git describe --tags ${TAG})-next"
-BUILD_DIR=dist
-PROTON_COMMIT := "ccbf219312db35a934361ebad895cb40145ca235"
+PROTON_COMMIT := "a4240deecb8345e0e95261f22288f937422594b7"
 
-.PHONY: all build clean test tidy vet proto setup format generate
+.PHONY: all build clean test tidy vet proto setup format
 
-all: clean test build format lint
+all: clean test lint build
 
 tidy:
 	@echo "Tidy up go.mod..."
@@ -19,19 +16,17 @@ lint: ## Lint checker
 
 clean: tidy ## Clean the build artifacts
 	@echo "Cleaning up build directories..."
-	@rm -rf $coverage.out ${BUILD_DIR}
+	@rm -rf $coverage.out raccoon
 
 proto: ## Generate the protobuf files
 	@echo "Generating protobuf from raystack/proton"
-	@echo " [info] make sure correct version of dependencies are installed using 'make install'"
-	@buf generate https://github.com/raystack/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --template buf.gen.yaml --path raystack/raccoon -v
-	@cp -R proto/raystack/raccoon/v1beta1/* proto/ && rm -Rf proto/raystack
+	@buf generate https://github.com/raystack/proton/archive/${PROTON_COMMIT}.zip#strip_components=1 --path raystack/raccoon -v
 	@echo "Protobuf compilation finished"
 
 setup: ## Install required dependencies
 	@echo "> Installing dependencies..."
 	go mod tidy
-	go install github.com/bufbuild/buf/cmd/buf@v1.23.0
+	go install github.com/bufbuild/buf/cmd/buf@v1.33.0
 
 config: ## Generate the sample config file
 	@echo "Initializing sample server config..."
@@ -43,7 +38,7 @@ build: ## Build the raccoon binary
 	@echo "Build complete"
 
 install:
-	@echo "Installing Guardian to ${GOBIN}..."
+	@echo "Installing Raccoon to ${GOBIN}..."
 	@go install
 
 test: ## Run the tests
@@ -51,10 +46,6 @@ test: ## Run the tests
 
 test-bench: # run benchmark tests
 	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./... -run=^Benchmark ]
-
-vendor: ## Update the vendor directory
-	@echo "Updating vendor directory..."
-	@go mod vendor
 
 docker-run:
 	docker compose build

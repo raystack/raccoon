@@ -1,0 +1,91 @@
+version: 2
+
+project_name: raccoon
+
+release:
+  prerelease: auto
+
+before:
+  hooks:
+    - go mod tidy
+    - make clean
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^build:"
+
+builds:
+  - main: ./main.go
+    id: "linux"
+    binary: raccoon
+    flags: [-a]
+    ldflags:
+      - -X github.com/raystack/raccoon/cmd.Version={{.Tag}}
+      - -X github.com/raystack/raccoon/cmd.BuildCommit={{.FullCommit}}
+      - -X github.com/raystack/raccoon/cmd.BuildDate={{.Date}}
+    goos: ["linux", "windows", "darwin"]
+    goarch: [amd64, arm64]
+    env:
+      - CGO_ENABLED=1
+
+archives:
+  - id: "archives"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+dockers:
+  - goos: linux
+    goarch: amd64
+    ids:
+      - linux
+    dockerfile: Dockerfile
+    image_templates:
+      - "docker.io/raystack/{{.ProjectName}}:latest"
+      - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}"
+      - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}-amd64"
+
+nfpms:
+  - maintainer: Raystack
+    description: "Event sourcing tool."
+    homepage: https://github.com/raystack/raccoon
+    license: Apache 2.0
+    formats:
+      - deb
+      - rpm
+      - apk
+
+scoops:
+  - homepage: "https://github.com/raystack/raccoon"
+    description: "Event sourcing tool."
+    license: Apache 2.0
+    repository:
+      owner: raystack
+      name: scoop-bucket
+
+brews:
+  - name: raccoon
+    homepage: "https://github.com/raystack/raccoon"
+    description: "Event sourcing tool."
+    repository:
+      owner: raystack
+      name: homebrew-tap
+    license: "Apache 2.0"
+    directory: Formula
+    dependencies:
+      - name: git
+    install: |-
+      bin.install "raccoon"
+    commit_author:
+      name: Ravi Suhag
+      email: suhag.ravi@gmail.com

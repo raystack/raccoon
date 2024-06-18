@@ -10,7 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
@@ -66,7 +66,7 @@ func TestNewHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewHandler(tt.args.pingC, &collection.MockCollector{}); !reflect.DeepEqual(got, tt.want) {
+			if got := NewHandler(tt.args.pingC, &collector.MockCollector{}); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewHandler() = %v, want %v", got, tt.want)
 			}
 		})
@@ -188,7 +188,7 @@ func TestHandler_GETHandlerWSEvents(t *testing.T) {
 }
 
 func getRouter(hlr *Handler) http.Handler {
-	collector := new(collection.MockCollector)
+	collector := new(collector.MockCollector)
 	collector.On("Collect", mock.Anything, mock.Anything).Return(nil)
 	router := mux.NewRouter()
 	subRouter := router.PathPrefix("/api/v1").Subrouter()

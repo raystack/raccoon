@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/config"
 	pb "github.com/raystack/raccoon/proto"
 	"google.golang.org/grpc"
 )
 
 type Service struct {
-	Collector collection.Collector
+	Collector collector.Collector
 	s         *grpc.Server
 }
 
-func NewGRPCService(c collection.Collector) *Service {
+func NewGRPCService(c collector.Collector) *Service {
 	server := grpc.NewServer()
 	pb.RegisterEventServiceServer(server, &Handler{C: c})
 	return &Service{

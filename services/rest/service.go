@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/metrics"
 	"github.com/raystack/raccoon/middleware"
@@ -15,11 +15,11 @@ import (
 )
 
 type Service struct {
-	Collector collection.Collector
+	Collector collector.Collector
 	s         *http.Server
 }
 
-func NewRestService(c collection.Collector) *Service {
+func NewRestService(c collector.Collector) *Service {
 	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)
 	wh := websocket.NewHandler(pingChannel, c)
 	go websocket.Pinger(pingChannel, config.ServerWs.PingerSize, config.ServerWs.PingInterval, config.ServerWs.WriteWaitInterval)

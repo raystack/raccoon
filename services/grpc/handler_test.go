@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
@@ -23,7 +23,7 @@ func (v void) Write(_ []byte) (int, error) {
 
 func TestHandler_SendEvent(t *testing.T) {
 	type fields struct {
-		C                               collection.Collector
+		C                               collector.Collector
 		UnimplementedEventServiceServer pb.UnimplementedEventServiceServer
 	}
 	type args struct {
@@ -33,7 +33,7 @@ func TestHandler_SendEvent(t *testing.T) {
 
 	logger.SetOutput(void{})
 	metrics.SetVoid()
-	collector := new(collection.MockCollector)
+	collector := new(collector.MockCollector)
 	ctx := context.Background()
 	meta := metadata.MD{}
 	meta.Set(config.ServerWs.ConnGroupHeader, "group")

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/services/grpc"
 	"github.com/raystack/raccoon/services/pprof"
@@ -43,8 +43,8 @@ func (s *Services) Shutdown(ctx context.Context) {
 	}
 }
 
-func Create(b chan collection.CollectRequest) Services {
-	c := collection.NewChannelCollector(b)
+func Create(b chan collector.CollectRequest) Services {
+	c := collector.NewChannelCollector(b)
 	return Services{
 		b: []bootstrapper{
 			grpc.NewGRPCService(c),

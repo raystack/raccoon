@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/identification"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/stretchr/testify/assert"
@@ -14,7 +14,7 @@ import (
 )
 
 func TestWorker(t *testing.T) {
-	request := &collection.CollectRequest{
+	request := &collector.CollectRequest{
 		ConnectionIdentifier: identification.Identifier{
 			ID:    "12345",
 			Group: "viewer",
@@ -31,7 +31,7 @@ func TestWorker(t *testing.T) {
 			m.On("Timing", "processing.latency", mock.Anything, "")
 			m.On("Count", "kafka_messages_delivered_total", 0, "success=true")
 			m.On("Count", "kafka_messages_delivered_total", 0, "success=false")
-			bc := make(chan collection.CollectRequest, 2)
+			bc := make(chan collector.CollectRequest, 2)
 			worker := Pool{
 				Size:                1,
 				deliveryChannelSize: 0,
@@ -54,7 +54,7 @@ func TestWorker(t *testing.T) {
 	t.Run("Flush", func(t *testing.T) {
 		t.Run("Should block until all messages is processed", func(t *testing.T) {
 			kp := mockKafkaPublisher{}
-			bc := make(chan collection.CollectRequest, 2)
+			bc := make(chan collector.CollectRequest, 2)
 			m := &mockMetric{}
 			m.On("Timing", "processing.latency", mock.Anything, "")
 			m.On("Count", "kafka_messages_delivered_total", 0, "success=false")

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/identification"
 	"github.com/raystack/raccoon/logger"
@@ -15,7 +15,7 @@ import (
 )
 
 type Handler struct {
-	C collection.Collector
+	C collector.Collector
 	pb.UnimplementedEventServiceServer
 }
 
@@ -49,7 +49,7 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.
 	h.sendEventCounters(req.Events, identifier.Group)
 
 	responseChannel := make(chan *pb.SendEventResponse, 1)
-	h.C.Collect(ctx, &collection.CollectRequest{
+	h.C.Collect(ctx, &collector.CollectRequest{
 		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
 		SendEventRequest:     req,
@@ -59,7 +59,7 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.
 
 }
 
-func (h *Handler) Ack(responseChannel chan *pb.SendEventResponse, reqGuid, connGroup string) collection.AckFunc {
+func (h *Handler) Ack(responseChannel chan *pb.SendEventResponse, reqGuid, connGroup string) collector.AckFunc {
 	switch config.Event.Ack {
 	case config.Asynchronous:
 		responseChannel <- &pb.SendEventResponse{

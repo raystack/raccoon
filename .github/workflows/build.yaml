@@ -1,35 +1,30 @@
-name: Test
+name: Build
 
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.22.4"
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Invoking go test
-        run: make test
-      - name: Invoking go bench test
-        run: make test-bench
-
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Go
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git fetch --force --tags
+      - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: "1.22.4"
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-      - uses: actions/checkout@v2
-      - name: Build
-        run: make build
+          go-version: "stable"
+          cache: true
+      - name: Get release tag
+        id: get_version
+        uses: battila7/get-version-action@v2
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: ~v2
+          args: --snapshot --clean

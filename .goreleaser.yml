@@ -56,24 +56,6 @@ dockers:
       - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}"
       - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}-amd64"
 
-# nfpms:
-#   - maintainer: Raystack
-#     description: "Event sourcing tool."
-#     homepage: https://github.com/raystack/raccoon
-#     license: Apache 2.0
-#     formats:
-#       - deb
-#       - rpm
-#       - apk
-
-# scoops:
-#   - homepage: "https://github.com/raystack/raccoon"
-#     description: "Event sourcing tool."
-#     license: Apache 2.0
-#     repository:
-#       owner: raystack
-#       name: scoop-bucket
-
 brews:
   - name: raccoon
     homepage: "https://github.com/raystack/raccoon"

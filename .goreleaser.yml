@@ -19,17 +19,19 @@ changelog:
       - "^build:"
 
 builds:
-  - main: ./main.go
+  - id: darwin-amd64
+    main: ./main.go
     binary: raccoon
-    flags: [-a]
-    ldflags:
-      - -X github.com/raystack/raccoon/cmd.Version={{.Tag}}
-      - -X github.com/raystack/raccoon/cmd.BuildCommit={{.FullCommit}}
-      - -X github.com/raystack/raccoon/cmd.BuildDate={{.Date}}
-    goos: ["linux", "windows", "darwin"]
-    goarch: [amd64, arm64]
+    goos:
+      - darwin
+    goarch:
+      - amd64
     env:
       - CGO_ENABLED=1
+    flags:
+      - -mod=readonly
+    ldflags:
+      - -s -w -X main.version={{.Version}}
 
 archives:
   - id: "archives"
@@ -54,23 +56,23 @@ dockers:
       - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}"
       - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}-amd64"
 
-nfpms:
-  - maintainer: Raystack
-    description: "Event sourcing tool."
-    homepage: https://github.com/raystack/raccoon
-    license: Apache 2.0
-    formats:
-      - deb
-      - rpm
-      - apk
+# nfpms:
+#   - maintainer: Raystack
+#     description: "Event sourcing tool."
+#     homepage: https://github.com/raystack/raccoon
+#     license: Apache 2.0
+#     formats:
+#       - deb
+#       - rpm
+#       - apk
 
-scoops:
-  - homepage: "https://github.com/raystack/raccoon"
-    description: "Event sourcing tool."
-    license: Apache 2.0
-    repository:
-      owner: raystack
-      name: scoop-bucket
+# scoops:
+#   - homepage: "https://github.com/raystack/raccoon"
+#     description: "Event sourcing tool."
+#     license: Apache 2.0
+#     repository:
+#       owner: raystack
+#       name: scoop-bucket
 
 brews:
   - name: raccoon

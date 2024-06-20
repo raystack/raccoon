@@ -15,10 +15,11 @@ import (
 )
 
 type Publisher struct {
-	client            *kinesis.Client
-	streamPattern     string
-	streamAutocreate  bool
-	defaultShardCount int32
+	client              *kinesis.Client
+	streamPattern       string
+	streamAutocreate    bool
+	streamProbeInterval time.Duration
+	defaultShardCount   int32
 }
 
 func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
@@ -56,6 +57,7 @@ func (p *Publisher) stream(name string) (string, error) {
 			return "", errNotFound
 		}
 
+		// TODO: handle ResourceLimitExceeded exception
 		_, err := p.client.CreateStream(
 			context.Background(),
 			&kinesis.CreateStreamInput{
@@ -81,7 +83,7 @@ func (p *Publisher) stream(name string) (string, error) {
 	}
 
 	for stream.StreamDescriptionSummary.StreamStatus != types.StreamStatusActive {
-		time.Sleep(1 * time.Second)
+		time.Sleep(p.streamProbeInterval)
 		stream, err = p.client.DescribeStreamSummary(
 			context.Background(),
 			&kinesis.DescribeStreamSummaryInput{
@@ -106,9 +108,10 @@ func WithStreamAutocreate(autocreate bool) Opt {
 
 func New(client *kinesis.Client, opts ...Opt) *Publisher {
 	p := &Publisher{
-		client:            client,
-		streamPattern:     "%s",
-		defaultShardCount: 1,
+		client:              client,
+		streamPattern:       "%s",
+		defaultShardCount:   1,
+		streamProbeInterval: time.Second,
 	}
 	for _, opt := range opts {
 		opt(p)

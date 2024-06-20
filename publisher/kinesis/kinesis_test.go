@@ -2,13 +2,16 @@ package kinesis_test
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	kinesis_sdk "github.com/aws/aws-sdk-go-v2/service/kinesis"
+	"github.com/aws/aws-sdk-go-v2/service/kinesis/types"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher/kinesis"
 	"github.com/stretchr/testify/require"
@@ -41,6 +44,28 @@ var (
 	}
 )
 
+func deleteStream(client *kinesis_sdk.Client, name string) error {
+	_, err := client.DeleteStream(context.Background(), &kinesis_sdk.DeleteStreamInput{
+		StreamName: aws.String(name),
+	})
+	if err != nil {
+		return err
+	}
+
+	var errNotFound *types.ResourceNotFoundException
+	for !errors.As(err, &errNotFound) {
+		_, err = client.DescribeStreamSummary(
+			context.Background(),
+			&kinesis_sdk.DescribeStreamSummaryInput{
+				StreamName: aws.String(name),
+			},
+		)
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	return nil
+}
+
 func TestKinesisProducer(t *testing.T) {
 
 	localstackHost := os.Getenv(envLocalstackHost)
@@ -63,9 +88,8 @@ func TestKinesisProducer(t *testing.T) {
 		pub := kinesis.New(client, kinesis.WithStreamAutocreate(true))
 		err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 		require.NoError(t, err)
-		_, err = client.DeleteStream(context.Background(), &kinesis_sdk.DeleteStreamInput{
-			StreamName: aws.String("click"),
-		})
+
+		err = deleteStream(client, testEvent.Type)
 		require.NoError(t, err)
 	})
 }

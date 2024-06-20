@@ -59,6 +59,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 					"event_type": event.Type,
 				},
 			)
+			// todo: enrich error information
 			errors[order] = err
 			continue
 		}
@@ -148,6 +149,7 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 			cfg.RetentionDuration = p.topicRetentionDuration
 		}
 
+		// TODO: handle topic already exists error (if created by a service replica)
 		topic, err = p.client.CreateTopicWithConfig(ctx, id, cfg)
 		if err != nil {
 			return nil, fmt.Errorf("error creating topic %q: %w", id, err)

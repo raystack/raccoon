@@ -100,6 +100,19 @@ func deleteStream(client *kinesis_sdk.Client, name string) error {
 	return nil
 }
 
+func getStreamMode(client *kinesis_sdk.Client, name string) (types.StreamMode, error) {
+	stream, err := client.DescribeStreamSummary(
+		context.Background(),
+		&kinesis_sdk.DescribeStreamSummaryInput{
+			StreamName: aws.String(name),
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	return stream.StreamDescriptionSummary.StreamModeDetails.StreamMode, nil
+}
+
 func readStream(client *kinesis_sdk.Client, arn string) ([][]byte, error) {
 	stream, err := client.DescribeStream(
 		context.Background(),
@@ -162,14 +175,6 @@ func TestKinesisProducer(t *testing.T) {
 		require.Error(t, err)
 
 	})
-	t.Run("should create the stream if it doesn't exist and autocreate is set to true", func(t *testing.T) {
-		pub := kinesis.New(client, kinesis.WithStreamAutocreate(true))
-		err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
-		require.NoError(t, err)
-
-		err = deleteStream(client, testEvent.Type)
-		require.NoError(t, err)
-	})
 	t.Run("should publish message to kinesis", func(t *testing.T) {
 		streamARN, err := createStream(client, testEvent.Type)
 		require.NoError(t, err)
@@ -181,5 +186,60 @@ func TestKinesisProducer(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, events, 1)
 		require.Equal(t, events[0], testEvent.EventBytes)
+	})
+	t.Run("stream auto creation", func(t *testing.T) {
+		t.Run("should create the stream if it doesn't exist and autocreate is set to true", func(t *testing.T) {
+			pub := kinesis.New(client, kinesis.WithStreamAutocreate(true))
+			err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+			require.NoError(t, err)
+
+			err = deleteStream(client, testEvent.Type)
+			require.NoError(t, err)
+		})
+		t.Run("should create the stream with mode = ON_DEMAND (default)", func(t *testing.T) {
+
+			pub := kinesis.New(client, kinesis.WithStreamAutocreate(true))
+			err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+			require.NoError(t, err)
+			defer deleteStream(client, testEvent.Type)
+
+			mode, err := getStreamMode(client, testEvent.Type)
+			require.NoError(t, err)
+			require.Equal(t, mode, types.StreamModeOnDemand)
+		})
+		t.Run("should create the stream with mode = PROVISIONED", func(t *testing.T) {
+			pub := kinesis.New(
+				client,
+				kinesis.WithStreamAutocreate(true),
+				kinesis.WithStreamMode(types.StreamModeProvisioned),
+			)
+			err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+			require.NoError(t, err)
+			defer deleteStream(client, testEvent.Type)
+
+			mode, err := getStreamMode(client, testEvent.Type)
+			require.NoError(t, err)
+			require.Equal(t, mode, types.StreamModeProvisioned)
+		})
+		t.Run("should create stream with specified number of shards", func(t *testing.T) {
+			shards := 5
+			pub := kinesis.New(
+				client,
+				kinesis.WithStreamAutocreate(true),
+				kinesis.WithShards(uint32(shards)),
+			)
+			err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+			require.NoError(t, err)
+			defer deleteStream(client, testEvent.Type)
+
+			stream, err := client.DescribeStream(
+				context.Background(),
+				&kinesis_sdk.DescribeStreamInput{
+					StreamName: aws.String(testEvent.Type),
+				},
+			)
+			require.NoError(t, err)
+			require.Equal(t, shards, len(stream.StreamDescription.Shards))
+		})
 	})
 }

@@ -21,6 +21,7 @@ type Publisher struct {
 	streamPattern       string
 	streamAutocreate    bool
 	streamProbeInterval time.Duration
+	streamMode          types.StreamMode
 	defaultShardCount   int32
 }
 
@@ -79,7 +80,7 @@ func (p *Publisher) stream(name string) (string, error) {
 				StreamName: aws.String(name),
 				ShardCount: aws.Int32(p.defaultShardCount),
 				StreamModeDetails: &types.StreamModeDetails{
-					StreamMode: types.StreamModeOnDemand, // TODO: make this configurable
+					StreamMode: p.streamMode,
 				},
 			},
 		)
@@ -121,12 +122,25 @@ func WithStreamAutocreate(autocreate bool) Opt {
 	}
 }
 
+func WithStreamMode(mode types.StreamMode) Opt {
+	return func(p *Publisher) {
+		p.streamMode = mode
+	}
+}
+
+func WithShards(n uint32) Opt {
+	return func(p *Publisher) {
+		p.defaultShardCount = int32(n)
+	}
+}
+
 func New(client *kinesis.Client, opts ...Opt) *Publisher {
 	p := &Publisher{
 		client:              client,
 		streamPattern:       "%s",
 		defaultShardCount:   1,
 		streamProbeInterval: time.Second,
+		streamMode:          types.StreamModeOnDemand,
 	}
 	for _, opt := range opts {
 		opt(p)

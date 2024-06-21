@@ -242,4 +242,18 @@ func TestKinesisProducer(t *testing.T) {
 			require.Equal(t, shards, len(stream.StreamDescription.Shards))
 		})
 	})
+
+	t.Run("should publish message according to the stream pattern", func(t *testing.T) {
+		streamPattern := "pre-%s-post"
+		destinationStream := "pre-click-post"
+		_, err := createStream(client, destinationStream)
+		require.NoError(t, err)
+		defer deleteStream(client, destinationStream)
+		pub := kinesis.New(
+			client,
+			kinesis.WithStreamPattern(streamPattern),
+		)
+		err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+		require.NoError(t, err)
+	})
 }

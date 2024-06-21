@@ -134,6 +134,12 @@ func WithShards(n uint32) Opt {
 	}
 }
 
+func WithStreamPattern(pattern string) Opt {
+	return func(p *Publisher) {
+		p.streamPattern = pattern
+	}
+}
+
 func New(client *kinesis.Client, opts ...Opt) *Publisher {
 	p := &Publisher{
 		client:              client,

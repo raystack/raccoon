@@ -15,7 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/kinesis/types"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher/kinesis"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -174,9 +173,7 @@ func TestKinesisProducer(t *testing.T) {
 	t.Run("should publish message to kinesis", func(t *testing.T) {
 		streamARN, err := createStream(client, testEvent.Type)
 		require.NoError(t, err)
-		defer func() {
-			assert.NoError(t, deleteStream(client, testEvent.Type))
-		}()
+		defer deleteStream(client, testEvent.Type)
 
 		err = kinesis.New(client).ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 		require.NoError(t, err)

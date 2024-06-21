@@ -192,9 +192,7 @@ func TestKinesisProducer(t *testing.T) {
 			pub := kinesis.New(client, kinesis.WithStreamAutocreate(true))
 			err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 			require.NoError(t, err)
-
-			err = deleteStream(client, testEvent.Type)
-			require.NoError(t, err)
+			deleteStream(client, testEvent.Type)
 		})
 		t.Run("should create the stream with mode = ON_DEMAND (default)", func(t *testing.T) {
 
@@ -252,6 +250,18 @@ func TestKinesisProducer(t *testing.T) {
 		pub := kinesis.New(
 			client,
 			kinesis.WithStreamPattern(streamPattern),
+		)
+		err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+		require.NoError(t, err)
+	})
+	t.Run("should publish messages to static stream names", func(t *testing.T) {
+		destinationStream := "static"
+		_, err := createStream(client, destinationStream)
+		require.NoError(t, err)
+		defer deleteStream(client, destinationStream)
+		pub := kinesis.New(
+			client,
+			kinesis.WithStreamPattern(destinationStream),
 		)
 		err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 		require.NoError(t, err)

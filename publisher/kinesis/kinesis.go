@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -17,7 +18,10 @@ import (
 )
 
 type Publisher struct {
-	client              *kinesis.Client
+	client *kinesis.Client
+
+	streamLock          sync.RWMutex
+	streams             map[string]bool
 	streamPattern       string
 	streamAutocreate    bool
 	streamProbeInterval time.Duration
@@ -29,7 +33,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 	errors := make([]error, len(events))
 	for order, event := range events {
 		streamName := strings.Replace(p.streamPattern, "%s", event.Type, 1)
-		_, err := p.stream(streamName)
+		err := p.ensureStream(streamName)
 		if err != nil {
 			errors[order] = err
 			continue
@@ -55,7 +59,18 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 	return nil
 }
 
-func (p *Publisher) stream(name string) (string, error) {
+func (p *Publisher) ensureStream(name string) error {
+
+	p.streamLock.RLock()
+	exists := p.streams[name]
+	p.streamLock.RUnlock()
+
+	if exists {
+		return nil
+	}
+	p.streamLock.Lock()
+	defer p.streamLock.Unlock()
+
 	stream, err := p.client.DescribeStreamSummary(
 		context.Background(),
 		&kinesis.DescribeStreamSummaryInput{
@@ -66,11 +81,11 @@ func (p *Publisher) stream(name string) (string, error) {
 	if err != nil {
 		var errNotFound *types.ResourceNotFoundException
 		if !errors.As(err, &errNotFound) {
-			return "", err
+			return err
 		}
 
 		if !p.streamAutocreate {
-			return "", errNotFound
+			return errNotFound
 		}
 
 		// TODO: handle ResourceLimitExceeded exception
@@ -85,7 +100,7 @@ func (p *Publisher) stream(name string) (string, error) {
 			},
 		)
 		if err != nil {
-			return "", err
+			return err
 		}
 		stream, err = p.client.DescribeStreamSummary(
 			context.Background(),
@@ -94,7 +109,7 @@ func (p *Publisher) stream(name string) (string, error) {
 			},
 		)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
 
@@ -107,11 +122,12 @@ func (p *Publisher) stream(name string) (string, error) {
 			},
 		)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
 
-	return *stream.StreamDescriptionSummary.StreamARN, nil
+	p.streams[name] = true
+	return nil
 }
 
 type Opt func(*Publisher)
@@ -147,6 +163,7 @@ func New(client *kinesis.Client, opts ...Opt) *Publisher {
 		defaultShardCount:   1,
 		streamProbeInterval: time.Second,
 		streamMode:          types.StreamModeOnDemand,
+		streams:             make(map[string]bool),
 	}
 	for _, opt := range opts {
 		opt(p)

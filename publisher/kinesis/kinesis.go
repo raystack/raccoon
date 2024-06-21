@@ -33,14 +33,20 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 	errors := make([]error, len(events))
 	for order, event := range events {
 		streamName := strings.Replace(p.streamPattern, "%s", event.Type, 1)
-		err := p.ensureStream(streamName)
-		if err != nil {
-			errors[order] = err
-			continue
+
+		// only check for streams existence if publisher is configured
+		// to create streams. If target stream doesn't exist, then
+		// PutRecord will return an error anyway.
+		if p.streamAutocreate {
+			err := p.ensureStream(streamName)
+			if err != nil {
+				errors[order] = err
+				continue
+			}
 		}
 
 		partitionKey := fmt.Sprintf("%d", rand.Int31())
-		_, err = p.client.PutRecord(
+		_, err := p.client.PutRecord(
 			context.Background(),
 			&kinesis.PutRecordInput{
 				Data:         event.EventBytes,

@@ -4,6 +4,8 @@ import (
 	"cmp"
 	"context"
 	"errors"
+	"fmt"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -32,6 +34,19 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 			continue
 		}
 
+		partitionKey := fmt.Sprintf("%d", rand.Intn(256))
+		_, err = p.client.PutRecord(
+			context.Background(),
+			&kinesis.PutRecordInput{
+				Data:         event.EventBytes,
+				PartitionKey: aws.String(partitionKey),
+				StreamName:   aws.String(streamName),
+			},
+		)
+		if err != nil {
+			errors[order] = err
+			continue
+		}
 	}
 	if cmp.Or(errors...) != nil {
 		return &publisher.BulkError{Errors: errors}

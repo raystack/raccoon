@@ -17,6 +17,8 @@ import (
 	"github.com/raystack/raccoon/publisher"
 )
 
+var globalCtx = context.Background()
+
 type Publisher struct {
 	client *kinesis.Client
 
@@ -27,10 +29,15 @@ type Publisher struct {
 	streamProbeInterval time.Duration
 	streamMode          types.StreamMode
 	defaultShardCount   int32
+	publishTimeout      time.Duration
 }
 
 func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
+
+	ctx, cancel := context.WithTimeout(globalCtx, p.publishTimeout)
+	defer cancel()
 	errors := make([]error, len(events))
+
 	for order, event := range events {
 		streamName := strings.Replace(p.streamPattern, "%s", event.Type, 1)
 
@@ -38,7 +45,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		// to create streams. If target stream doesn't exist, then
 		// PutRecord will return an error anyway.
 		if p.streamAutocreate {
-			err := p.ensureStream(streamName)
+			err := p.ensureStream(ctx, streamName)
 			if err != nil {
 				errors[order] = err
 				continue
@@ -47,7 +54,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 
 		partitionKey := fmt.Sprintf("%d", rand.Int31())
 		_, err := p.client.PutRecord(
-			context.Background(),
+			ctx,
 			&kinesis.PutRecordInput{
 				Data:         event.EventBytes,
 				PartitionKey: aws.String(partitionKey),
@@ -65,7 +72,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 	return nil
 }
 
-func (p *Publisher) ensureStream(name string) error {
+func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 
 	p.streamLock.RLock()
 	exists := p.streams[name]
@@ -78,7 +85,7 @@ func (p *Publisher) ensureStream(name string) error {
 	defer p.streamLock.Unlock()
 
 	stream, err := p.client.DescribeStreamSummary(
-		context.Background(),
+		ctx,
 		&kinesis.DescribeStreamSummaryInput{
 			StreamName: aws.String(name),
 		},
@@ -96,7 +103,7 @@ func (p *Publisher) ensureStream(name string) error {
 
 		// TODO: handle ResourceLimitExceeded exception
 		_, err := p.client.CreateStream(
-			context.Background(),
+			ctx,
 			&kinesis.CreateStreamInput{
 				StreamName: aws.String(name),
 				ShardCount: aws.Int32(p.defaultShardCount),
@@ -109,7 +116,7 @@ func (p *Publisher) ensureStream(name string) error {
 			return err
 		}
 		stream, err = p.client.DescribeStreamSummary(
-			context.Background(),
+			ctx,
 			&kinesis.DescribeStreamSummaryInput{
 				StreamName: aws.String(name),
 			},
@@ -122,7 +129,7 @@ func (p *Publisher) ensureStream(name string) error {
 	for stream.StreamDescriptionSummary.StreamStatus != types.StreamStatusActive {
 		time.Sleep(p.streamProbeInterval)
 		stream, err = p.client.DescribeStreamSummary(
-			context.Background(),
+			ctx,
 			&kinesis.DescribeStreamSummaryInput{
 				StreamName: aws.String(name),
 			},
@@ -165,6 +172,12 @@ func WithStreamPattern(pattern string) Opt {
 	}
 }
 
+func WithPublishTimeout(timeout time.Duration) Opt {
+	return func(p *Publisher) {
+		p.publishTimeout = timeout
+	}
+}
+
 func New(client *kinesis.Client, opts ...Opt) *Publisher {
 	p := &Publisher{
 		client:              client,
@@ -173,6 +186,7 @@ func New(client *kinesis.Client, opts ...Opt) *Publisher {
 		streamProbeInterval: time.Second,
 		streamMode:          types.StreamModeOnDemand,
 		streams:             make(map[string]bool),
+		publishTimeout:      time.Minute,
 	}
 	for _, opt := range opts {
 		opt(p)

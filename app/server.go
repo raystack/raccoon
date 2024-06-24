@@ -10,16 +10,20 @@ import (
 	"syscall"
 	"time"
 
-	pubsubsdk "cloud.google.com/go/pubsub"
 	"github.com/raystack/raccoon/collection"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
 	"github.com/raystack/raccoon/publisher"
 	"github.com/raystack/raccoon/publisher/kafka"
+	"github.com/raystack/raccoon/publisher/kinesis"
 	"github.com/raystack/raccoon/publisher/pubsub"
 	"github.com/raystack/raccoon/services"
 	"github.com/raystack/raccoon/worker"
+
+	pubsubsdk "cloud.google.com/go/pubsub"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	kinesissdk "github.com/aws/aws-sdk-go-v2/service/kinesis"
 	"google.golang.org/api/option"
 )
 
@@ -140,6 +144,14 @@ func initPublisher() (Publisher, error) {
 			pubsub.WithByteThreshold(config.PublisherPubSub.PublishByteThreshold),
 			pubsub.WithTimeout(config.PublisherPubSub.PublishTimeout),
 		)
+	case "kinesis":
+		cfg, err := awsconfig.LoadDefaultConfig(context.Background())
+		if err != nil {
+			return nil, fmt.Errorf("error locating aws credentials: %w", err)
+		}
+		return kinesis.New(
+			kinesissdk.NewFromConfig(cfg),
+		), nil
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)
 	}

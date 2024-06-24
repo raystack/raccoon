@@ -136,6 +136,9 @@ func (p *Publisher) ensureStream(name string) error {
 	return nil
 }
 
+func (*Publisher) Name() string { return "kinesis" }
+func (*Publisher) Close() error { return nil }
+
 type Opt func(*Publisher)
 
 func WithStreamAutocreate(autocreate bool) Opt {

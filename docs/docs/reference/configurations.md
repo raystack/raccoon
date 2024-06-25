@@ -323,6 +323,8 @@ AWS Region of the target kinesis stream. The value of `AWS_REGION` is used as fa
 
 Path to [AWS Credentials file](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html). 
 
+You can also specify the credentials using `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables. 
+
 - Type `Optional`
 - Default value `$HOME/.aws/credentials`
 

@@ -24,6 +24,7 @@ import (
 	pubsubsdk "cloud.google.com/go/pubsub"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	kinesissdk "github.com/aws/aws-sdk-go-v2/service/kinesis"
+	"github.com/aws/aws-sdk-go-v2/service/kinesis/types"
 	"google.golang.org/api/option"
 )
 
@@ -149,9 +150,16 @@ func initPublisher() (Publisher, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error locating aws credentials: %w", err)
 		}
+		conf := config.PublisherKinesis
 		return kinesis.New(
 			kinesissdk.NewFromConfig(cfg),
-		), nil
+			kinesis.WithStreamPattern(config.EventDistribution.PublisherPattern),
+			kinesis.WithStreamAutocreate(conf.StreamAutoCreate),
+			kinesis.WithStreamMode(types.StreamMode(conf.StreamMode)),
+			kinesis.WithShards(conf.DefaultShards),
+			kinesis.WithPublishTimeout(conf.PublishTimeout),
+			kinesis.WithStreamProbleInterval(conf.StreamProbeInterval),
+		)
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)
 	}

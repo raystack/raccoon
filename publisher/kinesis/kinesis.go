@@ -101,7 +101,6 @@ func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 			return errNotFound
 		}
 
-		// TODO: handle ResourceLimitExceeded exception
 		_, err := p.client.CreateStream(
 			ctx,
 			&kinesis.CreateStreamInput{
@@ -146,39 +145,66 @@ func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 func (*Publisher) Name() string { return "kinesis" }
 func (*Publisher) Close() error { return nil }
 
-type Opt func(*Publisher)
+type Opt func(*Publisher) error
 
 func WithStreamAutocreate(autocreate bool) Opt {
-	return func(p *Publisher) {
+	return func(p *Publisher) error {
 		p.streamAutocreate = autocreate
+		return nil
 	}
 }
 
 func WithStreamMode(mode types.StreamMode) Opt {
-	return func(p *Publisher) {
+
+	validModesList := types.StreamMode("").Values()
+	validModes := map[types.StreamMode]bool{}
+	for _, m := range validModesList {
+		validModes[types.StreamMode(m)] = true
+	}
+
+	return func(p *Publisher) error {
+		valid := validModes[mode]
+		if !valid {
+			return fmt.Errorf(
+				"unknown stream mode: %q (valid values: %v)",
+				mode,
+				validModesList,
+			)
+		}
 		p.streamMode = mode
+		return nil
 	}
 }
 
 func WithShards(n uint32) Opt {
-	return func(p *Publisher) {
+	return func(p *Publisher) error {
 		p.defaultShardCount = int32(n)
+		return nil
 	}
 }
 
 func WithStreamPattern(pattern string) Opt {
-	return func(p *Publisher) {
+	return func(p *Publisher) error {
 		p.streamPattern = pattern
+		return nil
 	}
 }
 
 func WithPublishTimeout(timeout time.Duration) Opt {
-	return func(p *Publisher) {
+	return func(p *Publisher) error {
 		p.publishTimeout = timeout
+		return nil
 	}
 }
 
-func New(client *kinesis.Client, opts ...Opt) *Publisher {
+func WithStreamProbleInterval(interval time.Duration) Opt {
+	return func(p *Publisher) error {
+		p.streamProbeInterval = interval
+		return nil
+	}
+}
+
+func New(client *kinesis.Client, opts ...Opt) (*Publisher, error) {
 	p := &Publisher{
 		client:              client,
 		streamPattern:       "%s",
@@ -189,7 +215,10 @@ func New(client *kinesis.Client, opts ...Opt) *Publisher {
 		publishTimeout:      time.Minute,
 	}
 	for _, opt := range opts {
-		opt(p)
+		err := opt(p)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return p
+	return p, nil
 }

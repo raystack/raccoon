@@ -170,17 +170,29 @@ func TestKinesisProducer(t *testing.T) {
 	client := kinesis_sdk.NewFromConfig(cfg, withLocalStack(localstackHost))
 
 	t.Run("should return an error if stream doesn't exist", func(t *testing.T) {
-		pub := kinesis.New(client)
-		err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+		pub, err := kinesis.New(client)
+		require.NoError(t, err)
+		err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 		require.Error(t, err)
 
 	})
+
+	t.Run("should return an error if an invalid stream mode is specified", func(t *testing.T) {
+		_, err := kinesis.New(
+			client,
+			kinesis.WithStreamMode("INVALID"),
+		)
+		require.Error(t, err)
+	})
+
 	t.Run("should publish message to kinesis", func(t *testing.T) {
 		streamARN, err := createStream(client, testEvent.Type)
 		require.NoError(t, err)
 		defer deleteStream(client, testEvent.Type)
 
-		err = kinesis.New(client).ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+		pub, err := kinesis.New(client)
+		require.NoError(t, err)
+		pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 		require.NoError(t, err)
 		events, err := readStream(client, streamARN)
 		require.NoError(t, err)
@@ -189,15 +201,18 @@ func TestKinesisProducer(t *testing.T) {
 	})
 	t.Run("stream auto creation", func(t *testing.T) {
 		t.Run("should create the stream if it doesn't exist and autocreate is set to true", func(t *testing.T) {
-			pub := kinesis.New(client, kinesis.WithStreamAutocreate(true))
-			err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+			pub, err := kinesis.New(client, kinesis.WithStreamAutocreate(true))
+			require.NoError(t, err)
+
+			err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 			require.NoError(t, err)
 			deleteStream(client, testEvent.Type)
 		})
 		t.Run("should create the stream with mode = ON_DEMAND (default)", func(t *testing.T) {
 
-			pub := kinesis.New(client, kinesis.WithStreamAutocreate(true))
-			err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+			pub, err := kinesis.New(client, kinesis.WithStreamAutocreate(true))
+			require.NoError(t, err)
+			err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 			require.NoError(t, err)
 			defer deleteStream(client, testEvent.Type)
 
@@ -206,12 +221,13 @@ func TestKinesisProducer(t *testing.T) {
 			require.Equal(t, mode, types.StreamModeOnDemand)
 		})
 		t.Run("should create the stream with mode = PROVISIONED", func(t *testing.T) {
-			pub := kinesis.New(
+			pub, err := kinesis.New(
 				client,
 				kinesis.WithStreamAutocreate(true),
 				kinesis.WithStreamMode(types.StreamModeProvisioned),
 			)
-			err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+			require.NoError(t, err)
+			err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 			require.NoError(t, err)
 			defer deleteStream(client, testEvent.Type)
 
@@ -221,12 +237,14 @@ func TestKinesisProducer(t *testing.T) {
 		})
 		t.Run("should create stream with specified number of shards", func(t *testing.T) {
 			shards := 5
-			pub := kinesis.New(
+			pub, err := kinesis.New(
 				client,
 				kinesis.WithStreamAutocreate(true),
 				kinesis.WithShards(uint32(shards)),
 			)
-			err := pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
+			require.NoError(t, err)
+
+			err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 			require.NoError(t, err)
 			defer deleteStream(client, testEvent.Type)
 
@@ -247,10 +265,11 @@ func TestKinesisProducer(t *testing.T) {
 		_, err := createStream(client, destinationStream)
 		require.NoError(t, err)
 		defer deleteStream(client, destinationStream)
-		pub := kinesis.New(
+		pub, err := kinesis.New(
 			client,
 			kinesis.WithStreamPattern(streamPattern),
 		)
+		require.NoError(t, err)
 		err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 		require.NoError(t, err)
 	})
@@ -259,10 +278,11 @@ func TestKinesisProducer(t *testing.T) {
 		_, err := createStream(client, destinationStream)
 		require.NoError(t, err)
 		defer deleteStream(client, destinationStream)
-		pub := kinesis.New(
+		pub, err := kinesis.New(
 			client,
 			kinesis.WithStreamPattern(destinationStream),
 		)
+		require.NoError(t, err)
 		err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 		require.NoError(t, err)
 	})

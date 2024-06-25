@@ -14,6 +14,7 @@ import (
 var Publisher string
 var PublisherKafka publisherKafka
 var PublisherPubSub publisherPubSub
+var PublisherKinesis publisherKinesis
 var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
 
 type publisherPubSub struct {
@@ -25,6 +26,14 @@ type publisherPubSub struct {
 	PublishCountThreshold int
 	PublishByteThreshold  int
 	CredentialsFile       string
+}
+
+type publisherKinesis struct {
+	StreamAutoCreate    bool
+	StreamProbeInterval time.Duration
+	StreamMode          string
+	DefaultShards       uint32
+	PublishTimeout      time.Duration
 }
 
 type publisherKafka struct {
@@ -65,13 +74,15 @@ func publisherKafkaConfigLoader() {
 }
 
 func publisherPubSubLoader() {
-	envCredentialsFile := "PUBLISHER_PUBSUB_CREDENTIALS"
-	envTopicAutoCreate := "PUBLISHER_PUBSUB_TOPIC_AUTOCREATE"
-	envTopicRetentionDuration := "PUBLISHER_PUBSUB_TOPIC_RETENTION_MS"
-	envPublishDelayThreshold := "PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS"
-	envPublishCountThreshold := "PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD"
-	envPublishByteThreshold := "PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD"
-	envPublishTimeout := "PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS"
+	var (
+		envCredentialsFile        = "PUBLISHER_PUBSUB_CREDENTIALS"
+		envTopicAutoCreate        = "PUBLISHER_PUBSUB_TOPIC_AUTOCREATE"
+		envTopicRetentionDuration = "PUBLISHER_PUBSUB_TOPIC_RETENTION_MS"
+		envPublishDelayThreshold  = "PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS"
+		envPublishCountThreshold  = "PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD"
+		envPublishByteThreshold   = "PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD"
+		envPublishTimeout         = "PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS"
+	)
 
 	defaultCredentials := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if strings.TrimSpace(defaultCredentials) != "" {
@@ -97,6 +108,31 @@ func publisherPubSubLoader() {
 	}
 }
 
+func publisherKinesisLoader() {
+	var (
+		envStreamProbeInterval = "PUBLISHER_KINESIS_STREAM_PROBE_INTERVAL_MS"
+		envStreamAutoCreate    = "PUBLISHER_KINESIS_STREAM_AUTOCREATE"
+		envStreamMode          = "PUBLISHER_KINESIS_STREAM_MODE"
+		envStreamDefaultShards = "PUBLISHER_KINESIS_STREAM_SHARDS"
+		envPublishTimeout      = "PUBLISHER_KINESIS_PUBLISH_TIMEOUT_MS"
+	)
+
+	viper.SetDefault(envStreamProbeInterval, "1000")
+	viper.SetDefault(envStreamAutoCreate, "false")
+	viper.SetDefault(envStreamMode, "ON_DEMAND")
+	viper.SetDefault(envStreamDefaultShards, "4")
+	viper.SetDefault(envPublishTimeout, "60000")
+
+	PublisherKinesis = publisherKinesis{
+		StreamAutoCreate:    util.MustGetBool(envStreamAutoCreate),
+		StreamProbeInterval: util.MustGetDuration(envStreamProbeInterval, time.Millisecond),
+		StreamMode:          util.MustGetString(envStreamMode),
+		DefaultShards:       uint32(util.MustGetInt(envStreamDefaultShards)),
+		PublishTimeout:      util.MustGetDuration(envPublishTimeout, time.Millisecond),
+	}
+
+}
+
 func publisherConfigLoader() {
 
 	viper.SetDefault("PUBLISHER_TYPE", "kafka")
@@ -111,5 +147,7 @@ func publisherConfigLoader() {
 		publisherKafkaConfigLoader()
 	case "pubsub":
 		publisherPubSubLoader()
+	case "kinesis":
+		publisherKinesisLoader()
 	}
 }

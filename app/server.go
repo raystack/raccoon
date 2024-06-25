@@ -146,7 +146,13 @@ func initPublisher() (Publisher, error) {
 			pubsub.WithTimeout(config.PublisherPubSub.PublishTimeout),
 		)
 	case "kinesis":
-		cfg, err := awsconfig.LoadDefaultConfig(context.Background())
+		cfg, err := awsconfig.LoadDefaultConfig(
+			context.Background(),
+			awsconfig.WithRegion(config.PublisherKinesis.Region),
+			awsconfig.WithSharedConfigFiles(
+				[]string{config.PublisherKinesis.CredentialsFile},
+			),
+		)
 		if err != nil {
 			return nil, fmt.Errorf("error locating aws credentials: %w", err)
 		}

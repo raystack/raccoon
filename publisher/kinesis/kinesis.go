@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/kinesis"
 	"github.com/aws/aws-sdk-go-v2/service/kinesis/types"
+	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
 )
@@ -47,6 +48,24 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		if p.streamAutocreate {
 			err := p.ensureStream(ctx, streamName)
 			if err != nil {
+				metrics.Increment(
+					"kinesis_messages_delivered_total",
+					map[string]string{
+						"success":    "false",
+						"conn_group": connGroup,
+						"event_type": event.Type,
+					},
+				)
+				if p.isErrNotFound(err) {
+					metrics.Increment(
+						"kinesis_unknown_stream_failure_total",
+						map[string]string{
+							"stream":     streamName,
+							"conn_group": connGroup,
+							"event_type": event.Type,
+						},
+					)
+				}
 				errors[order] = err
 				continue
 			}
@@ -62,9 +81,44 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 			},
 		)
 		if err != nil {
+			metrics.Increment(
+				"kinesis_messages_delivered_total",
+				map[string]string{
+					"success":    "false",
+					"conn_group": connGroup,
+					"event_type": event.Type,
+				},
+			)
+			metrics.Increment(
+				"kinesis_messages_undelivered_total",
+				map[string]string{
+					"success":    "true",
+					"conn_group": connGroup,
+					"event_type": event.Type,
+				},
+			)
+			if p.isErrNotFound(err) {
+				metrics.Increment(
+					"kinesis_unknown_stream_failure_total",
+					map[string]string{
+						"stream":     streamName,
+						"conn_group": connGroup,
+						"event_type": event.Type,
+					},
+				)
+			}
 			errors[order] = err
 			continue
 		}
+
+		metrics.Increment(
+			"kinesis_messages_delivered_total",
+			map[string]string{
+				"success":    "true",
+				"conn_group": connGroup,
+				"event_type": event.Type,
+			},
+		)
 	}
 	if cmp.Or(errors...) != nil {
 		return &publisher.BulkError{Errors: errors}
@@ -92,13 +146,8 @@ func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 	)
 
 	if err != nil {
-		var errNotFound *types.ResourceNotFoundException
-		if !errors.As(err, &errNotFound) {
+		if !p.isErrNotFound(err) {
 			return err
-		}
-
-		if !p.streamAutocreate {
-			return errNotFound
 		}
 
 		_, err := p.client.CreateStream(
@@ -140,6 +189,14 @@ func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 
 	p.streams[name] = true
 	return nil
+}
+
+func (*Publisher) isErrNotFound(e error) bool {
+	var (
+		errNotFound   *types.ResourceNotFoundException
+		isErrNotFound = errors.As(e, &errNotFound)
+	)
+	return isErrNotFound
 }
 
 func (*Publisher) Name() string { return "kinesis" }

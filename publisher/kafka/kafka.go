@@ -90,6 +90,10 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 		d := <-deliveryChannel
 		m := d.(*kafka.Message)
 		if m.TopicPartition.Error != nil {
+
+			// BUG: the index of the event is wrong, since
+			// totalProcessed doesn't correspond to the value of
+			// the event that failed.
 			eventType := events[i].Type
 			metrics.Increment("kafka_messages_undelivered_total", map[string]string{"success": "true", "conn_group": connGroup, "event_type": eventType})
 			metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "false", "conn_group": connGroup, "event_type": eventType})

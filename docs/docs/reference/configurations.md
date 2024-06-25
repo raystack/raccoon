@@ -199,7 +199,7 @@ Publisher specific configuration follows the pattern `PUBLISHER_${TYPE}_*` where
 
 - Type `Optional`
 - Default value: `kafka`
-- Possible values: `kafka`, `pubsub`
+- Possible values: `kafka`, `pubsub`, `kinesis`
 
 ### `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`
 
@@ -312,6 +312,60 @@ How long to wait before aborting a publish operation.
 
 - Type `Optional`
 - Default value `60000` (1 Minute)
+
+### `PUBLISHER_KINESIS_AWS_REGION`
+
+AWS Region of the target kinesis stream. The value of `AWS_REGION` is used as fallback if this variable is not set.
+
+- Type `Required`
+
+### `PUBLISHER_KINESIS_CREDENTIALS`
+
+Path to [AWS Credentials file](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html). 
+
+- Type `Optional`
+- Default value `$HOME/.aws/credentials`
+
+### `PUBLISHER_KINESIS_STREAM_AUTOCREATE`
+
+Whether Raccon should create a stream if it doesn't exist.
+
+NOTE: We recommend that you create all streams that you need to publish to ahead of time.
+
+- Type `Optional`
+- Default value `false`
+
+### `PUBLISHER_KINESIS_STREAM_MODE`
+
+This configuration variable controls the `StreamMode` of the
+streams created by Raccon.
+
+- Type `Optional`
+- Default value `ON_DEMAND`
+- Possible values: `ON_DEMAND`, `PROVISIONED`
+
+### `PUBLISHER_KINESIS_STREAM_SHARDS`
+
+This controls the number of shards configured for a stream created by Raccoon.
+
+- Type `Optional`
+- Default value `4`
+
+### `PUBLISHER_KINESIS_STREAM_PROBE_INTERVAL_MS`
+
+This specifies the time delay between stream status checks.
+
+- Type `Optional`
+- Default value `1000`
+
+
+### `PUBLISHER_KINESIS_PUBLISH_TIMEOUT_MS`
+
+How long to wait for before aborting a publish operation.
+
+- Type `Optional`
+- Default value `60000`
+
 
 ## Metric
 

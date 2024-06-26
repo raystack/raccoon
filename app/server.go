@@ -10,7 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/raystack/raccoon/collection"
+
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
@@ -35,7 +36,7 @@ type Publisher interface {
 
 // StartServer starts the server
 func StartServer(ctx context.Context, cancel context.CancelFunc) {
-	bufferChannel := make(chan collection.CollectRequest, config.Worker.ChannelSize)
+	bufferChannel := make(chan collector.CollectRequest, config.Worker.ChannelSize)
 	httpServices := services.Create(bufferChannel)
 	logger.Info("Start Server -->")
 	httpServices.Start(ctx, cancel)
@@ -55,7 +56,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	go shutDownServer(ctx, cancel, httpServices, bufferChannel, workerPool, publisher)
 }
 
-func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collection.CollectRequest, workerPool *worker.Pool, pub Publisher) {
+func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collector.CollectRequest, workerPool *worker.Pool, pub Publisher) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {

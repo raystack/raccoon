@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
@@ -25,13 +25,13 @@ type Producer interface {
 type Pool struct {
 	Size                int
 	deliveryChannelSize int
-	EventsChannel       <-chan collection.CollectRequest
+	EventsChannel       <-chan collector.CollectRequest
 	producer            Producer
 	wg                  sync.WaitGroup
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan collection.CollectRequest, deliveryChannelSize int, producer Producer) *Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan collector.CollectRequest, deliveryChannelSize int, producer Producer) *Pool {
 	return &Pool{
 		Size:                size,
 		deliveryChannelSize: deliveryChannelSize,

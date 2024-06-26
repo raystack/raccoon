@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/deserialization"
 	"github.com/raystack/raccoon/logger"
@@ -23,7 +23,7 @@ type serDe struct {
 type Handler struct {
 	upgrader    *connection.Upgrader
 	serdeMap    map[int]*serDe
-	collector   collection.Collector
+	collector   collector.Collector
 	PingChannel chan connection.Conn
 }
 
@@ -41,7 +41,7 @@ func getSerDeMap() map[int]*serDe {
 	return serDeMap
 }
 
-func NewHandler(pingC chan connection.Conn, collector collection.Collector) *Handler {
+func NewHandler(pingC chan connection.Conn, collector collector.Collector) *Handler {
 	ugConfig := connection.UpgraderConfig{
 		ReadBufferSize:    config.ServerWs.ReadBufferSize,
 		WriteBufferSize:   config.ServerWs.WriteBufferSize,
@@ -115,7 +115,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 		metrics.Increment("batches_read_total", map[string]string{"status": "success", "conn_group": conn.Identifier.Group, "reason": "NA"})
 		h.sendEventCounters(payload.Events, conn.Identifier.Group)
 
-		h.collector.Collect(r.Context(), &collection.CollectRequest{
+		h.collector.Collect(r.Context(), &collector.CollectRequest{
 			ConnectionIdentifier: conn.Identifier,
 			TimeConsumed:         timeConsumed,
 			SendEventRequest:     payload,
@@ -124,7 +124,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serialization.SerializeFunc, messageType int, reqGuid string, timeConsumed time.Time) collection.AckFunc {
+func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serialization.SerializeFunc, messageType int, reqGuid string, timeConsumed time.Time) collector.AckFunc {
 	switch config.Event.Ack {
 	case config.Asynchronous:
 		writeSuccessResponse(conn, s, messageType, reqGuid)

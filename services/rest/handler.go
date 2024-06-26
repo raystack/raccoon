@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/raystack/raccoon/collection"
+	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/deserialization"
 	"github.com/raystack/raccoon/identification"
@@ -28,10 +28,10 @@ type serDe struct {
 }
 type Handler struct {
 	serDeMap  map[string]*serDe
-	collector collection.Collector
+	collector collector.Collector
 }
 
-func NewHandler(collector collection.Collector) *Handler {
+func NewHandler(collector collector.Collector) *Handler {
 	serDeMap := make(map[string]*serDe)
 	serDeMap[ContentJSON] = &serDe{
 		serializer:   serialization.SerializeJSON,
@@ -128,7 +128,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	h.sendEventCounters(req.Events, identifier.Group)
 
 	resChannel := make(chan struct{}, 1)
-	h.collector.Collect(r.Context(), &collection.CollectRequest{
+	h.collector.Collect(r.Context(), &collector.CollectRequest{
 		ConnectionIdentifier: identifier,
 		TimeConsumed:         timeConsumed,
 		SendEventRequest:     req,
@@ -137,7 +137,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	<-resChannel
 }
 
-func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serialization.SerializeFunc, reqGuid string, connGroup string) collection.AckFunc {
+func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serialization.SerializeFunc, reqGuid string, connGroup string) collector.AckFunc {
 	res := &Response{
 		SendEventResponse: &pb.SendEventResponse{},
 	}

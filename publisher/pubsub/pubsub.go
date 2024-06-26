@@ -14,6 +14,8 @@ import (
 	"github.com/raystack/raccoon/publisher"
 )
 
+var globalCtx = context.Background()
+
 // Publisher publishes to a Google Cloud Platform PubSub Topic.
 type Publisher struct {
 	client      *pubsub.Client
@@ -34,7 +36,9 @@ type Publisher struct {
 
 func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(globalCtx, p.publishSettings.Timeout)
+	defer cancel()
+
 	errors := make([]error, len(events))
 	results := make([]*pubsub.PublishResult, len(events))
 

@@ -151,6 +151,12 @@ func getCounterMap() map[string]CounterVec {
 	counters["pubsub_messages_undelivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "pubsub_messages_undelivered_total",
 		Help: "Number of delivered events to PubSub which failed while reading delivery report"}, []string{"success", "conn_group", "event_type"})
+	counters["kinesis_messages_delivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "kinesis_messages_delivered_total",
+		Help: "Number of delivered events to Kafka"}, []string{"success", "conn_group", "event_type"})
+	counters["kinesis_messages_undelivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "kinesis_messages_undelivered_total",
+		Help: "Number of delivered events to kinesis which failed while reading delivery report"}, []string{"success", "conn_group", "event_type"})
 	counters["events_rx_bytes_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "events_rx_bytes_total",
 		Help: "Total byte receieved in requests"}, []string{"conn_group", "event_type"})
@@ -163,6 +169,9 @@ func getCounterMap() map[string]CounterVec {
 	counters["pubsub_unknown_topic_failure_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "pubsub_unknown_topic_failure_total",
 		Help: "Number of delivery failure caused by topic does not exist in PubSub."}, []string{"topic", "event_type", "conn_group"})
+	counters["kinesis_unknown_stream_failure_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "kinesis_unknown_stream_failure_total",
+		Help: "Number of delivery failure caused by stream does not exist in kinesis."}, []string{"stream", "event_type", "conn_group"})
 	counters["batches_read_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "batches_read_total",
 		Help: "Request count"}, []string{"status", "reason", "conn_group"})
@@ -265,6 +274,10 @@ func getHistogramMap() map[string]HistogramVec {
 	}, []string{})
 	histogram["pubsub_producebulk_tt_ms"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:    "pubsub_producebulk_tt_ms",
+		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
+	}, []string{})
+	histogram["kinesis_producebulk_tt_ms"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "kinesis_producebulk_tt_ms",
 		Buckets: []float64{5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000},
 	}, []string{})
 	histogram["event_processing_duration_milliseconds"] = prometheus.NewHistogramVec(prometheus.HistogramOpts{

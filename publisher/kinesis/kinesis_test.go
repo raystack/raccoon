@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -13,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	kinesis_sdk "github.com/aws/aws-sdk-go-v2/service/kinesis"
 	"github.com/aws/aws-sdk-go-v2/service/kinesis/types"
+	"github.com/raystack/raccoon/logger"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher/kinesis"
 	"github.com/stretchr/testify/require"
@@ -286,4 +288,9 @@ func TestKinesisProducer(t *testing.T) {
 		err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 		require.NoError(t, err)
 	})
+}
+
+func TestMain(m *testing.M) {
+	logger.SetOutput(io.Discard)
+	os.Exit(m.Run())
 }

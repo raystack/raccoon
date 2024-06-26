@@ -9,9 +9,11 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/googleapis/gax-go/v2/apierror"
 	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
+	"google.golang.org/grpc/codes"
 )
 
 var globalCtx = context.Background()
@@ -154,12 +156,17 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 			cfg.RetentionDuration = p.topicRetentionDuration
 		}
 
-		// TODO: handle topic already exists error (if created by a service replica)
 		topic, err = p.client.CreateTopicWithConfig(ctx, id, cfg)
 		if err != nil {
-			return nil, fmt.Errorf("error creating topic %q: %w", id, err)
+			// in case a service replica created this topic before we could
+			if p.isAlreadyExistsError(err) {
+				topic = p.client.Topic(id)
+			} else {
+				return nil, fmt.Errorf("error creating topic %q: %w", id, err)
+			}
+		} else {
+			topic.PublishSettings = p.publishSettings
 		}
-		topic.PublishSettings = p.publishSettings
 	}
 
 	p.topics[id] = topic
@@ -177,6 +184,14 @@ func (p *Publisher) Close() error {
 
 func (p *Publisher) Name() string {
 	return "pubsub"
+}
+
+func (p *Publisher) isAlreadyExistsError(e error) bool {
+	apiError, ok := e.(*apierror.APIError)
+	if !ok {
+		return false
+	}
+	return apiError.GRPCStatus().Code() == codes.AlreadyExists
 }
 
 type Opt func(*Publisher)

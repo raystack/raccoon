@@ -51,15 +51,18 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 					"event_type": event.Type,
 				},
 			)
-			metrics.Increment(
-				"pubsub_unknown_topic_failure_total",
-				map[string]string{
-					"topic":      topicId,
-					"conn_group": connGroup,
-					"event_type": event.Type,
-				},
-			)
-			// todo: enrich error information
+			_, isUnknownTopic := err.(*unknownTopicError)
+			if isUnknownTopic {
+				metrics.Increment(
+					"pubsub_unknown_topic_failure_total",
+					map[string]string{
+						"topic":      topicId,
+						"conn_group": connGroup,
+						"event_type": event.Type,
+					},
+				)
+
+			}
 			errors[order] = err
 			continue
 		}
@@ -139,9 +142,7 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 
 	if !exists {
 		if !p.autoCreateTopic {
-			return nil, fmt.Errorf(
-				"topic %q doesn't exist in %q project", topic, p.client.Project(),
-			)
+			return nil, &unknownTopicError{Topic: id, Project: p.client.Project()}
 		}
 
 		cfg := &pubsub.TopicConfig{}

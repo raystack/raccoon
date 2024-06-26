@@ -71,6 +71,15 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 			}
 		}
 
+		metrics.Increment(
+			"kinesis_messages_delivered_total",
+			map[string]string{
+				"success":    "true",
+				"conn_group": connGroup,
+				"event_type": event.Type,
+			},
+		)
+
 		partitionKey := fmt.Sprintf("%d", rand.Int31())
 		_, err := p.client.PutRecord(
 			ctx,
@@ -80,6 +89,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 				StreamName:   aws.String(streamName),
 			},
 		)
+
 		if err != nil {
 			metrics.Increment(
 				"kinesis_messages_delivered_total",
@@ -110,15 +120,6 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 			errors[order] = err
 			continue
 		}
-
-		metrics.Increment(
-			"kinesis_messages_delivered_total",
-			map[string]string{
-				"success":    "true",
-				"conn_group": connGroup,
-				"event_type": event.Type,
-			},
-		)
 	}
 	if cmp.Or(errors...) != nil {
 		return &publisher.BulkError{Errors: errors}

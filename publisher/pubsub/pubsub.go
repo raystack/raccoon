@@ -164,11 +164,10 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 			} else {
 				return nil, fmt.Errorf("error creating topic %q: %w", id, err)
 			}
-		} else {
-			topic.PublishSettings = p.publishSettings
 		}
 	}
 
+	topic.PublishSettings = p.publishSettings
 	p.topics[id] = topic
 	return topic, nil
 }

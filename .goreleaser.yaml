@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
 version: 2
 
 project_name: raccoon
@@ -26,9 +27,9 @@ builds:
     main: ./
     flags: [-a]
     ldflags:
-      - -X github.com/raystack/raccoon.version={{.Tag}}
-      - -X github.com/raystack/raccoon.buildCommit={{.FullCommit}}
-      - -X github.com/raystack/raccoon.buildDate={{.Date}}
+      - -X github.com/raystack/raccoon/config.Version={{.Tag}}
+      - -X github.com/raystack/raccoon/config.BuildCommit={{.FullCommit}}
+      - -X github.com/raystack/raccoon/config.BuildDate={{.Date}}
     goos: 
       - darwin
       - linux
@@ -55,7 +56,6 @@ builds:
         {{- if eq .Os "windows" }}
           {{- if eq .Arch "amd64" }}CC=x86_64-w64-mingw32-gcc{{- end }}
         {{- end}}
-    
 
 archives:
   - id: "archives"
@@ -63,44 +63,44 @@ archives:
       - goos: windows
         format: zip
 
-# dockers:
-#   - id: dockerhub
-#     image_templates:
-#       - "docker.io/raystack/{{.ProjectName}}:latest"
-#       - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}"
-#       - "docker.io/raystack/{{.ProjectName}}:{{ .Tag }}-amd64"
+dockers:
+  - id: dockerhub
+    image_templates:
+      - "docker.io/raystack/{{.ProjectName}}:latest"
+      - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}"
+      - "docker.io/raystack/{{.ProjectName}}:{{ .Tag }}-amd64"
 
 nfpms:
   - maintainer: Raystack
-    description: Universal data access tool
-    homepage: https://github.com/raystack/guardian
+    description: Scalable event ingestion tool.
+    homepage: https://github.com/raystack/raccoon
     license: Apache 2.0
     formats:
       - deb
       - rpm
       - apk
 
-# scoops:
-#   - homepage: "https://github.com/raystack/guardian"
-#     description: "Universal data access tool"
-#     license: Apache 2.0
-#     bucket:
-#       owner: raystack
-#       name: scoop-bucket
+scoops:
+  - homepage: "https://github.com/raystack/raccoon"
+    description: "Scalable event ingestion tool"
+    license: Apache 2.0
+    repository:
+      owner: raystack
+      name: scoop-bucket
 
-# brews:
-#   - name: guardian
-#     homepage: "https://github.com/raystack/guardian"
-#     description: "Universal data access tool"
-#     tap:
-#       owner: raystack
-#       name: homebrew-tap
-#     license: "Apache 2.0"
-#     folder: Formula
-#     dependencies:
-#       - name: git
-#     install: |-
-#       bin.install "guardian"
-#     commit_author:
-#       name: Ravi Suhag
-#       email: suhag.ravi@gmail.com
+brews:
+  - name: raccoon
+    homepage: "https://github.com/raystack/raccoon"
+    description: "Scalable event ingestion tool"
+    repository:
+      owner: raystack
+      name: homebrew-tap
+    license: "Apache 2.0"
+    directory: Formula
+    dependencies:
+      - name: git
+    install: |-
+      bin.install "raccoon"
+    commit_author:
+      name: Ravi Suhag
+      email: suhag.ravi@gmail.com

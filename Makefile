@@ -1,7 +1,7 @@
 NAME="github.com/raystack/raccoon"
 COMMIT := $(shell git rev-parse --short HEAD)
 TAG := "$(shell git rev-list --tags --max-count=1)"
-VERSION := "$(shell git describe --tags ${TAG})-next"
+VERSION := "$(shell git describe --tags ${TAG})"
 BUILD_DIR=dist
 PROTON_COMMIT := "ccbf219312db35a934361ebad895cb40145ca235"
 
@@ -32,18 +32,20 @@ setup: ## Install required dependencies
 	@echo "> Installing dependencies..."
 	go mod tidy
 	go install github.com/bufbuild/buf/cmd/buf@v1.23.0
+	go install github.com/goreleaser/goreleaser/v2@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.59.1
 
 config: ## Generate the sample config file
 	@echo "Initializing sample server config..."
 	@cp .env.sample .env
 
 build: ## Build the raccoon binary
-	@echo "Building racccoon version ${VERSION}..."
-	go build 
+	@echo "Building raccoon version ${VERSION}..."
+	goreleaser build --single-target --snapshot --clean
 	@echo "Build complete"
 
 install:
-	@echo "Installing Guardian to ${GOBIN}..."
+	@echo "Installing Raccoon to ${GOBIN}..."
 	@go install
 
 test: ## Run the tests

@@ -41,11 +41,12 @@ config: ## Generate the sample config file
 
 build: ## Build the raccoon binary
 	@echo "Building raccoon version ${VERSION}..."
-	goreleaser build --single-target --snapshot --clean
+	go build -ldflags "-X ${NAME}/config.Version=${VERSION}" ${NAME}
 	@echo "Build complete"
 
 install:
 	@echo "Installing Raccoon to ${GOBIN}..."
+	go install -ldflags "-X ${NAME}/config.Version=${VERSION}" ${NAME}
 	@go install
 
 test: ## Run the tests

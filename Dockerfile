@@ -8,12 +8,11 @@ RUN PROTOC_ZIP=protoc-3.17.3-linux-x86_64.zip && \
     unzip -o $PROTOC_ZIP -d /usr/local 'include/*' && \
     rm -f $PROTOC_ZIP
 COPY . .
-RUN make setup
 RUN make build
 
 
 FROM debian:bookworm-slim
 WORKDIR /app
-COPY --from=0 /app/dist/raccoon_linux_amd64_v1/raccoon ./raccoon
+COPY --from=0 /app/raccoon ./raccoon
 COPY . .
 CMD ["./raccoon"]

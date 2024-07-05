@@ -25,8 +25,9 @@ changelog:
 builds:
   - id: "raccoon"
     main: ./
-    flags: [-a]
+    flags: [-trimpath]
     ldflags:
+      - -s -w
       - -X github.com/raystack/raccoon/config.Version={{.Tag}}
       - -X github.com/raystack/raccoon/config.BuildCommit={{.FullCommit}}
       - -X github.com/raystack/raccoon/config.BuildDate={{.Date}}

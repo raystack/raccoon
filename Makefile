@@ -4,6 +4,8 @@ TAG := "$(shell git rev-list --tags --max-count=1)"
 VERSION := "$(shell git describe --tags ${TAG})"
 BUILD_DIR=dist
 PROTON_COMMIT := "ccbf219312db35a934361ebad895cb40145ca235"
+BUILD_FLAGS=-trimpath
+LD_FLAGS=-ldflags "-s -w -X ${NAME}/config.Version=${VERSION}"
 
 .PHONY: all build clean test tidy vet proto setup format generate
 
@@ -41,12 +43,12 @@ config: ## Generate the sample config file
 
 build: ## Build the raccoon binary
 	@echo "Building raccoon version ${VERSION}..."
-	go build -ldflags "-X ${NAME}/config.Version=${VERSION}" ${NAME}
+	go build ${BUILD_FLAGS} ${LD_FLAGS} ${NAME}
 	@echo "Build complete"
 
 install:
 	@echo "Installing Raccoon to ${GOBIN}..."
-	go install -ldflags "-X ${NAME}/config.Version=${VERSION}" ${NAME}
+	go install ${BUILD_FLAGS} ${LD_FLAGS} ${NAME}
 	@go install
 
 test: ## Run the tests

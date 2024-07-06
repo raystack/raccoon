@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 
+	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"
 )
 
@@ -14,6 +15,7 @@ func Run() error {
 	//@TODO - init config
 
 	//start server
+	logger.Infof("Raccoon %s", config.Version)
 	StartServer(ctx, cancel)
 	logger.Info("App.Run --> Complete")
 	<-ctx.Done()

@@ -8,7 +8,7 @@ RUN PROTOC_ZIP=protoc-3.17.3-linux-x86_64.zip && \
     unzip -o $PROTOC_ZIP -d /usr/local 'include/*' && \
     rm -f $PROTOC_ZIP
 COPY . .
-RUN  make build
+RUN make build
 
 
 FROM debian:bookworm-slim

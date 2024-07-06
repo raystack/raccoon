@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+project_name: raccoon
+
+release:
+  prerelease: auto
+
+before:
+  hooks:
+    - go mod tidy
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^build:"
+
+
+builds:
+  - id: "raccoon"
+    main: ./
+    flags: [-trimpath]
+    ldflags:
+      - -s -w
+      - -X github.com/raystack/raccoon/config.Version={{.Tag}}
+      - -X github.com/raystack/raccoon/config.BuildCommit={{.FullCommit}}
+      - -X github.com/raystack/raccoon/config.BuildDate={{.Date}}
+    goos: 
+      - darwin
+      - linux
+      - windows
+    goarch: 
+      - amd64
+      - arm64
+    ignore:
+      # confluent-kafka-go doesn't support arm64 on windows
+      # https://github.com/confluentinc/confluent-kafka-go/blob/master/kafka/librdkafka_vendor/README.md
+      - goos: windows         
+        goarch: arm64
+    env:
+      - CGO_ENABLED=1
+      - >- 
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64" }}CC=x86_64-apple-darwin21.1-clang{{- end }}
+          {{- if eq .Arch "arm64" }}CC=aarch64-apple-darwin21.1-clang{{- end }}
+        {{- end }}
+        {{- if eq .Os "linux" }}
+          {{- if eq .Arch "amd64" }}CC=x86_64-linux-gnu-gcc{{- end}}
+          {{- if eq .Arch "arm64" }}CC=aarch64-linux-gnu-gcc{{- end }}
+        {{- end}}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64" }}CC=x86_64-w64-mingw32-gcc{{- end }}
+        {{- end}}
+
+archives:
+  - id: "archives"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+dockers:
+  - id: dockerhub
+    image_templates:
+      - "docker.io/raystack/{{.ProjectName}}:latest"
+      - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}"
+      - "docker.io/raystack/{{.ProjectName}}:{{ .Tag }}-amd64"
+
+nfpms:
+  - maintainer: Raystack
+    description: Scalable event ingestion tool.
+    homepage: https://github.com/raystack/raccoon
+    license: Apache 2.0
+    formats:
+      - deb
+      - rpm
+      - apk
+
+scoops:
+  - homepage: "https://github.com/raystack/raccoon"
+    description: "Scalable event ingestion tool"
+    license: Apache 2.0
+    repository:
+      owner: raystack
+      name: scoop-bucket
+
+brews:
+  - name: raccoon
+    homepage: "https://github.com/raystack/raccoon"
+    description: "Scalable event ingestion tool"
+    repository:
+      owner: raystack
+      name: homebrew-tap
+    license: "Apache 2.0"
+    directory: Formula
+    dependencies:
+      - name: git
+    install: |-
+      bin.install "raccoon"
+    commit_author:
+      name: Ravi Suhag
+      email: suhag.ravi@gmail.com

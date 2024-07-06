@@ -5,7 +5,7 @@ on:
       - "v*.*.*"
 
 jobs:
-  docker:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,13 +24,11 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and Push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: |
-            docker.pkg.github.com/${{ github.repository }}/raccoon:latest
-            docker.pkg.github.com/${{ github.repository }}/raccoon:${{ steps.get_version.outputs.version-without-v }}
-            raystack/raccoon:latest
-            raystack/raccoon:${{ steps.get_version.outputs.version-without-v }}
+      - name: setup docker
+        uses: docker-practice/actions-setup-docker@master
+      - name: release the project
+        env:
+          GITHUB_TOKEN: ${{ secrets.GO_RELEASER_TOKEN }}
+        run: |
+          BUILD_CMD='git config --global --add safe.directory /build/src && cd /build/src && goreleaser release --clean'
+          echo $BUILD_CMD | docker run -e GITHUB_TOKEN="${GITHUB_TOKEN}" -i --entrypoint /bin/bash -v "$PWD/:/build/src" goreleaser/goreleaser-cross:v1.22.4

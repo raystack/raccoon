@@ -30,4 +30,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GO_RELEASER_TOKEN }}
         run: |
           BUILD_CMD='git config --global --add safe.directory /build/src && cd /build/src && goreleaser release --clean'
-          echo $BUILD_CMD | docker run -v /var/run/docker.sock:/var/run/docker.sock -e GITHUB_TOKEN="${GITHUB_TOKEN}" -i --entrypoint /bin/bash -v "$PWD/:/build/src" goreleaser/goreleaser-cross:v1.22.4
+          echo $BUILD_CMD | docker run \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $HOME/.docker:/root/.docker \
+            -v "$PWD/:/build/src" \
+            -e GITHUB_TOKEN="${GITHUB_TOKEN}" \
+            -i --entrypoint /bin/bash \
+            goreleaser/goreleaser-cross:v1.22.4

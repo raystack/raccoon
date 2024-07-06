@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
@@ -17,13 +18,8 @@ const (
 	group1 = "group-1"
 )
 
-type void struct{}
-
-func (v void) Write(_ []byte) (int, error) {
-	return 0, nil
-}
 func TestMain(t *testing.M) {
-	logger.SetOutput(void{})
+	logger.SetOutput(io.Discard)
 	os.Exit(t.Run())
 }
 

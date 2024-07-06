@@ -10,16 +10,22 @@ import (
 	"syscall"
 	"time"
 
-	pubsubsdk "cloud.google.com/go/pubsub"
+
 	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
 	"github.com/raystack/raccoon/publisher"
 	"github.com/raystack/raccoon/publisher/kafka"
+	"github.com/raystack/raccoon/publisher/kinesis"
 	"github.com/raystack/raccoon/publisher/pubsub"
 	"github.com/raystack/raccoon/services"
 	"github.com/raystack/raccoon/worker"
+
+	pubsubsdk "cloud.google.com/go/pubsub"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	kinesissdk "github.com/aws/aws-sdk-go-v2/service/kinesis"
+	"github.com/aws/aws-sdk-go-v2/service/kinesis/types"
 	"google.golang.org/api/option"
 )
 
@@ -139,6 +145,27 @@ func initPublisher() (Publisher, error) {
 			pubsub.WithCountThreshold(config.PublisherPubSub.PublishCountThreshold),
 			pubsub.WithByteThreshold(config.PublisherPubSub.PublishByteThreshold),
 			pubsub.WithTimeout(config.PublisherPubSub.PublishTimeout),
+		)
+	case "kinesis":
+		cfg, err := awsconfig.LoadDefaultConfig(
+			context.Background(),
+			awsconfig.WithRegion(config.PublisherKinesis.Region),
+			awsconfig.WithSharedConfigFiles(
+				[]string{config.PublisherKinesis.CredentialsFile},
+			),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error locating aws credentials: %w", err)
+		}
+		conf := config.PublisherKinesis
+		return kinesis.New(
+			kinesissdk.NewFromConfig(cfg),
+			kinesis.WithStreamPattern(config.EventDistribution.PublisherPattern),
+			kinesis.WithStreamAutocreate(conf.StreamAutoCreate),
+			kinesis.WithStreamMode(types.StreamMode(conf.StreamMode)),
+			kinesis.WithShards(conf.DefaultShards),
+			kinesis.WithPublishTimeout(conf.PublishTimeout),
+			kinesis.WithStreamProbleInterval(conf.StreamProbeInterval),
 		)
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)

@@ -9,10 +9,14 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/googleapis/gax-go/v2/apierror"
 	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
+	"google.golang.org/grpc/codes"
 )
+
+var globalCtx = context.Background()
 
 // Publisher publishes to a Google Cloud Platform PubSub Topic.
 type Publisher struct {
@@ -34,7 +38,9 @@ type Publisher struct {
 
 func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(globalCtx, p.publishSettings.Timeout)
+	defer cancel()
+
 	errors := make([]error, len(events))
 	results := make([]*pubsub.PublishResult, len(events))
 
@@ -51,14 +57,18 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 					"event_type": event.Type,
 				},
 			)
-			metrics.Increment(
-				"pubsub_unknown_topic_failure_total",
-				map[string]string{
-					"topic":      topicId,
-					"conn_group": connGroup,
-					"event_type": event.Type,
-				},
-			)
+			_, isUnknownTopic := err.(*unknownTopicError)
+			if isUnknownTopic {
+				metrics.Increment(
+					"pubsub_unknown_topic_failure_total",
+					map[string]string{
+						"topic":      topicId,
+						"conn_group": connGroup,
+						"event_type": event.Type,
+					},
+				)
+
+			}
 			errors[order] = err
 			continue
 		}
@@ -138,9 +148,7 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 
 	if !exists {
 		if !p.autoCreateTopic {
-			return nil, fmt.Errorf(
-				"topic %q doesn't exist in %q project", topic, p.client.Project(),
-			)
+			return nil, &unknownTopicError{Topic: id, Project: p.client.Project()}
 		}
 
 		cfg := &pubsub.TopicConfig{}
@@ -150,11 +158,16 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 
 		topic, err = p.client.CreateTopicWithConfig(ctx, id, cfg)
 		if err != nil {
-			return nil, fmt.Errorf("error creating topic %q: %w", id, err)
+			// in case a service replica created this topic before we could
+			if p.isAlreadyExistsError(err) {
+				topic = p.client.Topic(id)
+			} else {
+				return nil, fmt.Errorf("error creating topic %q: %w", id, err)
+			}
 		}
-		topic.PublishSettings = p.publishSettings
 	}
 
+	topic.PublishSettings = p.publishSettings
 	p.topics[id] = topic
 	return topic, nil
 }
@@ -170,6 +183,14 @@ func (p *Publisher) Close() error {
 
 func (p *Publisher) Name() string {
 	return "pubsub"
+}
+
+func (p *Publisher) isAlreadyExistsError(e error) bool {
+	apiError, ok := e.(*apierror.APIError)
+	if !ok {
+		return false
+	}
+	return apiError.GRPCStatus().Code() == codes.AlreadyExists
 }
 
 type Opt func(*Publisher)

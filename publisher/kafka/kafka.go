@@ -86,14 +86,14 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 	}
 
 	// Wait for deliveryChannel as many as processed
-	for i := range totalProcessed {
+	for range totalProcessed {
 		d := <-deliveryChannel
 		m := d.(*kafka.Message)
 		if m.TopicPartition.Error != nil {
-			eventType := events[i].Type
+			order := m.Opaque.(int)
+			eventType := events[order].Type
 			metrics.Increment("kafka_messages_undelivered_total", map[string]string{"success": "true", "conn_group": connGroup, "event_type": eventType})
 			metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "false", "conn_group": connGroup, "event_type": eventType})
-			order := m.Opaque.(int)
 			errors[order] = m.TopicPartition.Error
 		}
 	}

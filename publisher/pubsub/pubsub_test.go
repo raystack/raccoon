@@ -2,7 +2,7 @@ package pubsub_test
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -29,8 +29,8 @@ var testEvent = &raccoonv1.Event{
 func TestPubSubPublisher(t *testing.T) {
 	host := os.Getenv(envPubsubEmulator)
 	if strings.TrimSpace(host) == "" {
-		t.Logf(
-			"skipping pubsub tests, because %s env variable is not set",
+		t.Errorf(
+			"cannot run tests because %s env variable is not set",
 			envPubsubEmulator,
 		)
 		return
@@ -182,6 +182,6 @@ func TestPubSubPublisher(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	logger.SetOutput(ioutil.Discard)
+	logger.SetOutput(io.Discard)
 	os.Exit(m.Run())
 }

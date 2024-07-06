@@ -52,7 +52,7 @@ install:
 	@go install
 
 test: ## Run the tests
-	go test $(shell go list ./... | grep -v "vendor" | grep -v "integration") -v
+	go test $(shell go list ./... | grep -v "vendor" | grep -v "integration" | grep -v "pubsub" | grep -v "kinesis") -v
 
 test-bench: # run benchmark tests
 	@go test $(shell go list ./... | grep -v "vendor") -v -bench ./... -run=^Benchmark ]

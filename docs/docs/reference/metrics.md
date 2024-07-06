@@ -6,6 +6,8 @@ Raccoon uses Statsd protocol as way to report metrics. You can capture the metri
 
 - [Server Connection](metrics.md#server-connection)
 - [Kafka Publisher](metrics.md#kafka-publisher)
+- [PubSub Publisher](metrics.md#pubsub-publisher)
+- [Kinesis Publisher](metrics.md#kinesis-publisher)
 - [Resource Usage](metrics.md#resource-usage)
 - [Event Delivery](metrics.md#event-delivery)
 
@@ -162,6 +164,30 @@ Number of delivery failure caused by topic does not exist in PubSub.
 
 - Type: `Count`
 - Tags: `topic=topicname` `event_type=*` `conn_group=*`
+
+## Kinesis Publisher
+
+### `kinesis_messages_delivered_total`
+
+Number of delivered events to Kinesis. The metric also contains false increments. To find the true value, one should use the difference between this and `kinesis_messages_undelivered_total` metric for the same tag/labels.
+
+- Type: `Count`
+- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+
+### `kinesis_messages_undelivered_total`
+
+The count of false increments done by `kinesis_messages_delivered_total`. To be used in conjunction with the former for accurate metrics.
+
+- Type: `Count`
+- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+
+
+### `kinesis_unknown_stream_failure_total`
+
+Number of delivery failure caused by stream does not exist in Kinesis.
+
+- Type: `Count`
+- Tags: `stream=streamname` `event_type=*` `conn_group=*`
 
 ## Resource Usage
 

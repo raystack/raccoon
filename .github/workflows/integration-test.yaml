@@ -28,4 +28,15 @@ jobs:
       - name: start pubsub emulator
         run: docker compose up pubsub-emulator -d
       - name: run integration tests
-        run: PUBSUB_EMULATOR_HOST=localhost:8085 go test ./publisher/pubsub -v 
+        run: PUBSUB_EMULATOR_HOST=localhost:8085 go test ./publisher/pubsub -v
+  kinesis-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: setup integration environment
+        uses: ./.github/workflows/integration-test-setup
+      - name: start localstack (kinesis emulator) 
+        run: docker compose up localstack -d
+      - name: run integration tests
+        run: LOCALSTACK_HOST=http://localhost:4566 go test ./publisher/kinesis/ -v

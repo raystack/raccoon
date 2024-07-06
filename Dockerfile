@@ -14,5 +14,4 @@ RUN make build
 FROM debian:bookworm-slim
 WORKDIR /app
 COPY --from=0 /app/raccoon ./raccoon
-COPY . .
 CMD ["./raccoon"]

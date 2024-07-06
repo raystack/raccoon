@@ -66,6 +66,7 @@ archives:
 
 dockers:
   - id: dockerhub
+    dockerfile: Dockerfile.release
     image_templates:
       - "docker.io/raystack/{{.ProjectName}}:latest"
       - "docker.io/raystack/{{.ProjectName}}:{{ .Version }}"

@@ -24,8 +24,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: setup docker
-        uses: docker-practice/actions-setup-docker@master
       - name: release the project
         env:
           GITHUB_TOKEN: ${{ secrets.GO_RELEASER_TOKEN }}

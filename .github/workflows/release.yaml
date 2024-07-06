@@ -25,7 +25,7 @@ jobs:
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: release the project
+      - name: Release the project
         env:
           GITHUB_TOKEN: ${{ secrets.GO_RELEASER_TOKEN }}
         run: |

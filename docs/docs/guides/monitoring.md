@@ -17,7 +17,7 @@ This section will cover a setup example using [Telegraf](https://www.influxdata.
 
 **Run Statsd Supported Metric Collector** To enable statsd on Telegraf you need to enable statsd input on `telegraf.conf` file. Following are default configurations that you can add based on statsd input [readme](https://github.com/influxdata/telegraf/blob/master/plugins/inputs/statsd/README.md).
 
-```text
+```toml
 [[inputs.statsd]]
   protocol = "udp"
   max_tcp_connections = 250

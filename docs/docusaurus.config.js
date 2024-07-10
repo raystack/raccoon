@@ -75,6 +75,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['toml', 'protobuf']
       },
       announcementBar: {
         id: 'star-repo',

@@ -189,11 +189,11 @@ Before going to production, we recommend the following setup tips.
 
 Followings are main configurations closely related to deployment that you need to pay attention:
 
-- [`SERVER_WEBSOCKET_PORT`](https://raystack.gitbook.io/raccoon/reference/configurations#server_websocket_port)
-- [`EVENT_DISTRIBUTION_PUBLISHER_PATTERN`](https://raystack.gitbook.io/raccoon/reference/configurations#event_distribution_publisher_pattern)
-- [`PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`](https://raystack.gitbook.io/raccoon/reference/configurations#publisher_kafka_client_bootstrap_servers)
-- [`METRIC_STATSD_ADDRESS`](https://raystack.gitbook.io/raccoon/reference/configurations#metric_statsd_address)
-- [`SERVER_WEBSOCKET_CONN_ID_HEADER`](https://raystack.gitbook.io/raccoon/reference/configurations#server_websocket_conn_id_header)
+- [`SERVER_WEBSOCKET_PORT`](reference/configurations.md#server_websocket_port)
+- [`EVENT_DISTRIBUTION_PUBLISHER_PATTERN`](reference/configurations.md#event_distribution_publisher_pattern)
+- [`PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`](reference/configurations.md#publisher_kafka_client_bootstrap_servers)
+- [`METRIC_STATSD_ADDRESS`](reference/configurations.md#metric_statsd_address)
+- [`SERVER_WEBSOCKET_CONN_ID_HEADER`](reference/configurations.md#server_websocket_conn_id_header)
 
   **TLS/HTTPS**
 
@@ -205,4 +205,4 @@ Followings are main configurations closely related to deployment that you need t
 
   **Test The Setup**
 
-  To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find a guide on how to publish events [here](https://raystack.gitbook.io/raccoon/guides/publishing). You can also check example client [here](https://github.com/raystack/raccoon/tree/main/docs/example). If there is something wrong with Raccon, you can check the [troubleshooting](https://raystack.gitbook.io/raccoon/guides/troubleshooting) section.
+  To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find a guide on how to publish events [here](guides/publishing.md). You can also check example client [here](https://github.com/raystack/raccoon/tree/main/docs/example). If there is something wrong with Raccon, you can check the [troubleshooting](guides/troubleshooting.md) section.

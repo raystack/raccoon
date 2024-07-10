@@ -37,4 +37,4 @@ $ kafka-console-consumer --bootstrap-server localhost:9092 --topic clickstream-l
 
 ## Where To Go Next
 
-For more detail about publishing events to Raccoon, you can read the [detailed document](https://raystack.gitbook.io/raccoon/guides/publishing) under the guides section. To understand more about how Raccoon work, you can go to the [architecture document](https://raystack.gitbook.io/raccoon/concepts/architecture).
+For more detail about publishing events to Raccoon, you can read the [detailed document](guides/publishing.md) under the guides section. To understand more about how Raccoon work, you can go to the [architecture document](concepts/architecture.md).

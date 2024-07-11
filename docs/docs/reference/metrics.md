@@ -253,7 +253,7 @@ Following metrics are event delivery reports. Each metrics reported at a differe
 
 ### `events_rx_bytes_total`
 
-Total byte receieved in requests
+Total byte received in requests
 
 - Type: `Count`
 - Tags: `conn_group=*` `event_type=*`
@@ -295,7 +295,7 @@ Duration from the time request is sent to the time events are published. This me
 
 ### `server_processing_latency_milliseconds`
 
-Duration from the time request is receieved to the time events are published. This metric is calculated per event by following formula`(PublishedTime - ReceievedTime)/CountEvents`
+Duration from the time request is received to the time events are published. This metric is calculated per event by following formula`(PublishedTime - ReceivedTime)/CountEvents`
 
 - Type: `Timing`
 - Tags: `conn_group=*`

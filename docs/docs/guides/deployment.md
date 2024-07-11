@@ -205,4 +205,4 @@ Followings are main configurations closely related to deployment that you need t
 
   **Test The Setup**
 
-  To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find a guide on how to publish events [here](guides/publishing.md). You can also check example client [here](https://github.com/raystack/raccoon/tree/main/docs/example). If there is something wrong with Raccon, you can check the [troubleshooting](guides/troubleshooting.md) section.
+  To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find a guide on how to publish events [here](guides/publishing.md). You can also check example client [here](https://github.com/raystack/raccoon/tree/main/docs/example). If there is something wrong with Raccoon, you can check the [troubleshooting](guides/troubleshooting.md) section.

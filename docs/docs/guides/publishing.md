@@ -31,9 +31,9 @@ Similar to HTTP SSL termination is outside the scope of Raccoon, and the service
 
 ## Data Formatters
 
-Raccoon supports Protos and JSON as the primary data formatters. Protobufs can be used to send event via websockets, REST or gRPC whereas JSON is supported only for websocket and REST endpoint.
+Raccoon supports Protobuf and JSON as the primary data formatters. Protobuf can be used to send event via websocket, REST or gRPC whereas JSON is supported only for websocket and REST endpoint.
 
-With a websocket connection the content type is identified based on the mesage type. If the message type is binary it is assumed that the formatting is protobufs and if the message type is text then formatting is assumed to be JSON.
+With a websocket connection the content type is identified based on the message type. If the message type is binary it is assumed that the formatting is protobuf and if the message type is text then formatting is assumed to be JSON.
 
 ### Protos
 
@@ -151,11 +151,11 @@ Sample JSON SendEventResponse
 | data      | int       | data map sent by the server, currently contains just the req_guid |
 | reason    | string    | reason for any failure if any                                     |
 
-Values of status and codes is same as defined in Protos.
+Values of status and codes is same as defined in Proto.
 
 ## Headers
 
-Raccoon service accepts headers to identify a user connection uniquely. The header name is made configurable as it enables clients to specify a header name that works for them. For, e.g. for a mobile app having a request header as `X-User-ID` which identifies the user \(client\) connecting to Raccoon, can configure Raccoon service with the config set as below `SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID`. Optionally, `SERVER_WEBSOCKET_CONN_GROUP_HEADER` can also be configured to [support multitenancy](concepts/architecture.md#connections) such as multiple apps connecting to a single Raccoon instance.
+Raccoon service accepts headers to identify a user connection uniquely. The header name is made configurable as it enables clients to specify a header name that works for them. For, e.g. for a mobile app having a request header as `X-User-ID` which identifies the user \(client\) connecting to Raccoon, can configure Raccoon service with the config set as below `SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID`. Optionally, `SERVER_WEBSOCKET_CONN_GROUP_HEADER` can also be configured to [support multi-tenancy](concepts/architecture.md#connections) such as multiple apps connecting to a single Raccoon instance.
 
 Raccoon uses the config to fetch the header name and uses the value passed in the request header with this name, as the connection id. This header name uniquely identifies a client. A client, in this case, can be the user in the app.
 
@@ -171,7 +171,7 @@ The following header is a sample providing a user id: 654785432. Once the client
 
 Following are the supported `Content-Type` headers for various data formats:
 
-- Protobufs - `application/proto`
+- Protobuf - `application/proto`
 - JSON - `application/json`
 
 ## gRPC
@@ -182,7 +182,7 @@ Refer to [EventService.proto](https://github.com/raystack/proton/blob/main/rayst
 
 Input to the RPC call is [SendEventRequest](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto) and the output is [raccoon.proto](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto).
 
-To support multi-tenacy while using gRPC, `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` values can be used. The key along with their values if set in grpc metadata while sending the request. Golang client example -
+To support multi-tenancy while using gRPC, `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` values can be used. The key along with their values if set in grpc metadata while sending the request. Golang client example -
 
 ```go
 md := metadata.New(map[string]string{"X-User-ID": "1234"})
@@ -192,7 +192,7 @@ r, err := client.SendEvent(ctx, req)
 
 ## Topics
 
-Raccoon distributes events to a topic based on the event type. The protobufs section above clarifies how the type should be set in the event. The type is a string literal. For example, ViewedEvent - which signifies that the user viewed something on the app or the site can have its event type set as below `type = viewedevent`
+Raccoon distributes events to a topic based on the event type. The protobuf section above clarifies how the type should be set in the event. The type is a string literal. For example, ViewedEvent - which signifies that the user viewed something on the app or the site can have its event type set as below `type = viewedevent`
 
 When raccoon API consumes a batch array of events \(events in SendEventRequest proto\), it deserializes them and fetches the individual events \(using the SendEventRequest proto\), and constructs the topic to send each event to based on the `type` field set in each of the events.
 

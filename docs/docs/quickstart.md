@@ -1,17 +1,17 @@
 # Quickstart
 
-This document will guide you to get Raccoon along with Kafka setup running locally. This document assumes that you have installed Docker and Kafka with `host.docker.internal` [advertised](https://www.confluent.io/blog/kafka-listeners-explained/) on your machine.
+This document will guide you on how to get Raccoon along with Kafka setup running locally. This document assumes that you have installed Docker and Kafka with `host.docker.internal` [advertised](https://www.confluent.io/blog/kafka-listeners-explained/) on your machine.
 
-## Run Raccoon With Docker
+## Run Raccoon with Docker
 
-Run the following command. Make sure to set `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS` according to your local Kafka setup.
+Make sure to set `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS` according to your local Kafka setup. Then run the following commands:. 
 
 ```bash
 $ docker run -p 8080:8080 \
-  -e SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID \
-  -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9092 \
-  -e EVENT_DISTRIBUTION_PUBLISHER_PATTERN=clickstream-log \
-  raystack/raccoon:latest
+  -e SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID \
+  -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9092 \
+  -e EVENT_DISTRIBUTION_PUBLISHER_PATTERN=clickstream-log \
+  raystack/raccoon:latest
 ```
 
 To test whether the service is running or not, you can try to ping the server.
@@ -37,4 +37,4 @@ $ kafka-console-consumer --bootstrap-server localhost:9092 --topic clickstream-l
 
 ## Where To Go Next
 
-For more detail about publishing events to Raccoon, you can read the [detailed document](guides/publishing.md) under the guides section. To understand more about how Raccoon work, you can go to the [architecture document](concepts/architecture.md).
+For more detail about publishing events to Raccoon, you can read the [detailed document](guides/publishing.md) under the guides section. To understand more about how Raccoon works, you can go to the [architecture document](concepts/architecture.md).

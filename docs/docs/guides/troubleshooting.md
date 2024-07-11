@@ -34,4 +34,4 @@ Currently, Raccoon is using [Librd Kafka client Go wrapper](https://github.com/c
 
 ## Backpressure
 
-You might see the `event_processing_duration_milliseconds` keeps on increasing and `batch_idle_in_channel_milliseconds` is in constant high value. In that case, Raccoon might get backpressure from the publisher. If that happens, you can check the publisher, or you need to tune the publisher configuration on Raccoon.
+You might see the `event_processing_duration_milliseconds` keeps on increasing and `batch_idle_in_channel_milliseconds` is in constant high value. In that case, Raccoon might get back-pressure from the publisher. If that happens, you can check the publisher, or you need to tune the publisher configuration on Raccoon.

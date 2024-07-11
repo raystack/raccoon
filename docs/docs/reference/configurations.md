@@ -106,7 +106,7 @@ The config decides whether to enable the cors middleware and thus allow CORS req
 
 ### `SERVER_CORS_ALLOWED_ORIGIN`
 
-The server decides which origin to allow. The configuration is expected to space separated. Multiple values are supported. The value requies `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
+The server decides which origin to allow. The configuration is expected to space separated. Multiple values are supported. The value requires `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
 
 - Type `Optional`
 - Default Value ``
@@ -150,7 +150,7 @@ The server decides whether or not to handle duplicate batches for the active con
 
 ### `WORKER_BUFFER_CHANNEL_SIZE`
 
-Maximum batch that service can handle when workers are busy. When the number of batch is exceeded, the worker will backpressure causing websocket to stop reading new request.
+Maximum batch that service can handle when workers are busy. When the number of batch is exceeded, the worker will back-pressure causing websocket to stop reading new request.
 
 - Type `Optional`
 - Default value: `100`
@@ -182,7 +182,7 @@ Delivery channel is implementation detail where the kafka client asks for channe
 
 Routes events based on given pattern and [type](https://github.com/raystack/proton/blob/main/raystack/raccoon/Event.proto#L31). The pattern is following [go string format](https://golang.org/pkg/fmt/) with event `type` as second argument. The result of the string format will be the kafka topic target of the event.
 
-For example, you pass `%s-event` as `EVENT_DISTRIBUTION_PUBLISHER_PATTERN`. If you send event with `click` type, your event will be forwareded to `click-event` kafka topic on the configured broker. If you send event with `buy` type, your event will be forwarded to `buy-event`.
+For example, you pass `%s-event` as `EVENT_DISTRIBUTION_PUBLISHER_PATTERN`. If you send event with `click` type, your event will be forwarded to `click-event` kafka topic on the configured broker. If you send event with `buy` type, your event will be forwarded to `buy-event`.
 
 You can also route the events to single topic irrespective of the type. To do that you can drop `%s` in the value. For example, provided `mobile-events` as value. All incoming events will be routed to `mobile-events` kafka topic.
 
@@ -330,7 +330,7 @@ You can also specify the credentials using `AWS_ACCESS_KEY_ID` and `AWS_SECRET_A
 
 ### `PUBLISHER_KINESIS_STREAM_AUTOCREATE`
 
-Whether Raccon should create a stream if it doesn't exist.
+Whether Raccoon should create a stream if it doesn't exist.
 
 NOTE: We recommend that you create all streams that you need to publish to ahead of time.
 
@@ -340,7 +340,7 @@ NOTE: We recommend that you create all streams that you need to publish to ahead
 ### `PUBLISHER_KINESIS_STREAM_MODE`
 
 This configuration variable controls the `StreamMode` of the
-streams created by Raccon.
+streams created by Raccoon.
 
 - Type `Optional`
 - Default value `ON_DEMAND`

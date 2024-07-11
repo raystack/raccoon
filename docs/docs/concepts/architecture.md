@@ -1,6 +1,6 @@
 # Architecture
 
-Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon supports websockets, REST and gRPC protocols for clients to send events. With wesockets it provides long persistent connections, with no overhead of additional headers sizes as in http protocol. Racoon supports protocol buffers and JSON as serialization formats. Websockets and REST API support both whereas with gRPC only protocol buffers are supported. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](guides/publishing.md#data-formatters) for data definitions format that Raccoon accepts.
+Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon supports websocket, REST and gRPC protocols for clients to send events. With websocket it provides long persistent connections, with no overhead of additional headers sizes as in http protocol. Racoon supports protocol buffers and JSON as serialization formats. Websocket and REST API support both whereas with gRPC only protocol buffers are supported. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](guides/publishing.md#data-formatters) for data definitions format that Raccoon accepts.
 
 Raccoon was built with a primary purpose to source or collect user behaviour data in near-real time. User behaviour data is a stream of events that occur when users traverse through a mobile app or website. Raccoon powers analytics systems, big data pipelines and other disparate consumers by providing high volume, high throughput ingestion APIs consuming real time data. Raccoon’s key architecture principle is a realization of an event agnostic backend \(accepts events of any type without the type awareness\). It is this capability that enables Raccoon to evolve into a strong player in the ingestion/collector ecosystem that has real time streaming/analytical needs.
 
@@ -53,14 +53,14 @@ Clients can send the request anytime as long as the websocket connection is aliv
 
 ### Event Delivery Gurantee \(at-least-once for most time\)
 
-The server for the most times provide at-least-once event delivery gurantee.
+The server for the most times provide at-least-once event delivery guarantee.
 
 Event data loss happens in the following scenarios:
 
-- When the server shutsdown, events in-flight in the kafka buffer or those stored in the internal channels are potentially lost. The server performs, on a best-effort basis, sending all the events to kafka within a configured shutdown time `WORKER_BUFFER_FLUSH_TIMEOUT_MS`. The default time is set to 5000 ms within which it is expected that all the events are sent by then.
+- When the server shuts down, events in-flight in the kafka buffer or those stored in the internal channels are potentially lost. The server performs, on a best-effort basis, sending all the events to kafka within a configured shutdown time `WORKER_BUFFER_FLUSH_TIMEOUT_MS`. The default time is set to 5000 ms within which it is expected that all the events are sent by then.
 - When the upstream kafka cluster is facing a downtime
 
-  Every event sent from the client is stored in-memory in the buffered channels \(explained in the `Acknowledging events` section\). The workers pull the events from this channel and publishes to kafka. The server does not maintain any event peristence. This is a conscious decision to enable a simpler, performant ingestion design for the server. The buffer/retries of failed events is relied upon Kafka's internal buffer/retries respectively. In future: Server can be augmented for zero-data loss or at-least-once guarantees through intermediate event persitence.
+  Every event sent from the client is stored in-memory in the buffered channels \(explained in the `Acknowledging events` section\). The workers pull the events from this channel and publishes to kafka. The server does not maintain any event persistence. This is a conscious decision to enable a simpler, performant ingestion design for the server. The buffer/retries of failed events is relied upon Kafka's internal buffer/retries respectively. In future: Server can be augmented for zero-data loss or at-least-once guarantees through intermediate event persistence.
 
 ## Acknowledging events
 
@@ -78,7 +78,7 @@ Pros:
 
 Cons:
 
-- Potential data-loss and the clients do not get a chance to retry/resend the events. The possiblity of data-loss occurs when the kafka borker cluster is facing a downtime.
+- Potential data-loss and the clients do not get a chance to retry/resend the events. The possibility of data-loss occurs when the kafka broker cluster is facing a downtime.
 
 ### EVENT_ACK = 1
 
@@ -96,7 +96,7 @@ Cons:
 
 Considering that kafka is set up in a clustered, cross-region, cross-zone environment, the chances of it going down are mostly unlikely. In case if it does, the amount of events lost is negligible considering it is a streaming system and is expected to forward millions of events/sec.
 
-When an SendEventRequest is sent to Raccoon over any connection be it Websocket/HTTP/gRPC a corresponding response is sent by the server inidcating whether the event was consumed successfully or not.
+When an SendEventRequest is sent to Raccoon over any connection be it Websocket/HTTP/gRPC a corresponding response is sent by the server indicating whether the event was consumed successfully or not.
 
 ## Supported Protocols and Data formats
 
@@ -114,7 +114,7 @@ When an SendEventRequest is sent to Raccoon over any connection be it Websocket/
 
 When an [SendEventRequest](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto) proto below containing events are sent over the wire
 
-```text
+```protobuf
 message SendEventRequest {
   //unique guid generated by the client for this request
   string req_guid = 1;
@@ -127,7 +127,7 @@ message SendEventRequest {
 
 a corresponding [SendEventResponse](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto) is sent by the server.
 
-```text
+```protobuf
 message SendEventResponse {
   Status status = 1;
   Code code = 2;
@@ -142,7 +142,7 @@ message SendEventResponse {
 
 ### JSON
 
-When a JSON event like the one metoined below is sent a corresponding JSON response is sent by the server.
+When a JSON event like the one mentioned below is sent a corresponding JSON response is sent by the server.
 
 **Request**
 
@@ -183,7 +183,7 @@ Event distribution works by finding the type for each event in the batch and sen
 topic := fmt.Sprintf(pr.topicFormat, event.Type)
 ```
 
-where **topicformat** - is the configured pattern `EVENT_DISTRIBUTION_PUBLISHER_PATTERN` **type** - is the type set by the client when the event proto is generated
+where **topicFormat** - is the configured pattern `EVENT_DISTRIBUTION_PUBLISHER_PATTERN` **type** - is the type set by the client when the event proto is generated
 
 For eg. setting the
 
@@ -195,7 +195,7 @@ and a type such as `type=viewed` in the [event](https://github.com/raystack/prot
 
 and a type such as `type=viewed` in the event format
 
-```text
+```protobuf
 message Event {
   /*
   `eventBytes` is where you put bytes serialized event.
@@ -215,7 +215,7 @@ will have the event sent to a topic like
 
 `topic-viewed-log`
 
-The event distribution does not depend on any partition logic. So events can be randomnly distrbuted to any kafka partition.
+The event distribution does not depend on any partition logic. So events can be randomly distributed to any kafka partition.
 
 ### Event Deserialization
 
@@ -227,7 +227,7 @@ Buffered Channels are used to store the incoming events' batch. The channel size
 
 ### Keeping connections alive
 
-The server ensures that the connections are recyclable. It adopts mechanisms to check connection time idleness. The handlers ping clients very 30 seconds \(configurable\). If the client does not respond within a stipulated time the connection is marked as corrupt. Every subsequent read/write message there after on this connection fails. Raccoon removes the connections post this. Clients can also ping the server while the server responds with pongs to these pings. Clients can programmtically reconnect on failed or corrupt server connections.
+The server ensures that the connections are recyclable. It adopts mechanisms to check connection time idleness. The handlers ping clients very 30 seconds \(configurable\). If the client does not respond within a stipulated time the connection is marked as corrupt. Every subsequent read/write message there after on this connection fails. Raccoon removes the connections post this. Clients can also ping the server while the server responds with pongs to these pings. Clients can programmatically reconnect on failed or corrupt server connections.
 
 ## Components
 
@@ -241,4 +241,4 @@ Raccoon internally checks for these delivery reports before pulling the next bat
 
 ### Observability Stack
 
-Raccoon internally uses [statsd](https://gopkg.in/alexcesaro/statsd.v2) go module client to export metrics in StatsD line protocol format. A recommended choice for observability stack would be to host [telegraf](https://www.influxdata.com/time-series-platform/telegraf/) as the receiver of these measurements and expoert it to [influx](https://www.influxdata.com/get-influxdb/), influx to store the metrics, [grafana](https://grafana.com/) to build dashboards using Influx as the source.
+Raccoon internally uses [statsd](https://gopkg.in/alexcesaro/statsd.v2) go module client to export metrics in StatsD line protocol format. A recommended choice for observability stack would be to host [telegraf](https://www.influxdata.com/time-series-platform/telegraf/) as the receiver of these measurements and export it to [influx](https://www.influxdata.com/get-influxdb/), influx to store the metrics, [grafana](https://grafana.com/) to build dashboards using Influx as the source.

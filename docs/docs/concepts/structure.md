@@ -2,7 +2,7 @@
 
 This document describes high-level code structure of the project. You'll find this part useful when you want to get started to contribute to Raccoon.
 
-## Highlevel View
+## High level View
 
 The core structure of Raccoon is the server itself. After the server is started, data flows from `websocket` to `worker` to `publisher`. `websocket` manages websocket server, handle incoming connection, and incoming request. `worker` acts as a buffer and interface for various types of server and publisher down the roadmap. `publisher` contains logic to publish the events to the downstream pipeline. ![high-level](/assets/structure.svg) All the components above are initialized on `app`. `app` package is the starting point of Raccoon.
 
@@ -20,7 +20,7 @@ Contains server-related code along with request/response handlers and [connectio
 
 #### `http/rest`
 
-Contains server-side code along with resquest/response handler for the REST endpoint.
+Contains server-side code along with request/response handler for the REST endpoint.
 
 #### `http/gRPC`
 
@@ -44,7 +44,7 @@ Load and store application configurations. Contains mapping of environment confi
 
 ### `serialization`
 
-Contains the common serialization code for both JSON and Protobufs along with common interface.
+Contains the common serialization code for both JSON and protobuf along with common interface.
 
 ### `deserialization`
 

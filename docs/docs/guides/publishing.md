@@ -199,7 +199,7 @@ When raccoon API consumes a batch array of events \(events in SendEventRequest p
 The following code determines the topic name.
 
 ```go
-topic := fmt.Sprintf(pr.topicFormat, event.Type)
+topic := strings.Replace(p.topicFormat, "%s", event.Type, 1)
 ```
 
 where **topicformat** - is the configured pattern `EVENT_DISTRIBUTION_PUBLISHER_PATTERN` **type** - is the type set by the client when the event proto is generated

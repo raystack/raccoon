@@ -179,15 +179,15 @@ When a JSON event like the one mentioned below is sent a corresponding JSON resp
 
 Event distribution works by finding the type for each event in the batch and sending them to appropriate kafka topic. The topic name is determined by the following code
 
-```text
-topic := fmt.Sprintf(pr.topicFormat, event.Type)
+```golang
+topic := strings.Replace(p.topicFormat, "%s", event.Type, 1)
 ```
 
 where **topicFormat** - is the configured pattern `EVENT_DISTRIBUTION_PUBLISHER_PATTERN` **type** - is the type set by the client when the event proto is generated
 
 For eg. setting the
 
-```text
+```bash
 EVENT_DISTRIBUTION_PUBLISHER_PATTERN=topic-%s-log
 ```
 

@@ -181,11 +181,11 @@ Following are the supported `Content-Type` headers for various data formats:
 
 Events can be sent to Raccoon using gRPC too.
 
-Refer to [EventService.proto](https://github.com/raystack/proton/blob/main/raystack/raccoon/EventService.proto) for the definition of `EventService` which exposes one RPC call `SendEvent`. It is recommended to generate the language specific gRPC client using the proto definition.
+Refer to [EventService](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto) for the definition of `EventService` which exposes one RPC call `SendEvent`. It is recommended to generate the language specific gRPC client using the proto definition.
 
-Input to the RPC call is [SendEventRequest](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto) and the output is [raccoon.proto](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto).
+Input to the RPC call is [SendEventRequest](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto) and the output is [SendEventResponse](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto).
 
-To support multi-tenancy while using gRPC, `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` values can be used. The key along with their values if set in grpc metadata while sending the request. Golang client example -
+To support multi-tenancy while using gRPC, `SERVER_WEBSOCKET_CONN_ID_HEADER` and `SERVER_WEBSOCKET_CONN_GROUP_HEADER` values can be used. The key along with their values should be set in the grpc metadata while sending the request. Golang client example -
 
 ```go
 md := metadata.New(map[string]string{"X-User-ID": "1234"})

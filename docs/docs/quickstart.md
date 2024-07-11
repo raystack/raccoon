@@ -24,13 +24,21 @@ To test whether the service is running or not, you can try to ping the server.
 $ curl http://localhost:8080/ping
 ```
 
+To verify the event published by Raccoon. First, you need to start a Kafka listener. In a seperate terminal run:
+
+```bash
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic clickstream-log
+```
+
 ## Publishing Your First Event
 
 ```mdx-code-block
 <Tabs default>
 <TabItem value='go'>
 ```
-create a directory called `go-raccoon-example` and initalise a go module
+Make sure that `Go` >= `1.16` is installed on your system. See [installation instructions](https://go.dev/doc/install) on Go's website for more info.
+
+Create a directory called `go-raccoon-example` and initalise it as a go module
 
 ```bash
 $ mkdir go-raccoon-example
@@ -42,42 +50,34 @@ Install the raccoon client
 ``` bash
 $ go get github.com/raystack/raccoon/clients/go
 ```
-create the `main.go` file 
+Create the `main.go` file 
 ```go title="main.go" showLineNumbers
 package main
 
 import (
 	"fmt"
 	"log"
-	"time"
 
-	"crypto/tls"
-
-	g "google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
+	raccoon "github.com/raystack/raccoon/clients/go"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"
-	raccoon "github.com/raystack/raccoon/clients/go"
-	"github.com/raystack/raccoon/clients/go/grpc"
 	"github.com/raystack/raccoon/clients/go/testdata"
+	"github.com/raystack/raccoon/clients/go/ws"
 )
 
 func main() {
-	client, err := grpc.New(
-		grpc.WithAddr("localhost:8080"),
-		grpc.WithHeader("x-user-id", "123"),
-		grpc.WithDialOptions(
-			g.WithTransportCredentials(credentials.NewServerTLSFromCert(&tls.Certificate{})),
-		), 
-		grpc.WithRetry(time.Second*2, 5),
-	)
+	client, err := ws.New(
+		ws.WithUrl("ws://localhost:8080/api/v1/events"),
+		ws.WithHeader("x-user-id", "123"),
+		ws.WithHeader("x-user-type", "gojek"))
 
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer client.Close()
 
-	reqGuid, resp, err := client.Send([]*raccoon.Event{
+	_, err = client.Send([]*raccoon.Event{
 		{
 			Type: "page",
 			Data: &testdata.PageEvent{
@@ -92,8 +92,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(reqGuid)
-	fmt.Println(resp.Status)
+	<-client.EventAcks()
 }
 ```
 
@@ -104,18 +103,109 @@ $ go run main.go
 
 ```mdx-code-block
 </TabItem>
-<TabItem value='cli'>CLI</TabItem>
+<TabItem value='terminal'>
+```
+Make sure you have `curl` installed. On a debian-based system you can install `curl` via:
+
+```bash
+$ sudo apt-get install -y curl
+```
+
+Run the following to publish a single event to Raccoon
+```bash
+$ curl -XPOST "http://localhost:8080/api/v1/events" \
+    -H "content-type: application/json" \
+    -H "X-User-ID: user-one" \
+    -d "
+{
+    \"req_guid\": \"foobar-123\",
+    \"sent_time\": {
+        \"seconds\": $(date +%s),
+        \"nanos\": $(date +%N)
+    },
+    \"events\": [
+        {
+            \"type\": \"page\",
+            \"eventBytes\": \"$(echo \"EVENT\" | base64)\"
+        }
+    ]
+}"
+```
+
+```mdx-code-block
+</TabItem>
 <TabItem value='java'>Java</TabItem>
-<TabItem value='js'>Javascript</TabItem>
+```
+
+```mdx-code-block
+<TabItem value='js'>
+```
+Make sure you have `node` >= `20.x` installed. See [installation instructions](https://nodejs.org/en/download/package-manager) on nodejs website for more info.
+
+Create a new folder called `js-raccoon-example` and initalise it as a npm package.
+
+```bash
+$ mkdir js-raccoon-example
+$ cd js-raccoon-example
+$ npm init
+```
+
+Install the client using:
+```bash
+$ npm install @raystack/raccoon --save
+```
+
+Create a `main.js` file with the following contents:
+```js title="main.js" showLineNumbers
+import { RaccoonClient, SerializationType, WireType } from '@raystack/raccoon';
+
+const logger = console;
+
+//  create json messages
+const jsonEvents = [
+    {
+        type: 'test-topic1',
+        data: { key1: 'value1', key2: ['a', 'b'] }
+    },
+    {
+        type: 'test-topic2',
+        data: { key1: 'value2', key2: { key3: 'value3', key4: 'value4' } }
+    }
+];
+
+//  initialise the raccoon client with required configs
+const raccoonClient = new RaccoonClient({
+    serializationType: SerializationType.JSON,
+    wireType: WireType.JSON,
+    timeout: 5000,
+    url: 'http://localhost:8080/api/v1/events',
+    headers: {
+        'X-User-ID': 'user-1'
+    }
+});
+
+//  send the request
+raccoonClient
+    .send(jsonEvents)
+    .then((result) => {
+        logger.log('Result:', result);
+    })
+    .catch((error) => {
+        logger.error('Error:', error);
+    });
+```
+
+Finally run this script using:
+```bash
+$ node main.js
+```
+
+```mdx-code-block
+</TabItem>
 </Tabs>
 ```
 
 
-To verify the event published by Raccoon. First, you need to start a Kafka listener.
-
-```bash
-$ kafka-console-consumer --bootstrap-server localhost:9092 --topic clickstream-log
-```
 
 ## Where To Go Next
 

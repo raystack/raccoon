@@ -1,3 +1,7 @@
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import CodeBlock from '@theme/CodeBlock'
+
 # Quickstart
 
 This document will guide you on how to get Raccoon along with Kafka setup running locally. This document assumes that you have installed Docker and Kafka with `host.docker.internal` [advertised](https://www.confluent.io/blog/kafka-listeners-explained/) on your machine.
@@ -22,12 +26,90 @@ $ curl http://localhost:8080/ping
 
 ## Publishing Your First Event
 
-Currently, Raccoon doesn't come with a library client. To start publishing events to Raccoon, we provide you an [example of a go client](https://github.com/raystack/raccoon/tree/main/docs/example) that you can refer to. You can also run the example right away if you have Go installed on your machine.
+```mdx-code-block
+<Tabs default>
+<TabItem value='go'>
+```
+create a directory called `go-raccoon-example` and initalise a go module
 
 ```bash
-# `cd` on the client example directory and run the following
-$ go run main.go sample.pb.go
+$ mkdir go-raccoon-example
+$ cd go-raccoon-example
+$ go mod init go-raccoon-example
 ```
+Install the raccoon client
+
+``` bash
+$ go get github.com/raystack/raccoon/clients/go
+```
+create the `main.go` file 
+```go title="main.go" showLineNumbers
+package main
+
+import (
+	"fmt"
+	"log"
+	"time"
+
+	"crypto/tls"
+
+	g "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/google/uuid"
+	raccoon "github.com/raystack/raccoon/clients/go"
+	"github.com/raystack/raccoon/clients/go/grpc"
+	"github.com/raystack/raccoon/clients/go/testdata"
+)
+
+func main() {
+	client, err := grpc.New(
+		grpc.WithAddr("localhost:8080"),
+		grpc.WithHeader("x-user-id", "123"),
+		grpc.WithDialOptions(
+			g.WithTransportCredentials(credentials.NewServerTLSFromCert(&tls.Certificate{})),
+		), 
+		grpc.WithRetry(time.Second*2, 5),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reqGuid, resp, err := client.Send([]*raccoon.Event{
+		{
+			Type: "page",
+			Data: &testdata.PageEvent{
+				EventGuid: uuid.NewString(),
+				EventName: "clicked",
+				SentTime:  timestamppb.Now(),
+			},
+		},
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(reqGuid)
+	fmt.Println(resp.Status)
+}
+```
+
+Finally, run the program
+```bash
+$ go run main.go
+```
+
+```mdx-code-block
+</TabItem>
+<TabItem value='cli'>CLI</TabItem>
+<TabItem value='java'>Java</TabItem>
+<TabItem value='js'>Javascript</TabItem>
+</Tabs>
+```
+
 
 To verify the event published by Raccoon. First, you need to start a Kafka listener.
 

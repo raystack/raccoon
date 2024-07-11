@@ -183,7 +183,9 @@ Event distribution works by finding the type for each event in the batch and sen
 topic := strings.Replace(p.topicFormat, "%s", event.Type, 1)
 ```
 
-where **topicFormat** - is the configured pattern `EVENT_DISTRIBUTION_PUBLISHER_PATTERN` **type** - is the type set by the client when the event proto is generated
+where:
+* **topicFormat** - is the pattern configured via `EVENT_DISTRIBUTION_PUBLISHER_PATTERN` 
+* **type** - is the type set by the client on the Event
 
 For eg. setting the
 
@@ -191,9 +193,7 @@ For eg. setting the
 EVENT_DISTRIBUTION_PUBLISHER_PATTERN=topic-%s-log
 ```
 
-and a type such as `type=viewed` in the [event](https://github.com/raystack/proton/blob/main/raystack/raccoon/Event.proto) format
-
-and a type such as `type=viewed` in the event format
+and a type such as `type=viewed` in the [event](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto) format
 
 ```protobuf
 message Event {

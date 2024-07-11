@@ -134,10 +134,103 @@ $ curl -XPOST "http://localhost:8080/api/v1/events" \
 
 ```mdx-code-block
 </TabItem>
-<TabItem value='java'>Java</TabItem>
+<TabItem value='java'>
+```
+
+Make sure you have Java installed. Raccoon java client requires:
+* `JDK` version >= 8
+* `Gradle` version >= 7
+
+Begin by creating a new java project in a folder called `java-raccoon-example`
+```bash
+$ mkdir java-raccoon-example
+$ cd java-raccoon-example
+$ gradle init --type=java-application
+```
+
+Add `io.odpf.raccoon` version `0.1.5-rc` in your `build.gradle`. It should look something like this:
+```groovy
+plugins {
+    // Apply the application plugin to add support for building a CLI application in Java.
+    id 'application'
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+dependencies {
+    // Use JUnit test framework.
+    testImplementation libs.junit
+
+    // This dependency is used by the application.
+    implementation libs.guava
+    
+    // Raccoon Client library
+    implementation group: 'io.odpf', name: 'raccoon', version: '0.1.5-rc'
+}
+
+// Apply a specific Java toolchain to ease working on different environments.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'org.example.App'
+}
+```
+
+Edit the `App.java` file and add the following code:
+```java title=src/java/org/example/App.java showLineNumbers
+package org.example;
+
+import io.odpf.raccoon.client.RestConfig;
+import io.odpf.raccoon.client.RaccoonClient;
+import io.odpf.raccoon.client.RaccoonClientFactory;
+import io.odpf.raccoon.model.Event;
+import io.odpf.raccoon.model.Response;
+import io.odpf.raccoon.model.ResponseStatus;
+import io.odpf.raccoon.serializer.JsonSerializer;
+import io.odpf.raccoon.wire.ProtoWire;
+
+public class App {
+
+    public static void main(String[] args) {
+        RestConfig config = RestConfig.builder()
+                  .url("http://localhost:8080/api/v1/events")
+                  .header("x-user-id", "123")
+                  .serializer(new JsonSerializer()) // default is Json
+                  .marshaler(new ProtoWire()) // default is Json
+                  .retryMax(5) // default is 3
+                  .retryWait(2000) // default is one second
+                  .build();
+
+        // get the rest client instance.
+        RaccoonClient Client = RaccoonClientFactory.getRestClient(config);
+
+        Response res = Client.send(new Event[]{
+                new Event("page", "EVENT".getBytes())
+        });
+
+        if (res.isSuccess() && res.getStatus() == ResponseStatus.STATUS_SUCCESS) {
+                System.out.println("The event was sent successfully");
+        }
+    }
+}
+
+```
+
+Run the application using
+```bash
+$ gradle run
 ```
 
 ```mdx-code-block
+</TabItem>
 <TabItem value='js'>
 ```
 Make sure you have `node` >= `20.x` installed. See [installation instructions](https://nodejs.org/en/download/package-manager) on nodejs website for more info.
@@ -155,8 +248,8 @@ Install the client using:
 $ npm install @raystack/raccoon --save
 ```
 
-Create a `main.js` file with the following contents:
-```js title="main.js" showLineNumbers
+Create a `main.mjs` file with the following contents:
+```js title="main.mjs" showLineNumbers
 import { RaccoonClient, SerializationType, WireType } from '@raystack/raccoon';
 
 const logger = console;
@@ -197,7 +290,7 @@ raccoonClient
 
 Finally run this script using:
 ```bash
-$ node main.js
+$ node main.mjs
 ```
 
 ```mdx-code-block

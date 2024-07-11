@@ -39,6 +39,5 @@ module.exports = {
         "contribute/release",
       ],
     },
-    'roadmap',
   ],
 };

@@ -179,7 +179,7 @@ When a JSON event like the one mentioned below is sent a corresponding JSON resp
 
 Event distribution works by finding the type for each event in the batch and sending them to appropriate kafka topic. The topic name is determined by the following code
 
-```golang
+```go
 topic := strings.Replace(p.topicFormat, "%s", event.Type, 1)
 ```
 

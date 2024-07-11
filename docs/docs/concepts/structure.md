@@ -10,19 +10,20 @@ The core structure of Raccoon is the server itself. After the server is started,
 
 This section talks briefly about the content of various important packages. You can use this to guess the code location when you need to make changes.
 
-### `http`
+### `service`
 
-Contains all the http related code including code related to `websocket`, `rest` and `grpc`. It also has code pertaining to the http server that serves both WebSocket and REST APIs.
+Contains all backend related code including code related to `websocket`, `rest` and `grpc`. It also has code pertaining to the http server that serves both WebSocket and REST APIs.
 
-#### `http/websocket`
-
-Contains server-related code along with request/response handlers and [connection management](architecture.md#connections).
-
-#### `http/rest`
+#### `service/rest`
 
 Contains server-side code along with request/response handler for the REST endpoint.
 
-#### `http/gRPC`
+#### `service/rest/websocket`
+
+Contains server-related code along with request/response handlers and [connection management](architecture.md#connections).
+
+
+#### `service/gRPC`
 
 Contains server-side handlers for gRPC server.
 
@@ -32,7 +33,11 @@ Buffer from when the events are processed and before events are published. This 
 
 ### `publisher`
 
-Does the actual publishing to the downstream pipeline. Currently, only support Kafka publisher.
+Does the actual publishing to the downstream pipeline. 
+Currently Supports:
+* Apache Kafka
+* Google Cloud Pub/Sub
+* Amazon Web Services Kinesis
 
 ### `app`
 

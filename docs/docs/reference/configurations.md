@@ -245,7 +245,27 @@ Maximum number of messages allowed on the producer queue. This queue is shared b
 
 ### `PUBLISHER_KAFKA_CLIENT_*`
 
-Kafka client config is dynamically configured. You can see for other configuration [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
+Kafka client config is dynamically configured. You can see other configurations [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md).
+
+The configs are mapped to librdkafka configs by removing the `PUBLISHER_KAFKA_CLIENT_` prefix and replacing underscore with a period.
+
+Internally, this is how it looks
+```go title="config/publisher.go"
+var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
+
+type publisherKafka struct { /* ... */ }
+
+func (k publisherKafka) ToKafkaConfigMap() *confluent.ConfigMap {
+	configMap := &confluent.ConfigMap{}
+	for key, value := range viper.AllSettings() {
+		if strings.HasPrefix(strings.ToUpper(key), dynamicKafkaClientConfigPrefix) {
+			clientConfig := key[len(dynamicKafkaClientConfigPrefix):]
+			configMap.SetKey(strings.Join(strings.Split(clientConfig, "_"), "."), value)
+		}
+	}
+	return configMap
+}
+```
 
 - Type `Optional`
 - Default value: see the [reference](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
@@ -373,7 +393,7 @@ How long to wait for before aborting a publish operation.
 
 ### `METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS`
 
-The time interval between recording runtime stats of the application in the insturmentation. It's recommended to keep this value equivalent to flush interval when using statsd and your collector's scrape interval when using prometheus as your instrumentation.
+The time interval between recording runtime stats of the application in the instrumentation. It's recommended to keep this value equivalent to flush interval when using statsd and your collector's scrape interval when using prometheus as your instrumentation.
 
 - Type `Optional`
 - Default Value: `10000`

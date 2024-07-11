@@ -28,9 +28,8 @@ After the request is deserialized, the server puts the events on the buffer chan
 Currently, Raccoon is using [Librd Kafka client Go wrapper](https://github.com/confluentinc/confluent-kafka-go) as publisher client. There is plenty of guides out there to tune Kafka producer. Here are some configurations you can tune.
 
 - [PUBLISHER_KAFKA_CLIENT_BATCH_NUM_MESSAGES](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
-- [KAFKA_CLIENT_ACKS](reference/configurations.md#publisher_kafka_client_acks)
-- KAFKA_CLIENT_LINGER_MS
-- [PUBLISHER*KAFKA_CLIENT*\*](reference/configurations.md#publisher_kafka_client_) You can put any [librd kafka configuration](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) by replacing \* and change the delimiter to underscore.
+- [PUBLISHER_KAFKA_CLIENT_ACKS](reference/configurations.md#publisher_kafka_client_acks)
+- [PUBLISHER\_KAFKA\_CLIENT_${conf}](reference/configurations.md#publisher_kafka_client_) You can put any [librd kafka configuration](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) by replacing `${conf}` with upper case'd configuration key and changing the delimiter to underscore. For example, to use `log.queue=true`, you can set `PUBLISHER_KAFKA_CLIENT_LOG_QUEUE=true`
 
 ## Backpressure
 

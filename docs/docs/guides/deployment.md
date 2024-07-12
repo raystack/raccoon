@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Deployment
 
 This section contains guides and suggestions related to Raccoon deployment.
@@ -15,9 +18,8 @@ Using [Raccoon docker image](https://hub.docker.com/r/raystack/raccoon), you can
 
 **Creating Kubernetes Resources** You need at least 2 manifests for Raccoon. For [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment) and for [configmap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/). Prepare both manifest as YAML file. You can fill in the configuration as needed.
 
-`configmap.yaml`
 
-```yaml
+```yaml title="configmap.yml"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -26,15 +28,21 @@ metadata:
   labels:
     application: raccoon
 data:
-  METRIC_STATSD_ADDRESS: "host.docker.internal:8125"
   PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS: "host.docker.internal:9093"
   SERVER_WEBSOCKET_CONN_ID_HEADER: "X-User-ID"
   SERVER_WEBSOCKET_PORT: "8080"
+
+  # depending on what monitoring stack you wish to use
+  # you can remove the statsd or prometheus config below
+  METRIC_STATSD_ENABLED: true
+  METRIC_STATSD_ADDRESS: "host.docker.internal:8125"
+  METRIC_PROMETHEUS_ENABLED: true
+  METRIC_PROMETHEUS_PORT: "9090"
+
 ```
 
-`deployment.yaml`
 
-```yaml
+```yaml title="deployment.yaml"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,6 +58,13 @@ spec:
     metadata:
       labels:
         application: raccoon
+      annotations:
+        # these are only necessary if you plan to use prometheus
+        # to collect metrics from raccoon. See "Setting up monitoring" below
+        # for more information.
+        prometheus.io/scrape: 'true'
+        prometheus.io/path: 'metrics'
+        prometheus.io/port: '9090'
     spec:
       containers:
         - name: raccoon
@@ -74,10 +89,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-      volumes:
+
 ```
 
-Suppose you save them as `configmap.yaml` and `deployment.yaml`. The next step is to apply the manifests to the Kubeenetes cluster using `kubectl` command.
+Suppose you save them as `configmap.yaml` and `deployment.yaml`. The next step is to apply the manifests to the Kubernetes cluster using `kubectl` command.
 
 ```bash
 $ kubectl apply -f configmap.yaml -f deployment.yaml
@@ -96,11 +111,21 @@ $ kubectl get configmap raccoon-config
 
 **Exposing Raccoon** To make Raccoon accessible to the public, you need to setup the Kubernetes [service](https://kubernetes.io/docs/concepts/services-networking/service/) and [ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/). This setup may vary according to your need. There is plenty [ingress controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) you can choose. But first, you need to make sure that Websocket works with your choice of ingress controller.
 
-**Integrating With Telegraf** There are 2 options to integrate with Telegraf. One is to have Telegraf as separate service another is to have Telegraf as a sidecar. To have telegraf as a sidecar, you only need to add another configmap and another Telegraf container on the deployment above. You can add the container under `spec.template.spec.containers`. Then, you can use default `METRIC_STATSD_ADDRESS` which is `:8125`. Following is an example of Telegraf manifests that push to Influxdb.
+**Setting up monitoring**
 
-`deployment.yaml`
+Raccoon supports [statsd](https://github.com/statsd/statsd) and [prometheus](https://prometheus.io/) as monitoring backends. The following section will guide on how to setup each of these.
 
-```yaml
+```mdx-code-block
+<Tabs>
+<TabItem value="statsd">
+```
+The recommended way of interfacing with statsd is to use [telegraf](https://www.influxdata.com/time-series-platform/telegraf/).
+telegraf is the open source server agent to help you collect metrics from your applications and push them to different data sources.
+
+There are 2 options to integrate with Telegraf. One is to have Telegraf as a separate service and another is to have Telegraf as a sidecar. To have telegraf as a sidecar, you only need to add another configmap and another Telegraf container on the deployment above. You can add the container under `spec.template.spec.containers`. Then, you can use default `METRIC_STATSD_ADDRESS` which is `:8125`. Following is an example of Telegraf manifests that push to Influxdb.
+
+
+```yaml title="deployment.yaml"
 
 ---
 containers:
@@ -124,9 +149,7 @@ volumes:
     name: telegraf-conf
 ```
 
-`telegraf-conf.yaml`
-
-```yaml
+```yaml title="telegraf-conf.yaml"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -172,6 +195,137 @@ data:
       service_address = ":8125"
 ```
 
+```mdx-code-block
+</TabItem>
+<TabItem value="prometheus">
+```
+You can run prometheus as a seperate service on your kubernetes cluster and configure it to scrape the metrics from your raccoon deployment.
+
+Here's an example setup:
+```yaml title="prometheus-conf.yaml"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  labels:
+    app: prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    scrape_configs:
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+        - role: pod
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+          replacement: ${1}
+        - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          target_label: __address__
+          regex: (.+):(?:\d+);(\d+)
+          replacement: ${1}:${2}
+
+```
+
+```yaml title="prometheus-deployment.yaml"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccountName: prometheus
+      containers:
+      - name: prometheus
+        image: prom/prometheus:latest
+        args:
+          - --config.file=/etc/prometheus/prometheus.yml
+          - --storage.tsdb.path=/prometheus/
+        ports:
+        - containerPort: 9090
+        volumeMounts:
+        - name: prometheus-config-volume
+          mountPath: /etc/prometheus/
+      volumes:
+      - name: prometheus-config-volume
+        configMap:
+          name: prometheus-config
+
+```
+```yaml title="prometheus-service-account.yml"
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+
+```
+```yaml title="prometheus-cluster-role.yml"
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+
+```
+```yaml title="prometheus-cluster-role-binding.yml"
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: default
+
+```
+Create these files on your local system that's configured to talk to your Kubernetes cluster, then deploy prometheus by running:
+```bash
+$ kubectl apply -f prometheus-service-account.yml
+$ kubectl apply -f prometheus-cluster-role-binding.yml
+$ kubectl apply -f prometheus-cluster-role.yml
+$ kubectl apply -f prometheus-conf.yml
+$ kubectl apply -f prometheus-deployment.yml
+```
+
+This setups uses prometheus's [kubernetes_sd_config](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#kubernetes_sd_config), which is a feature that allows prometheus to leverage service discovery to find the pods that you wish to scrape metrics from.
+
+```mdx-code-block
+</TabItem>
+</Tabs>
+```
+
 ### Helm
 
 **Prerequisite**
@@ -205,4 +359,4 @@ Followings are main configurations closely related to deployment that you need t
 
   **Test The Setup**
 
-  To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find a guide on how to publish events [here](guides/publishing.md). You can also check example client [here](https://github.com/raystack/raccoon/tree/main/docs/example). If there is something wrong with Raccoon, you can check the [troubleshooting](guides/troubleshooting.md) section.
+  To make sure the deployment can handle the load, you need to test it with the same number of connections and request you are expecting. You can find a guide on how to publish events [here](guides/publishing.md). You can also check client example [here](quickstart.md##publishing-your-first-event). If there is something wrong with Raccoon, you can check the [troubleshooting](guides/troubleshooting.md) section.

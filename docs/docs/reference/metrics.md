@@ -1,6 +1,8 @@
 # Metrics
 
-Raccoon uses Statsd protocol as way to report metrics. You can capture the metrics using any supported statsd collector like [Telegraf](https://github.com/influxdata/telegraf). This page contains reference for all the metrics for Raccoon.
+Raccoon supports `statsd` and `prometheus` as two ways to report metrics. For statsd, we recommend using [Telegraf](https://github.com/influxdata/telegraf) as a collection agent.
+
+This page contains the reference for all the metrics exposed by Raccoon.
 
 ## Table of Contents
 

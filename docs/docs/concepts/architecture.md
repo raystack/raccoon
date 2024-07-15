@@ -245,7 +245,7 @@ The server ensures that the connections are recyclable. It adopts mechanisms to 
 ### Producer
 Raccoon supports a number of destination event storage systems. Following is a list of currently supported systems, along with their status. 
 
-|Name|Version|Status
+|Name|Version|Status|
 |---|---|---|
 | Apache Kafka | v0.1.0 |`STABLE` |
 | Google Cloud PubSub | v0.2.3 | `ALPHA` |

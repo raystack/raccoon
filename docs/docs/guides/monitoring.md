@@ -141,6 +141,11 @@ To infer data loss, you can count [`kafka_messages_delivered_total`](reference/m
 
 `count(kafka_messages_delivered_total success=false)/count(kafka_messages_delivered_total)`
 
+For other publishers, just replace `kafka` in the metric name with the name of the publisher. For instance, analogs of `kafka_messages_delivered_total` for PubSub and Kinesis would be:
+* [`pubsub_messages_delivered_total`](reference/metrics.md#pubsub_messages_delivered_total)
+* [`kinesis_messages_delivered_total`](reference/metrics.md#kinesis_messages_delivered_total)
+
+
 ### Latency
 
 Raccoon provides fine-grained metrics that denote latency. That gives clues as to where to look in case something goes wrong. In summary, these are key metrics for latency:

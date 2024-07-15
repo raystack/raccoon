@@ -29,11 +29,11 @@ Contains server-side handlers for gRPC server.
 
 ### `worker`
 
-Buffer from when the events are processed and before events are published. This will also act as interface that connects server and publisher when in the future. Currently, `worker` is tightly coupled with `websocket` server and `kafka` publisher.
+Buffer from when the events are processed and before events are published. This will also act as interface that connects server and publisher.
 
 ### `publisher`
 
-Does the actual publishing to the downstream pipeline. 
+Does the actual publishing to the downstream message queue. 
 Currently Supports:
 * Apache Kafka
 * Google Cloud Pub/Sub

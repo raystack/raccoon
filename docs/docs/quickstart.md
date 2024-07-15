@@ -4,30 +4,94 @@ import CodeBlock from '@theme/CodeBlock'
 
 # Quickstart
 
-This document will guide you on how to get Raccoon along with Kafka setup running locally. This document assumes that you have installed Docker and Kafka with `host.docker.internal` [advertised](https://www.confluent.io/blog/kafka-listeners-explained/) on your machine.
+This document will guide you on how to get Raccoon + Kafka setup running locally. This document assumes that you have Docker (with Docker Compose) and Kafka installed on your system. 
 
-## Run Raccoon with Docker
+## Run Raccoon with Docker Compose
 
-Make sure to set `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS` according to your local Kafka setup. Then run the following commands:. 
+Here's a minimal setup that runs a single node kafka-cluster along with raccoon:
 
-```bash
-$ docker run -p 8080:8080 \
-  -e SERVER_WEBSOCKET_CONN_ID_HEADER=X-User-ID \
-  -e PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS=host.docker.internal:9092 \
-  -e EVENT_DISTRIBUTION_PUBLISHER_PATTERN=clickstream-log \
-  raystack/raccoon:latest
+```yaml title="docker-compose.yml"
+networks:
+  raccoon-network:
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.1.2
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - raccoon-network
+
+  kafka:
+    image: confluentinc/cp-kafka:5.1.2
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9094:9094"
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: 1000000000
+      CONFLUENT_METRICS_ENABLE: 'false'
+    links:
+      - zookeeper
+    networks:
+      - raccoon-network
+  raccoon:
+    image: raystack/raccoon
+    hostname: raccoon
+    container_name: raccoon
+    stdin_open: true
+    tty: true
+    depends_on:
+      - kafka
+    environment:
+      SERVER_WEBSOCKET_PORT: "8080"
+      SERVER_WEBSOCKET_CHECK_ORIGIN: "true"
+      SERVER_CORS_ENABLED: "true"
+      SERVER_CORS_ALLOWED_ORIGIN: "http://localhost:3000 http://localhost:8080"
+      SERVER_CORS_ALLOWED_METHODS: "GET HEAD POST OPTIONS"
+      SERVER_WEBSOCKET_CONN_ID_HEADER: "X-User-ID"
+      SERVER_WEBSOCKET_CONN_GROUP_HEADER: "X-User-Group"
+      SERVER_GRPC_PORT: 8081
+      EVENT_DISTRIBUTION_PUBLISHER_PATTERN: "event-log"
+      PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS: "kafka:9092"
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    networks:
+      - raccoon-network
 ```
 
-To test whether the service is running or not, you can try to ping the server.
+This setup is configured to publish all events to `event-log` topic. You can also configure Raccoon to [route events to different topics based on the event type.](concepts/architecture.md#event-distribution)
+
+Copy the file to your local system and run the following to start Raccoon.
+```bash
+$ docker compose up
+```
+
+To test whether Raccoon is running or not, you can try to ping the server.
 
 ```bash
 $ curl http://localhost:8080/ping
 ```
 
 To verify the event published by Raccoon. First, you need to start a Kafka listener. In a seperate terminal run:
-
 ```bash
-$ kafka-console-consumer --bootstrap-server localhost:9092 --topic clickstream-log
+$ kafka-console-consumer --bootstrap-server localhost:9094 --topic 'event-log'
 ```
 
 ## Publishing Your First Event
@@ -297,7 +361,6 @@ $ node main.mjs
 </TabItem>
 </Tabs>
 ```
-
 
 
 ## Where To Go Next

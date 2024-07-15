@@ -241,4 +241,8 @@ Raccoon internally checks for these delivery reports before pulling the next bat
 
 ### Observability Stack
 
-Raccoon internally uses [statsd](https://gopkg.in/alexcesaro/statsd.v2) go module client to export metrics in StatsD line protocol format. A recommended choice for observability stack would be to host [telegraf](https://www.influxdata.com/time-series-platform/telegraf/) as the receiver of these measurements and export it to [influx](https://www.influxdata.com/get-influxdb/), influx to store the metrics, [grafana](https://grafana.com/) to build dashboards using Influx as the source.
+Raccoon supports [StatsD](https://github.com/statsd/statsd) and [Prometheus](https://prometheus.io/) as telemetry systems.
+
+* **StatsD**: A recommended choice for observability stack would be to host [telegraf](https://www.influxdata.com/time-series-platform/telegraf/) as the receiver of these measurements and export it to [influx](https://www.influxdata.com/get-influxdb/) database for storage, [grafana](https://grafana.com/) to build dashboards using Influx as the source.
+
+* **Prometheus**: Prometheus operates on a pull model and comes with it's own time-series database. You don't need any additional components apart from the prometheus to start collecting and storing metrics. [Grafana](https://grafana.com/) can be used to build dashboards using Prometheus as a data source.

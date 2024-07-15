@@ -3,9 +3,15 @@ toc_max_heading_level: 4
 ---
 # Architecture
 
-Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon supports websocket, REST and gRPC protocols for clients to send events. With websocket it provides long persistent connections, with no overhead of additional headers sizes as in http protocol. Racoon supports protocol buffers and JSON as serialization formats. Websocket and REST API support both whereas with gRPC only protocol buffers are supported. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](guides/publishing.md#data-formatters) for data definitions format that Raccoon accepts.
+Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to message queues. Following message queues are currently supported:
+* Apache Kafka
+* Google Cloud PubSub 
+* AWS Kinesis Data Streams
 
-Raccoon was built with a primary purpose to source or collect user behaviour data in near-real time. User behaviour data is a stream of events that occur when users traverse through a mobile app or website. Raccoon powers analytics systems, big data pipelines and other disparate consumers by providing high volume, high throughput ingestion APIs consuming real time data. Raccoon’s key architecture principle is a realization of an event agnostic backend \(accepts events of any type without the type awareness\). It is this capability that enables Raccoon to evolve into a strong player in the ingestion/collector ecosystem that has real time streaming/analytical needs.
+Raccoon supports websocket, REST and gRPC protocols for clients to send events. With websocket it provides long persistent connections, with no overhead of additional headers sizes as in http protocol. Racoon supports protocol buffers and JSON as serialization formats. Websocket and REST API support both whereas with gRPC only protocol buffers are supported. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](guides/publishing.md#data-formatters) for data definitions format that Raccoon accepts.
+
+
+Raccoon was built with the primary purpose to source or collect user behaviour data in near-real time. User behaviour data is a stream of events that occur when users traverse through a mobile app or website. Raccoon powers analytics systems, big data pipelines and other disparate consumers by providing high volume, high throughput ingestion APIs consuming real time data. Raccoon’s key architecture principle is a realization of an event agnostic backend \(accepts events of any type without the type awareness\). It is this capability that enables Raccoon to evolve into a strong player in the ingestion/collector ecosystem that has real time streaming/analytical needs.
 
 ## System Design
 
@@ -16,7 +22,7 @@ At a high level, the following sequence details the architecture.
 - Raccoon accepts events through one of the supported protocols.
 - The events are deserialized using the correct deserializer and then forwarded to the buffered channel.
 - A pool of worker go routines works off the buffered channel
-- Each worker iterates over the events' batch, determines the topic based on the type and serializes the bytes to the Kafka producer synchronously.
+- Each worker iterates over the events' batch, determines the topic based on the type and serializes the bytes to the Producer synchronously.
 
 Note: The internals of each of the components like channel size, buffer sizes, publisher properties etc., are configurable enabling Raccoon to be provisioned according to the system/event characteristics and load.
 
@@ -60,32 +66,32 @@ The server for the most times provide at-least-once event delivery guarantee.
 
 Event data loss happens in the following scenarios:
 
-- When the server shuts down, events in-flight in the kafka buffer or those stored in the internal channels are potentially lost. The server performs, on a best-effort basis, sending all the events to kafka within a configured shutdown time `WORKER_BUFFER_FLUSH_TIMEOUT_MS`. The default time is set to 5000 ms within which it is expected that all the events are sent by then.
-- When the upstream kafka cluster is facing a downtime
+- When the server shuts down, events in-flight in the buffer or those stored in the internal channels are potentially lost. The server performs, on a best-effort basis, to send all the events within a configured shutdown timeout `WORKER_BUFFER_FLUSH_TIMEOUT_MS`. The default time is set to 5000 ms within which it is expected that all the events are sent by then.
+- When the downstream message queue is facing a downtime
 
-  Every event sent from the client is stored in-memory in the buffered channels \(explained in the `Acknowledging events` section\). The workers pull the events from this channel and publishes to kafka. The server does not maintain any event persistence. This is a conscious decision to enable a simpler, performant ingestion design for the server. The buffer/retries of failed events is relied upon Kafka's internal buffer/retries respectively. In future: Server can be augmented for zero-data loss or at-least-once guarantees through intermediate event persistence.
+  Every event sent from the client is stored in-memory in the buffered channels \(explained in the `Acknowledging events` section\). The workers pull the events from this channel and send it to Producer for publishing. The server does not maintain any event persistence. This is a conscious decision to enable a simpler, performant ingestion design for the server. In future: Server can be augmented for zero-data loss or at-least-once guarantees through intermediate event persistence.
 
 ## Acknowledging events
 
-Event acknowledgements was designed to signify if the events batch is received and sent to Kafka successfully. This will enable the clients to retry on failed event delivery. Raccoon chooses when to send event acknowledgement based on the configuration parameter `EVENT_ACK`.
+Event acknowledgements was designed to signify if the events batch is received and sent successfully. This will enable the clients to retry on failed event delivery. Raccoon chooses when to send event acknowledgement based on the configuration parameter `EVENT_ACK`.
 
 ### EVENT_ACK = 0
 
-Raccoon sends the acknowledgments as soon as it receives and deserializes the events successfully using the proto `SendEventRequest`. This configuration is recommended when low latency takes precedence over end to end acknowledgement. The acks are sent even before it is produced to Kafka. The following picture depicts the sequence of the event ack.
+Raccoon sends the acknowledgments as soon as it receives and deserializes the events successfully using the proto `SendEventRequest`. This configuration is recommended when low latency takes precedence over end to end acknowledgement. The acks are sent even before it is produced to downstream message queue. The following picture depicts the sequence of the event ack.
 
 ![](/assets/raccoon_sync.png)
 
 Pros:
 
-- Performant as it does not wait for kafka/network round trip for each batch of events.
+- Performant as it does not wait for producer/network round trip for each batch of events.
 
 Cons:
 
-- Potential data-loss and the clients do not get a chance to retry/resend the events. The possibility of data-loss occurs when the kafka broker cluster is facing a downtime.
+- Potential data-loss and the clients do not get a chance to retry/resend the events. The possibility of data-loss occurs when the downstream message queue is experiencing downtime.
 
 ### EVENT_ACK = 1
 
-Raccoon sends the acknowledgments after the events are acknowledged successfully from the Kafka brokers. This configuration is recommended when reliable end-to-end acknowledgements are required. Here the underlying publisher acknowledgement is leveraged.
+Raccoon sends the acknowledgments after the events are acknowledged successfully from the downstream message queue. This configuration is recommended when reliable end-to-end acknowledgements are required. Here the underlying publisher acknowledgement is leveraged.
 
 ![](/assets/raccoon_async.png)
 
@@ -97,7 +103,9 @@ Cons:
 
 - Increased end to end latency as clients need to wait for the event to be published.
 
-Considering that kafka is set up in a clustered, cross-region, cross-zone environment, the chances of it going down are mostly unlikely. In case if it does, the amount of events lost is negligible considering it is a streaming system and is expected to forward millions of events/sec.
+Considering that kafka is set up in a clustered, cross-region, cross-zone environment, the chances of it going down are  unlikely. In case if it does, the amount of events lost is negligible considering it is a streaming system and is expected to forward millions of events/sec.
+
+PubSub and Kinesis offer strong SLAs (>=99.95% and >=99.9%) so they are least likey to be unavailable. However, you may hit rate limits for these services, so we advise that you provision your infrastructure sufficiently to avoid it. In case a rate-limit is hit, Raccoon will report the message as undelivered.
 
 When an SendEventRequest is sent to Raccoon over any connection be it Websocket/HTTP/gRPC a corresponding response is sent by the server indicating whether the event was consumed successfully or not.
 
@@ -180,7 +188,7 @@ When a JSON event like the one mentioned below is sent a corresponding JSON resp
 
 ### Event Distribution
 
-Event distribution works by finding the type for each event in the batch and sending them to appropriate kafka topic. The topic name is determined by the following code
+Event distribution works by finding the type for each event in the batch and sending them to appropriate message queue topic. The topic name is determined by the following code
 
 ```go
 topic := strings.Replace(p.topicFormat, "%s", event.Type, 1)
@@ -206,7 +214,7 @@ message Event {
   bytes eventBytes = 1;
   /*
   `type` denotes an event type that the producer of this proto message may set.
-  It is currently used by raccoon to distribute events to respective Kafka topics. However the
+  It is currently used by raccoon to distribute events to respective message queue topics. However the
   users of this proto can use this type to set strings which can be processed in their
   ingestion systems to distribute or perform other functions.
   */
@@ -218,7 +226,7 @@ will have the event sent to a topic like
 
 `topic-viewed-log`
 
-The event distribution does not depend on any partition logic. So events can be randomly distributed to any kafka partition.
+The event distribution does not depend on any partition logic. So events can be randomly distributed to any available partition.
 
 ### Event Deserialization
 
@@ -237,11 +245,11 @@ The server ensures that the connections are recyclable. It adopts mechanisms to 
 ### Producer
 Raccoon supports a number of destination event storage systems. Following is a list of currently supported systems, along with their status. 
 
-|Name|Status|
-|---|---|
-| Apache Kafka | `STABLE` |
-| Google Cloud PubSub | `ALPHA` |
-| AWS Kinesis Data Streams | `ALPHA` |
+|Name|Version|Status
+|---|---|---|
+| Apache Kafka | v0.1.0 |`STABLE` |
+| Google Cloud PubSub | v0.2.3 | `ALPHA` |
+| AWS Kinesis Data Streams | v0.2.5 | `ALPHA` |
 
 #### Apache Kafka
 

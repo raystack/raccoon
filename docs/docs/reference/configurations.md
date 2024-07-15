@@ -1,3 +1,7 @@
+---
+toc_max_heading_level: 4
+---
+
 # Configurations
 
 This page contains reference for all the application configurations for Raccoon.
@@ -189,9 +193,11 @@ You can also route the events to single topic irrespective of the type. To do th
 - Type `Required`
 - Default value: `clickstream-%s-log`
 
-## Publisher
+## Publishers
 
-### `PUBLISHER_TYPE`
+### Common
+
+#### `PUBLISHER_TYPE`
 
 The publisher to use for transmitting events.
 
@@ -201,49 +207,51 @@ Publisher specific configuration follows the pattern `PUBLISHER_${TYPE}_*` where
 - Default value: `kafka`
 - Possible values: `kafka`, `pubsub`, `kinesis`
 
-### `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`
+### Kafka
+
+#### `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`
 
 Kafka brokers IP address where the events are published.
 
 - Example value: localhost:9092
 - Type `Required`
 
-### `PUBLISHER_KAFKA_CLIENT_ACKS`
+#### `PUBLISHER_KAFKA_CLIENT_ACKS`
 
 Number of replica acknowledgement before it send ack back to service.
 
 - Type `Optional`
 - Default value: `-1`
 
-### `PUBLISHER_KAFKA_CLIENT_RETRIES`
+#### `PUBLISHER_KAFKA_CLIENT_RETRIES`
 
 Number of retries in case of failure.
 
 - Type `Optional`
 - Default value: `2147483647`
 
-### `PUBLISHER_KAFKA_CLIENT_RETRY_BACKOFF_MS`
+#### `PUBLISHER_KAFKA_CLIENT_RETRY_BACKOFF_MS`
 
 Backoff time on retry.
 
 - Type `Optional`
 - Default value: `100`
 
-### `PUBLISHER_KAFKA_CLIENT_STATISTICS_INTERVAL_MS`
+#### `PUBLISHER_KAFKA_CLIENT_STATISTICS_INTERVAL_MS`
 
 librdkafka statistics emit interval. The application also needs to register a stats callback using rd_kafka_conf_set_stats_cb\(\). The granularity is 1000ms. A value of 0 disables statistics.
 
 - Type `Optional`
 - Default value: `0`
 
-### `PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES`
+#### `PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES`
 
 Maximum number of messages allowed on the producer queue. This queue is shared by all topics and partitions.
 
 - Type `Optional`
 - Default value: `100000`
 
-### `PUBLISHER_KAFKA_CLIENT_*`
+#### `PUBLISHER_KAFKA_CLIENT_*`
 
 Kafka client config is dynamically configured. You can see other configurations [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md).
 
@@ -270,33 +278,34 @@ func (k publisherKafka) ToKafkaConfigMap() *confluent.ConfigMap {
 - Type `Optional`
 - Default value: see the [reference](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
 
-### `PUBLISHER_KAFKA_FLUSH_INTERVAL_MS`
+#### `PUBLISHER_KAFKA_FLUSH_INTERVAL_MS`
 
 Upon shutdown, the publisher will try to finish processing events in buffer before the timeout exceeded. When the timeout exceeded, the publisher is forcefully closed.
 
 - Type `Optional`
 - Default value: `1000`
 
-### `PUBLISHER_PUBSUB_CREDENTIALS`
+### PubSub
+#### `PUBLISHER_PUBSUB_CREDENTIALS`
 
 Path to the file containing service account credentials. Defaults to the value of `GOOGLE_APPLICATION_CREDENTIALS` environment variable. This is used to authenticate with Google Cloud Platform.
 
 - Type `Required` (if `PUBLISHER_TYPE=pubsub`, otherwise ignored)
 
-### `PUBLISHER_PUBSUB_PROJECT_ID`
+#### `PUBLISHER_PUBSUB_PROJECT_ID`
 
 Destination Google Cloud Project ID. Messages will be transmitted to the PubSub topics under this project.
 
 - Type `Required` (if `PUBLISHER_TYPE=pubsub`, otherwise ignored)
 
-### `PUBLISHER_PUBSUB_TOPIC_AUTOCREATE`
+#### `PUBLISHER_PUBSUB_TOPIC_AUTOCREATE`
 
 Whether Raccoon should create a topic if it doesn't exist.
 
 - Type `Optional`
 - Default value `false`
 
-### `PUBLISHER_PUBSUB_TOPIC_RETENTION_MS`
+#### `PUBLISHER_PUBSUB_TOPIC_RETENTION_MS`
 
 How long PubSub should retain messages in a topic (in milliseconds). Valid values must be between 10 minutes and 31 days.
 
@@ -305,41 +314,43 @@ see [pubsub docs](https://cloud.google.com/pubsub/docs/create-topic) for more in
 - Type `Optional`
 - Default value `0`
 
-### `PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS`
+#### `PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS`
 
 Maximum time to wait for before publishing a batch of messages.
 
 - Type `Optional`
 - Default value `10`
 
-### `PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD`
+#### `PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD`
 
 Maximum number of message to accumulate before transmission.
 
 - Type `Optional`
 - Default value `100`
 
-### `PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD`
+#### `PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD`
 
 Maximum buffer size (in bytes)
 
 - Type `Optional`
 - Default value `1000000` (~1MB)
 
-### `PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS`
+#### `PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS`
 
 How long to wait before aborting a publish operation.
 
 - Type `Optional`
 - Default value `60000` (1 Minute)
 
-### `PUBLISHER_KINESIS_AWS_REGION`
+### Kinesis
+
+#### `PUBLISHER_KINESIS_AWS_REGION`
 
 AWS Region of the target kinesis stream. The value of `AWS_REGION` is used as fallback if this variable is not set.
 
 - Type `Required`
 
-### `PUBLISHER_KINESIS_CREDENTIALS`
+#### `PUBLISHER_KINESIS_CREDENTIALS`
 
 Path to [AWS Credentials file](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html). 
 
@@ -348,7 +359,7 @@ You can also specify the credentials using `AWS_ACCESS_KEY_ID` and `AWS_SECRET_A
 - Type `Optional`
 - Default value `$HOME/.aws/credentials`
 
-### `PUBLISHER_KINESIS_STREAM_AUTOCREATE`
+#### `PUBLISHER_KINESIS_STREAM_AUTOCREATE`
 
 Whether Raccoon should create a stream if it doesn't exist.
 
@@ -357,7 +368,7 @@ NOTE: We recommend that you create all streams that you need to publish to ahead
 - Type `Optional`
 - Default value `false`
 
-### `PUBLISHER_KINESIS_STREAM_MODE`
+#### `PUBLISHER_KINESIS_STREAM_MODE`
 
 This configuration variable controls the `StreamMode` of the
 streams created by Raccoon.
@@ -366,14 +377,14 @@ streams created by Raccoon.
 - Default value `ON_DEMAND`
 - Possible values: `ON_DEMAND`, `PROVISIONED`
 
-### `PUBLISHER_KINESIS_STREAM_SHARDS`
+#### `PUBLISHER_KINESIS_STREAM_SHARDS`
 
 This controls the number of shards configured for a stream created by Raccoon.
 
 - Type `Optional`
 - Default value `4`
 
-### `PUBLISHER_KINESIS_STREAM_PROBE_INTERVAL_MS`
+#### `PUBLISHER_KINESIS_STREAM_PROBE_INTERVAL_MS`
 
 This specifies the time delay between stream status checks.
 
@@ -381,13 +392,12 @@ This specifies the time delay between stream status checks.
 - Default value `1000`
 
 
-### `PUBLISHER_KINESIS_PUBLISH_TIMEOUT_MS`
+#### `PUBLISHER_KINESIS_PUBLISH_TIMEOUT_MS`
 
 How long to wait for before aborting a publish operation.
 
 - Type `Optional`
 - Default value `60000`
-
 
 ## Metric
 

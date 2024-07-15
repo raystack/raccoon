@@ -70,7 +70,7 @@ func main() {
 	client, err := ws.New(
 		ws.WithUrl("ws://localhost:8080/api/v1/events"),
 		ws.WithHeader("x-user-id", "123"),
-		ws.WithHeader("x-user-type", "gojek"))
+		ws.WithHeader("x-user-type", "ACME"))
 
 	if err != nil {
 		log.Fatal(err)

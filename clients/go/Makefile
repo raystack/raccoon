@@ -1,15 +1,5 @@
 .PHONY: all
-all : setup fmt staticcheck test
-
-setup:
-	@echo "installing the dependencies..."
-	go get go.buf.build/raystack/gw/raystack/proton
-	go get golang.org/x/lint
-	go get google.golang.org/protobuf
-	go get github.com/gorilla/websocket
-	go get github.com/stretchr/testify
-	go get github.com/stretchr/testify
-	go get honnef.co/go/tools
+all : fmt staticcheck test
 
 fmt:
 	@echo "code formatting..."

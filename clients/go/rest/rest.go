@@ -7,7 +7,7 @@ import (
 
 	"net/http"
 
-	pb "go.buf.build/raystack/gw/raystack/proton/raystack/raccoon/v1beta1"
+	pb "buf.build/gen/go/raystack/proton/protocolbuffers/go/raystack/raccoon/v1beta1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gojek/heimdall/v7/httpclient"

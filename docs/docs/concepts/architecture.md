@@ -1,3 +1,6 @@
+---
+toc_max_heading_level: 4
+---
 # Architecture
 
 Raccoon written in [GO](https://github.com/golang) is a high throughput, low-latency service that provides an API to ingest streaming data from mobile apps, sites and publish it to Kafka. Raccoon supports websocket, REST and gRPC protocols for clients to send events. With websocket it provides long persistent connections, with no overhead of additional headers sizes as in http protocol. Racoon supports protocol buffers and JSON as serialization formats. Websocket and REST API support both whereas with gRPC only protocol buffers are supported. It provides an event type agnostic API that accepts a batch \(array\) of events in protobuf format. Refer [here](guides/publishing.md#data-formatters) for data definitions format that Raccoon accepts.
@@ -231,7 +234,16 @@ The server ensures that the connections are recyclable. It adopts mechanisms to 
 
 ## Components
 
-### Kafka producer
+### Producer
+Raccoon supports a number of destination event storage systems. Following is a list of currently supported systems, along with their status. 
+
+|Name|Status|
+|---|---|
+| Apache Kafka | `STABLE` |
+| Google Cloud PubSub | `ALPHA` |
+| AWS Kinesis Data Streams | `ALPHA` |
+
+#### Apache Kafka
 
 Raccoon uses [confluent go kafka](https://github.com/confluentinc/confluent-kafka-go) as the producer client to publish events. Publishing events are light weight and relies on kafka producer's retries. Confluent internally uses librdkafka which produces events asynchronously. Application writes messages using a functional based producer API
 
@@ -239,10 +251,31 @@ Raccoon uses [confluent go kafka](https://github.com/confluentinc/confluent-kafk
 
 Raccoon internally checks for these delivery reports before pulling the next batch of events. On failed deliveries the appropriate metrics are updated. This mechanism makes the events delivery synchronous and a reliable events delivery.
 
+#### Google Cloud PubSub
+
+Raccoon uses [cloud.google.com/go/pubsub](https://pkg.go.dev/cloud.google.com/go/pubsub) as the producer client for publishing events to Google Cloud PubSub.
+
+The Google Cloud PubSub SDK internally buffers messages in batches before sending them downstream. You can control this buffering behaviour by tuning the following env variables:
+* [`PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD`](reference/configurations.md#publisher_pubsub_publish_count_threshold)
+* [`PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD`](reference/configurations.md#publisher_pubsub_publish_byte_threshold)
+* [`PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS`](reference/configurations.md#publisher_pubsub_publish_delay_threshold_ms)
+
+The defaults for these settings are optimal for near-realtime uses cases.
+
+#### AWS Kinesis Data Streams
+
+Raccoon uses [github.com/aws/aws-sdk-go-v2/service/kinesis](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/service/kinesis) as the producer client for publishing events to AWS Kinesis.
+
+In particular, `kinesis.PutRecord()` is used for sending messages downstream. This means that the messages are sent immediately without any buffering at the SDK level. Each message is given a random partition key (using `rand.Int31()`) so that messages are evenly distributed amongst available shards. 
+
+In the future, Raccoon may support a more robust partition selection mechanism that has stronger distribution guarantees.
+
 ### Observability Stack
 
 Raccoon supports [StatsD](https://github.com/statsd/statsd) and [Prometheus](https://prometheus.io/) as telemetry systems.
 
-* **StatsD**: A recommended choice for observability stack would be to host [telegraf](https://www.influxdata.com/time-series-platform/telegraf/) as the receiver of these measurements and export it to [influx](https://www.influxdata.com/get-influxdb/) database for storage, [grafana](https://grafana.com/) to build dashboards using Influx as the source.
+#### [StatD](https://github.com/statsd/statsd)
+A recommended choice for observability stack would be to host [telegraf](https://www.influxdata.com/time-series-platform/telegraf/) as the receiver of these measurements and export it to [influx](https://www.influxdata.com/get-influxdb/) database for storage, [grafana](https://grafana.com/) to build dashboards using Influx as the source.
 
-* **Prometheus**: Prometheus operates on a pull model and comes with it's own time-series database. You don't need any additional components apart from the prometheus to start collecting and storing metrics. [Grafana](https://grafana.com/) can be used to build dashboards using Prometheus as a data source.
+#### [Prometheus](https://prometheus.io/)
+Prometheus operates on a pull model and comes with it's own time-series database. You don't need any additional components apart from the prometheus to start collecting and storing metrics. [Grafana](https://grafana.com/) can be used to build dashboards using Prometheus as a data source.

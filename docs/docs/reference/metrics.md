@@ -1,3 +1,6 @@
+---
+toc_max_heading_level: 4
+---
 # Metrics
 
 Raccoon supports `statsd` and `prometheus` as two ways to report metrics. For statsd, we recommend using [Telegraf](https://github.com/influxdata/telegraf) as a collection agent.
@@ -7,7 +10,10 @@ This page contains the reference for all the metrics exposed by Raccoon.
 ## Table of Contents
 
 - [Server Connection](metrics.md#server-connection)
-- [Kafka Publisher](metrics.md#kafka-publisher)
+- [Publisher](metrics.md#publisher)
+  - [Kafka](#kafka)
+  - [PubSub](#pubsub)
+  - [Kinesis](#kinesis)
 - [PubSub Publisher](metrics.md#pubsub-publisher)
 - [Kinesis Publisher](metrics.md#kinesis-publisher)
 - [Resource Usage](metrics.md#resource-usage)
@@ -64,16 +70,16 @@ Number of connection close errors encountered
 - Type: `Count`
 - Tags: NA
 
-## Kafka Publisher
-
-### `kafka_messages_delivered_total`
+## Publisher
+### Kafka
+#### `kafka_messages_delivered_total`
 
 Number of delivered events to Kafka. The metric also contains false increments. To find the true value, one should use the difference between this and `kafka_messages_undelivered_total` metric for the same tag/labels.
 
 - Type: `Count`
 - Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
 
-### `kafka_messages_undelivered_total`
+#### `kafka_messages_undelivered_total`
 
 The count of false increments done by `kafka_messages_delivered_total`. To be used in conjunction with the former for accurate metrics.
 
@@ -81,61 +87,61 @@ The count of false increments done by `kafka_messages_delivered_total`. To be us
 - Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
 
 
-### `kafka_unknown_topic_failure_total`
+#### `kafka_unknown_topic_failure_total`
 
 Number of delivery failure caused by topic does not exist in kafka.
 
 - Type: `Count`
 - Tags: `topic=topicname` `event_type=*`
 
-### `kafka_tx_messages_total`
+#### `kafka_tx_messages_total`
 
 Total number of messages transmitted \(produced\) to Kafka brokers.
 
 - Type: `Gauge`
 
-### `kafka_tx_messages_bytes_total`
+#### `kafka_tx_messages_bytes_total`
 
 Total number of message bytes \(including framing, such as per-Message framing and MessageSet/batch framing\) transmitted to Kafka brokers
 
 - Type: `Gauge`
 
-### `kafka_brokers_tx_total`
+#### `kafka_brokers_tx_total`
 
 Total number of requests sent to Kafka brokers
 
 - Type: `Gauge`
 - Tags: `broker=broker_nodes`
 
-### `kafka_brokers_tx_bytes_total`
+#### `kafka_brokers_tx_bytes_total`
 
 Total number of bytes transmitted to Kafka brokers
 
 - Type: `Gauge`
 - Tags: `broker=broker_nodes`
 
-### `kafka_brokers_rtt_average_milliseconds`
+#### `kafka_brokers_rtt_average_milliseconds`
 
 Broker latency / round-trip time in microseconds
 
 - Type: `Gauge`
 - Tags: `broker=broker_nodes`
 
-### `ack_event_rtt_ms`
+#### `ack_event_rtt_ms`
 
 Time taken from ack function called by kafka producer to processed by the ack handler.
 
 - Type: `Timing`
 - Tags: NA
 
-### `event_rtt_ms`
+#### `event_rtt_ms`
 
 Time taken from event is consumed from the queue to be acked by the ack handler.
 
 - Type: `Timing`
 - Tags: NA
 
-### `kafka_producebulk_tt_ms`
+#### `kafka_producebulk_tt_ms`
 
 Response time of produce batch method of the kafka producer
 
@@ -143,16 +149,16 @@ Response time of produce batch method of the kafka producer
 - Tags: NA
 
 
-## PubSub Publisher
+### PubSub
 
-### `pubsub_messages_delivered_total`
+#### `pubsub_messages_delivered_total`
 
 Number of delivered events to PubSub. The metric also contains false increments. To find the true value, one should use the difference between this and `pubsub_messages_undelivered_total` metric for the same tag/labels.
 
 - Type: `Count`
 - Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
 
-### `pubsub_messages_undelivered_total`
+#### `pubsub_messages_undelivered_total`
 
 The count of false increments done by `pubsub_messages_delivered_total`. To be used in conjunction with the former for accurate metrics.
 
@@ -160,23 +166,23 @@ The count of false increments done by `pubsub_messages_delivered_total`. To be u
 - Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
 
 
-### `pubsub_unknown_topic_failure_total`
+#### `pubsub_unknown_topic_failure_total`
 
 Number of delivery failure caused by topic does not exist in PubSub.
 
 - Type: `Count`
 - Tags: `topic=topicname` `event_type=*` `conn_group=*`
 
-## Kinesis Publisher
+### Kinesis
 
-### `kinesis_messages_delivered_total`
+#### `kinesis_messages_delivered_total`
 
 Number of delivered events to Kinesis. The metric also contains false increments. To find the true value, one should use the difference between this and `kinesis_messages_undelivered_total` metric for the same tag/labels.
 
 - Type: `Count`
 - Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
 
-### `kinesis_messages_undelivered_total`
+#### `kinesis_messages_undelivered_total`
 
 The count of false increments done by `kinesis_messages_delivered_total`. To be used in conjunction with the former for accurate metrics.
 
@@ -184,7 +190,7 @@ The count of false increments done by `kinesis_messages_delivered_total`. To be 
 - Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
 
 
-### `kinesis_unknown_stream_failure_total`
+#### `kinesis_unknown_stream_failure_total`
 
 Number of delivery failure caused by stream does not exist in Kinesis.
 

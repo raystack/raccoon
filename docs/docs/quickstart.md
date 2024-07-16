@@ -102,7 +102,7 @@ $ kafka-console-consumer --bootstrap-server localhost:9094 --topic 'event-log'
 ```
 Make sure that `Go` >= `1.16` is installed on your system. See [installation instructions](https://go.dev/doc/install) on Go's website for more info.
 
-Create a directory called `go-raccoon-example` and initalise it as a go module
+Create a directory called `go-raccoon-example` and initialize it as a go module
 
 ```bash
 $ mkdir go-raccoon-example

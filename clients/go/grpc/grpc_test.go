@@ -8,7 +8,8 @@ import (
 	"testing"
 	"time"
 
-	pb "go.buf.build/raystack/gw/raystack/proton/raystack/raccoon/v1beta1"
+	rpc "buf.build/gen/go/raystack/proton/grpc/go/raystack/raccoon/v1beta1/raccoonv1beta1grpc"
+	pb "buf.build/gen/go/raystack/proton/protocolbuffers/go/raystack/raccoon/v1beta1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -24,7 +25,7 @@ import (
 const connId string = "X-UniqueId"
 
 type mockEventServiceServer struct {
-	pb.UnimplementedEventServiceServer
+	rpc.UnimplementedEventServiceServer
 }
 
 func (*mockEventServiceServer) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.SendEventResponse, error) {
@@ -52,7 +53,7 @@ func (*mockEventServiceServer) SendEvent(ctx context.Context, req *pb.SendEventR
 func dialer() func(context.Context, string) (net.Conn, error) {
 	listener := bufconn.Listen(1024 * 1024)
 	server := grpc.NewServer()
-	pb.RegisterEventServiceServer(server, &mockEventServiceServer{})
+	rpc.RegisterEventServiceServer(server, &mockEventServiceServer{})
 	go func() {
 		if err := server.Serve(listener); err != nil {
 			log.Fatal(err)

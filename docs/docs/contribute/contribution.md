@@ -2,8 +2,8 @@
 
 The following is a set of guidelines for contributing to Raccoon. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request. Here are some important resources:
 
-- [Concepts](contribution.md) section will explain you about Raccoon architecture,
-- Our [roadmap](https://github.com/raystack/raccoon/docs/roadmap.md) is the 10k foot view of how we envision Raccoon to evolve
+- [Concepts](concepts/architecture.md) section will explain you about Raccoon architecture,
+- Our [roadmap](roadmap.md) is the 10k foot view of how we envision Raccoon to evolve
 - Github [issues](https://github.com/raystack/raccoon/issues) track the ongoing and reported issues.
 
 ## How can I contribute?

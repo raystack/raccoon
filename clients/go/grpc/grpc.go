@@ -6,7 +6,8 @@ import (
 
 	"github.com/raystack/raccoon/clients/go/log"
 
-	pb "go.buf.build/raystack/gw/raystack/proton/raystack/raccoon/v1beta1"
+	rpc "buf.build/gen/go/raystack/proton/grpc/go/raystack/raccoon/v1beta1/raccoonv1beta1grpc"
+	pb "buf.build/gen/go/raystack/proton/protocolbuffers/go/raystack/raccoon/v1beta1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -60,7 +61,7 @@ func (gc *Grpc) Send(events []*raccoon.Event) (string, *raccoon.Response, error)
 		})
 	}
 
-	svc := pb.NewEventServiceClient(gc.client)
+	svc := rpc.NewEventServiceClient(gc.client)
 	meta := metadata.New(gc.headers)
 	racReq := &pb.SendEventRequest{
 		ReqGuid:  reqId,

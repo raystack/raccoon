@@ -6,30 +6,36 @@ For maintainers, please read the sections below as a guide to create a new relea
 
 Please follow these steps to create a new release:
 
-* Update `version.txt` file
-* Generate changelog from commits by using [conventional-changelog-cli](https://www.npmjs.com/package/conventional-changelog-cli#quick-start)
+* create a new tag of the form `vM.m.p`, where:
+  * `M` = Major version, indicates there are breaking changes from the last Major version.
+  * `m` = Minor version, indicates there are backward-compatible changes.
+  * `p` = Patch version, indicates there are backward-compatible bug-fixes.
 
-  ```bash
-  $ conventional-changelog -p conventionalcommits -o CHANGELOG.md
-  ```
+For example:
+``` bash
+$ git tag v1.2.0
+```
 
-* Commit `version.txt` and `CHANGELOG.md` together and mark the commit with the release tag. Make sure the release tag and `version.txt` are the same.
+* push the tags to trigger a release.
+```bash
+$ git push --tags
+```
 
-  ```bash
-  $ git add version.txt CHANGELOG.md
-  $ git commit -m "docs: update changelog and version for vM.m.p"
-  $ git tag vM.m.p
-  ```
+ Raccoon uses Goreleaser under the hood for release management. Each release pushes:
+* A [github release](https://github.com/raystack/raccoon/releases/)
+* A docker image to [raystack/raccoon](https://hub.docker.com/r/raystack/raccoon)
+* Updates raystack's [homebrew-tap](https://github.com/raystack/homebrew-tap)
+* Updates raystack's [scoop-bucket](https://github.com/raystack/scoop-bucket)
 
-* Push the commit and the tag. Release action will trigger to publish docker image and create GitHub release.
+Additionally, the Github release will also contain with pre-built binaries for:
+* `linux`
+* `darwin` (macOS)
+* `windows`
 
 ## Important Notes
 
 * Raccoon release tags follow [SEMVER](https://semver.org/) convention.
 * Github workflow is used to build and push the built docker image to Docker hub.
-* A release is triggered when a github tag of format `vM.m.p` is pushed. After the release job is succeeded, a docker image of
-
-  format `M.m.p` is pushed to docker hub.
-
+* A release is triggered when a github tag of format `vM.m.p` is pushed.
 * Release tags should only point to main branch
 

@@ -2,7 +2,7 @@
 
 This document describes high-level code structure of the project. You'll find this part useful when you want to get started to contribute to Raccoon.
 
-## Highlevel View
+## High level View
 
 The core structure of Raccoon is the server itself. After the server is started, data flows from `websocket` to `worker` to `publisher`. `websocket` manages websocket server, handle incoming connection, and incoming request. `worker` acts as a buffer and interface for various types of server and publisher down the roadmap. `publisher` contains logic to publish the events to the downstream pipeline. ![high-level](/assets/structure.svg) All the components above are initialized on `app`. `app` package is the starting point of Raccoon.
 
@@ -10,29 +10,34 @@ The core structure of Raccoon is the server itself. After the server is started,
 
 This section talks briefly about the content of various important packages. You can use this to guess the code location when you need to make changes.
 
-### `http`
+### `service`
 
-Contains all the http related code including code related to `websocket`, `rest` and `grpc`. It also has code pertaining to the http server that serves both WebSocket and REST APIs.
+Contains all backend related code including code related to `websocket`, `rest` and `grpc`. It also has code pertaining to the http server that serves both WebSocket and REST APIs.
 
-#### `http/websocket`
+#### `service/rest`
+
+Contains server-side code along with request/response handler for the REST endpoint.
+
+#### `service/rest/websocket`
 
 Contains server-related code along with request/response handlers and [connection management](architecture.md#connections).
 
-#### `http/rest`
 
-Contains server-side code along with resquest/response handler for the REST endpoint.
-
-#### `http/gRPC`
+#### `service/gRPC`
 
 Contains server-side handlers for gRPC server.
 
 ### `worker`
 
-Buffer from when the events are processed and before events are published. This will also act as interface that connects server and publisher when in the future. Currently, `worker` is tightly coupled with `websocket` server and `kafka` publisher.
+Buffer from when the events are processed and before events are published. This will also act as interface that connects server and publisher.
 
 ### `publisher`
 
-Does the actual publishing to the downstream pipeline. Currently, only support Kafka publisher.
+Does the actual publishing to the downstream message queue. 
+Currently Supports:
+* Apache Kafka
+* Google Cloud Pub/Sub
+* Amazon Web Services Kinesis
 
 ### `app`
 
@@ -44,7 +49,7 @@ Load and store application configurations. Contains mapping of environment confi
 
 ### `serialization`
 
-Contains the common serialization code for both JSON and Protobufs along with common interface.
+Contains the common serialization code for both JSON and protobuf along with common interface.
 
 ### `deserialization`
 

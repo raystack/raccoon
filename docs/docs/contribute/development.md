@@ -13,7 +13,7 @@ Our preference is the use of `git rebase` instead of `git merge` : `git pull -r`
 Commits have to be signed before they are allowed to be merged into the codebase:
 
 ```bash
-# Include -s flag to signoff
+# Include -s flag to sign off
 git commit -s -m "My first commit"
 ```
 

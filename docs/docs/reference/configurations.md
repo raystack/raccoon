@@ -1,3 +1,7 @@
+---
+toc_max_heading_level: 4
+---
+
 # Configurations
 
 This page contains reference for all the application configurations for Raccoon.
@@ -106,7 +110,7 @@ The config decides whether to enable the cors middleware and thus allow CORS req
 
 ### `SERVER_CORS_ALLOWED_ORIGIN`
 
-The server decides which origin to allow. The configuration is expected to space separated. Multiple values are supported. The value requies `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
+The server decides which origin to allow. The configuration is expected to space separated. Multiple values are supported. The value requires `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
 
 - Type `Optional`
 - Default Value ``
@@ -150,7 +154,7 @@ The server decides whether or not to handle duplicate batches for the active con
 
 ### `WORKER_BUFFER_CHANNEL_SIZE`
 
-Maximum batch that service can handle when workers are busy. When the number of batch is exceeded, the worker will backpressure causing websocket to stop reading new request.
+Maximum batch that service can handle when workers are busy. When the number of batch is exceeded, the worker will back-pressure causing websocket to stop reading new request.
 
 - Type `Optional`
 - Default value: `100`
@@ -182,16 +186,18 @@ Delivery channel is implementation detail where the kafka client asks for channe
 
 Routes events based on given pattern and [type](https://github.com/raystack/proton/blob/main/raystack/raccoon/Event.proto#L31). The pattern is following [go string format](https://golang.org/pkg/fmt/) with event `type` as second argument. The result of the string format will be the kafka topic target of the event.
 
-For example, you pass `%s-event` as `EVENT_DISTRIBUTION_PUBLISHER_PATTERN`. If you send event with `click` type, your event will be forwareded to `click-event` kafka topic on the configured broker. If you send event with `buy` type, your event will be forwarded to `buy-event`.
+For example, you pass `%s-event` as `EVENT_DISTRIBUTION_PUBLISHER_PATTERN`. If you send event with `click` type, your event will be forwarded to `click-event` kafka topic on the configured broker. If you send event with `buy` type, your event will be forwarded to `buy-event`.
 
 You can also route the events to single topic irrespective of the type. To do that you can drop `%s` in the value. For example, provided `mobile-events` as value. All incoming events will be routed to `mobile-events` kafka topic.
 
 - Type `Required`
 - Default value: `clickstream-%s-log`
 
-## Publisher
+## Publishers
 
-### `PUBLISHER_TYPE`
+### Common
+
+#### `PUBLISHER_TYPE`
 
 The publisher to use for transmitting events.
 
@@ -201,82 +207,105 @@ Publisher specific configuration follows the pattern `PUBLISHER_${TYPE}_*` where
 - Default value: `kafka`
 - Possible values: `kafka`, `pubsub`, `kinesis`
 
-### `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`
+### Kafka
+
+#### `PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS`
 
 Kafka brokers IP address where the events are published.
 
 - Example value: localhost:9092
 - Type `Required`
 
-### `PUBLISHER_KAFKA_CLIENT_ACKS`
+#### `PUBLISHER_KAFKA_CLIENT_ACKS`
 
 Number of replica acknowledgement before it send ack back to service.
 
 - Type `Optional`
 - Default value: `-1`
 
-### `PUBLISHER_KAFKA_CLIENT_RETRIES`
+#### `PUBLISHER_KAFKA_CLIENT_RETRIES`
 
 Number of retries in case of failure.
 
 - Type `Optional`
 - Default value: `2147483647`
 
-### `PUBLISHER_KAFKA_CLIENT_RETRY_BACKOFF_MS`
+#### `PUBLISHER_KAFKA_CLIENT_RETRY_BACKOFF_MS`
 
 Backoff time on retry.
 
 - Type `Optional`
 - Default value: `100`
 
-### `PUBLISHER_KAFKA_CLIENT_STATISTICS_INTERVAL_MS`
+#### `PUBLISHER_KAFKA_CLIENT_STATISTICS_INTERVAL_MS`
 
 librdkafka statistics emit interval. The application also needs to register a stats callback using rd_kafka_conf_set_stats_cb\(\). The granularity is 1000ms. A value of 0 disables statistics.
 
 - Type `Optional`
 - Default value: `0`
 
-### `PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES`
+#### `PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES`
 
 Maximum number of messages allowed on the producer queue. This queue is shared by all topics and partitions.
 
 - Type `Optional`
 - Default value: `100000`
 
-### `PUBLISHER_KAFKA_CLIENT_*`
+#### `PUBLISHER_KAFKA_CLIENT_*`
 
-Kafka client config is dynamically configured. You can see for other configuration [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
+Kafka client config is dynamically configured. You can see other configurations [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md).
+
+The configs are mapped to librdkafka configs by removing the `PUBLISHER_KAFKA_CLIENT_` prefix and replacing underscore with a period.
+
+Internally, this is how it looks
+```go title="config/publisher.go"
+var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
+
+type publisherKafka struct { /* ... */ }
+
+func (k publisherKafka) ToKafkaConfigMap() *confluent.ConfigMap {
+	configMap := &confluent.ConfigMap{}
+	for key, value := range viper.AllSettings() {
+		if strings.HasPrefix(strings.ToUpper(key), dynamicKafkaClientConfigPrefix) {
+			clientConfig := key[len(dynamicKafkaClientConfigPrefix):]
+			configMap.SetKey(strings.Join(strings.Split(clientConfig, "_"), "."), value)
+		}
+	}
+	return configMap
+}
+```
 
 - Type `Optional`
 - Default value: see the [reference](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
 
-### `PUBLISHER_KAFKA_FLUSH_INTERVAL_MS`
+#### `PUBLISHER_KAFKA_FLUSH_INTERVAL_MS`
 
 Upon shutdown, the publisher will try to finish processing events in buffer before the timeout exceeded. When the timeout exceeded, the publisher is forcefully closed.
 
 - Type `Optional`
 - Default value: `1000`
 
-### `PUBLISHER_PUBSUB_CREDENTIALS`
+### PubSub
+#### `PUBLISHER_PUBSUB_CREDENTIALS`
 
 Path to the file containing service account credentials. Defaults to the value of `GOOGLE_APPLICATION_CREDENTIALS` environment variable. This is used to authenticate with Google Cloud Platform.
 
 - Type `Required` (if `PUBLISHER_TYPE=pubsub`, otherwise ignored)
 
-### `PUBLISHER_PUBSUB_PROJECT_ID`
+#### `PUBLISHER_PUBSUB_PROJECT_ID`
 
 Destination Google Cloud Project ID. Messages will be transmitted to the PubSub topics under this project.
 
 - Type `Required` (if `PUBLISHER_TYPE=pubsub`, otherwise ignored)
 
-### `PUBLISHER_PUBSUB_TOPIC_AUTOCREATE`
+#### `PUBLISHER_PUBSUB_TOPIC_AUTOCREATE`
 
 Whether Raccoon should create a topic if it doesn't exist.
 
 - Type `Optional`
 - Default value `false`
 
-### `PUBLISHER_PUBSUB_TOPIC_RETENTION_MS`
+#### `PUBLISHER_PUBSUB_TOPIC_RETENTION_MS`
 
 How long PubSub should retain messages in a topic (in milliseconds). Valid values must be between 10 minutes and 31 days.
 
@@ -285,41 +314,43 @@ see [pubsub docs](https://cloud.google.com/pubsub/docs/create-topic) for more in
 - Type `Optional`
 - Default value `0`
 
-### `PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS`
+#### `PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS`
 
 Maximum time to wait for before publishing a batch of messages.
 
 - Type `Optional`
 - Default value `10`
 
-### `PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD`
+#### `PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD`
 
 Maximum number of message to accumulate before transmission.
 
 - Type `Optional`
 - Default value `100`
 
-### `PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD`
+#### `PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD`
 
 Maximum buffer size (in bytes)
 
 - Type `Optional`
 - Default value `1000000` (~1MB)
 
-### `PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS`
+#### `PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS`
 
 How long to wait before aborting a publish operation.
 
 - Type `Optional`
 - Default value `60000` (1 Minute)
 
-### `PUBLISHER_KINESIS_AWS_REGION`
+### Kinesis
+
+#### `PUBLISHER_KINESIS_AWS_REGION`
 
 AWS Region of the target kinesis stream. The value of `AWS_REGION` is used as fallback if this variable is not set.
 
 - Type `Required`
 
-### `PUBLISHER_KINESIS_CREDENTIALS`
+#### `PUBLISHER_KINESIS_CREDENTIALS`
 
 Path to [AWS Credentials file](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html). 
 
@@ -328,32 +359,32 @@ You can also specify the credentials using `AWS_ACCESS_KEY_ID` and `AWS_SECRET_A
 - Type `Optional`
 - Default value `$HOME/.aws/credentials`
 
-### `PUBLISHER_KINESIS_STREAM_AUTOCREATE`
+#### `PUBLISHER_KINESIS_STREAM_AUTOCREATE`
 
-Whether Raccon should create a stream if it doesn't exist.
+Whether Raccoon should create a stream if it doesn't exist.
 
 NOTE: We recommend that you create all streams that you need to publish to ahead of time.
 
 - Type `Optional`
 - Default value `false`
 
-### `PUBLISHER_KINESIS_STREAM_MODE`
+#### `PUBLISHER_KINESIS_STREAM_MODE`
 
 This configuration variable controls the `StreamMode` of the
-streams created by Raccon.
+streams created by Raccoon.
 
 - Type `Optional`
 - Default value `ON_DEMAND`
 - Possible values: `ON_DEMAND`, `PROVISIONED`
 
-### `PUBLISHER_KINESIS_STREAM_SHARDS`
+#### `PUBLISHER_KINESIS_STREAM_SHARDS`
 
 This controls the number of shards configured for a stream created by Raccoon.
 
 - Type `Optional`
 - Default value `4`
 
-### `PUBLISHER_KINESIS_STREAM_PROBE_INTERVAL_MS`
+#### `PUBLISHER_KINESIS_STREAM_PROBE_INTERVAL_MS`
 
 This specifies the time delay between stream status checks.
 
@@ -361,19 +392,18 @@ This specifies the time delay between stream status checks.
 - Default value `1000`
 
 
-### `PUBLISHER_KINESIS_PUBLISH_TIMEOUT_MS`
+#### `PUBLISHER_KINESIS_PUBLISH_TIMEOUT_MS`
 
 How long to wait for before aborting a publish operation.
 
 - Type `Optional`
 - Default value `60000`
 
-
 ## Metric
 
 ### `METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS`
 
-The time interval between recording runtime stats of the application in the insturmentation. It's recommended to keep this value equivalent to flush interval when using statsd and your collector's scrape interval when using prometheus as your instrumentation.
+The time interval between recording runtime stats of the application in the instrumentation. It's recommended to keep this value equivalent to flush interval when using statsd and your collector's scrape interval when using prometheus as your instrumentation.
 
 - Type `Optional`
 - Default Value: `10000`

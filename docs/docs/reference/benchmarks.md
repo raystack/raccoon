@@ -15,7 +15,7 @@ This whole setup was deployed on a Kubernetes cluster running on GCP with one or
 
 ### Result
 
-Folowing are the benchmarking results for various versions
+Following are the benchmarking results for various versions
 
 | Raccoon version | Duration  | No. of Connections | No. of Raccoon Pods | No. of events/10s | Server Processing Latency(P95) | Server Processing Latency(Upper) | Workers Latency (mean p95)| Workers Latency (max upper) | Memory Used per pod |   CPU Cores Used per pod   |
 |-----------------|-----------|--------------------|---------------------|-------------------|--------------------------------|----------------------------------|---------------------------|-----------------------------|---------------------|----------------------------|

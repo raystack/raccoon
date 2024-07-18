@@ -5,8 +5,8 @@ import (
 
 	"net/http"
 
+	pb "buf.build/gen/go/raystack/proton/protocolbuffers/go/raystack/raccoon/v1beta1"
 	raccoon "github.com/raystack/raccoon/clients/go"
-	pb "go.buf.build/raystack/gw/raystack/proton/raystack/raccoon/v1beta1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/google/uuid"

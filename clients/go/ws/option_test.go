@@ -1,15 +1,33 @@
 package ws
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func noopHandler(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		panic(err)
+	}
+	c.Close()
+}
+
 func TestWebSocketOptionsSet(t *testing.T) {
 	assert := assert.New(t)
 
-	url := "ws://localhost:8080/api/v1/events"
+	srv := httptest.NewServer(http.HandlerFunc(noopHandler))
+	defer srv.Close()
+
+	u, err := url.Parse(srv.URL)
+	assert.NoError(err)
+
+	url := fmt.Sprintf("ws://%s/api/v1/events", u.Host)
 	key := "authorization"
 	val := "123"
 

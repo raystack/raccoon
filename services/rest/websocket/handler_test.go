@@ -114,8 +114,8 @@ func TestHandler_GETHandlerWSEvents(t *testing.T) {
 		WriteBufferSize:   10240,
 		CheckOrigin:       false,
 		MaxUser:           2,
-		PongWaitInterval:  time.Duration(60 * time.Second),
-		WriteWaitInterval: time.Duration(5 * time.Second),
+		PongWaitInterval:  60 * time.Second,
+		WriteWaitInterval: 5 * time.Second,
 		ConnIDHeader:      "X-User-ID",
 		ConnGroupHeader:   "string",
 	})
@@ -169,6 +169,8 @@ func TestHandler_GETHandlerWSEvents(t *testing.T) {
 		wss, _, err := websocket.DefaultDialer.Dial(url, http.Header{
 			"X-User-ID": []string{"test2-user2"},
 		})
+		require.NoError(t, err)
+
 		defer wss.Close()
 		require.NoError(t, err)
 

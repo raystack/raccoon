@@ -16,5 +16,4 @@ func DeserializeProto(b []byte, i interface{}) error {
 		return ErrInvalidProtoMessage
 	}
 	return proto.Unmarshal(b, msg)
-
 }

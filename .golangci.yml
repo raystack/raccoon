@@ -1,0 +1,30 @@
+run:
+  timeout: 5m
+  skip-dirs:
+output:
+  formats: 
+    - format: 'colored-line-number'
+linters:
+  enable-all: false
+  disable-all: true
+  enable:
+    - govet
+    - goimports
+    - thelper
+    - tparallel
+    - unconvert
+    - wastedassign
+    - revive
+    - staticcheck
+    - unused
+    - gofmt
+    - whitespace
+    - misspell
+linters-settings:
+  revive:
+    ignore-generated-header: true
+    severity: warning
+issues:
+  fix: true
+severity:
+  default-severity: error

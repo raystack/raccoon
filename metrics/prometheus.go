@@ -57,7 +57,6 @@ func initPrometheusCollector() (*PrometheusCollector, error) {
 	serveMux.Handle(config.MetricPrometheus.Path, promhttp.HandlerFor(p.registry, promhttp.HandlerOpts{Registry: p.registry}))
 	go server.ListenAndServe()
 	return p, nil
-
 }
 
 func (p *PrometheusCollector) Count(metricName string, count int64, labels map[string]string) error {
@@ -177,7 +176,7 @@ func getCounterMap() map[string]CounterVec {
 		Help: "Request count"}, []string{"status", "reason", "conn_group"})
 	counters["events_duplicate_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "events_duplicate_total",
-		Help: "Total Number of Duplicate events recieved by the server"}, []string{"conn_group", "reason"})
+		Help: "Total Number of Duplicate events received by the server"}, []string{"conn_group", "reason"})
 	counters["server_ping_failure_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "server_ping_failure_total",
 		Help: "Total ping that server fails to send"}, []string{"conn_group"})

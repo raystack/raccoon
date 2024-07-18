@@ -34,7 +34,6 @@ type Publisher struct {
 }
 
 func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
-
 	ctx, cancel := context.WithTimeout(globalCtx, p.publishTimeout)
 	defer cancel()
 	errors := make([]error, len(events))
@@ -128,7 +127,6 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 }
 
 func (p *Publisher) ensureStream(ctx context.Context, name string) error {
-
 	p.streamLock.RLock()
 	exists := p.streams[name]
 	p.streamLock.RUnlock()
@@ -213,11 +211,10 @@ func WithStreamAutocreate(autocreate bool) Opt {
 }
 
 func WithStreamMode(mode types.StreamMode) Opt {
-
 	validModesList := types.StreamMode("").Values()
 	validModes := map[types.StreamMode]bool{}
 	for _, m := range validModesList {
-		validModes[types.StreamMode(m)] = true
+		validModes[m] = true
 	}
 
 	return func(p *Publisher) error {

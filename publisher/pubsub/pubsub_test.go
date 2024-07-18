@@ -80,7 +80,6 @@ func TestPubSubPublisher(t *testing.T) {
 	})
 
 	t.Run("should return an error if topic doesn't exist and topic autocreate is set to false", func(t *testing.T) {
-
 		client, err := pubsubsdk.NewClient(context.Background(), testingProject)
 		assert.NoError(t, err, "error creating pubsub client")
 
@@ -95,7 +94,6 @@ func TestPubSubPublisher(t *testing.T) {
 	})
 
 	t.Run("should set retention for a topic correctly", func(t *testing.T) {
-
 		client, err := pubsubsdk.NewClient(context.Background(), testingProject)
 		assert.NoError(t, err, "error creating pubsub client")
 
@@ -123,7 +121,6 @@ func TestPubSubPublisher(t *testing.T) {
 	})
 
 	t.Run("should create the topic using topic format", func(t *testing.T) {
-
 		client, err := pubsubsdk.NewClient(context.Background(), testingProject)
 		assert.NoError(t, err, "error creating pubsub client")
 
@@ -152,7 +149,6 @@ func TestPubSubPublisher(t *testing.T) {
 	})
 
 	t.Run("static topic creation test", func(t *testing.T) {
-
 		client, err := pubsubsdk.NewClient(context.Background(), testingProject)
 		assert.NoError(t, err, "error creating pubsub client")
 

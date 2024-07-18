@@ -3,7 +3,6 @@ package rest
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -93,10 +92,10 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer io.Copy(ioutil.Discard, r.Body)
+	defer io.Copy(io.Discard, r.Body)
 	defer r.Body.Close()
 
-	b, err := ioutil.ReadAll(r.Body)
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		logger.Errorf(fmt.Sprintf("[rest.GetRESTAPIHandler] %s error reading request body, error: %v", identifier, err))
 		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "readerr", "conn_group": identifier.Group})

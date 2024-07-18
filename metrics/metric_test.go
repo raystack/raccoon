@@ -32,7 +32,6 @@ func (m *mockMetricInstrument) Count(metricName string, count int64, labels map[
 	} else {
 		return nil
 	}
-
 }
 
 func (m *mockMetricInstrument) Gauge(metricName string, value interface{}, labels map[string]string) error {

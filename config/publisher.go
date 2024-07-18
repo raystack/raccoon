@@ -152,11 +152,9 @@ func publisherKinesisLoader() {
 		DefaultShards:       uint32(util.MustGetInt(envStreamDefaultShards)),
 		PublishTimeout:      util.MustGetDuration(envPublishTimeout, time.Millisecond),
 	}
-
 }
 
 func publisherConfigLoader() {
-
 	viper.SetDefault("PUBLISHER_TYPE", "kafka")
 
 	Publisher = util.MustGetString("PUBLISHER_TYPE")

@@ -116,7 +116,6 @@ func (m *mockObserver) Observe(f float64) {
 }
 
 func (promSuite *PrometheusTestSuite) Test_Prometheus_Collector_Metrics_Initialised() {
-
 	// NOTE(turtledev): what are we even testing here?
 	numCounters := 18
 	numGauge := 15
@@ -183,7 +182,7 @@ func (promSuite *PrometheusTestSuite) Test_Prometheus_Counter_Working() {
 	mockCounter1.On("Add", float64(callArg1))
 	mockCounterVec2.On("With", promLabels2).Return(&mockCounter2)
 	mockCounter2.On("Inc")
-	err = promSuite.instrument.Count(sampleCounterMetric1, int64(callArg1), labels1)
+	err = promSuite.instrument.Count(sampleCounterMetric1, callArg1, labels1)
 	assert.NoError(promSuite.T(), err)
 	err = promSuite.instrument.Increment(sampleCounterMetric2, labels2)
 	assert.NoError(promSuite.T(), err)
@@ -210,7 +209,7 @@ func (promSuite *PrometheusTestSuite) Test_Prometheus_Gauge_Working() {
 	promSuite.instrument.gauges[sampleGaugeMetric] = &mockGaugeVec
 	mockGaugeVec.On("With", promLabels).Return(&mockGauge)
 	mockGauge.On("Set", float64(callArg))
-	err = promSuite.instrument.Gauge(sampleGaugeMetric, int64(callArg), labels)
+	err = promSuite.instrument.Gauge(sampleGaugeMetric, callArg, labels)
 	assert.NoError(promSuite.T(), err)
 	mockGaugeVec.AssertCalled(promSuite.T(), "With", promLabels)
 	mockGaugeVec.AssertNumberOfCalls(promSuite.T(), "With", 1)

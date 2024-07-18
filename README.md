@@ -2,6 +2,7 @@
 
 ![build workflow](https://github.com/raystack/raccoon/actions/workflows/build.yaml/badge.svg)
 ![package workflow](https://github.com/raystack/raccoon/actions/workflows/release.yaml/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/raystack/raccoon/badge.svg?branch=main)](https://coveralls.io/github/raystack/raccoon?branch=main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
 [![Version](https://img.shields.io/github/v/release/raystack/raccoon?logo=semantic-release)](Version)
 

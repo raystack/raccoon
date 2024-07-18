@@ -33,8 +33,8 @@ var config = UpgraderConfig{
 	WriteBufferSize:   10240,
 	CheckOrigin:       false,
 	MaxUser:           2,
-	PongWaitInterval:  time.Duration(60 * time.Second),
-	WriteWaitInterval: time.Duration(5 * time.Second),
+	PongWaitInterval:  60 * time.Second,
+	WriteWaitInterval: 5 * time.Second,
 	ConnIDHeader:      "X-User-ID",
 	ConnGroupHeader:   "",
 	ConnGroupDefault:  "--default--",
@@ -176,6 +176,7 @@ func TestConnectionRejection(t *testing.T) {
 
 // Prepare a websocket server with given upgrader and establish the connections with the given headers as many as given headers.
 func upgradeConnectionTestHelper(t *testing.T, upgrader *Upgrader, headers []http.Header, f assertUpgrade) {
+	t.Helper()
 	res := make(chan upgradeRes)
 	m := sync.Mutex{}
 	iteration := 0

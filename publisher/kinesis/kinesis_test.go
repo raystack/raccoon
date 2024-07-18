@@ -160,7 +160,6 @@ func readStream(client *kinesis_sdk.Client, arn string) ([][]byte, error) {
 }
 
 func TestKinesisProducer(t *testing.T) {
-
 	localstackHost := os.Getenv(envLocalstackHost)
 	if strings.TrimSpace(localstackHost) == "" {
 		t.Errorf("cannot run tests because %s env variable is not set", envLocalstackHost)
@@ -176,7 +175,6 @@ func TestKinesisProducer(t *testing.T) {
 		require.NoError(t, err)
 		err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")
 		require.Error(t, err)
-
 	})
 
 	t.Run("should return an error if an invalid stream mode is specified", func(t *testing.T) {
@@ -211,7 +209,6 @@ func TestKinesisProducer(t *testing.T) {
 			deleteStream(client, testEvent.Type)
 		})
 		t.Run("should create the stream with mode = ON_DEMAND (default)", func(t *testing.T) {
-
 			pub, err := kinesis.New(client, kinesis.WithStreamAutocreate(true))
 			require.NoError(t, err)
 			err = pub.ProduceBulk([]*pb.Event{testEvent}, "conn_group")

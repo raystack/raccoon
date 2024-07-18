@@ -42,10 +42,8 @@ func CreateWorkerPool(size int, eventsChannel <-chan collector.CollectRequest, d
 }
 
 func (w *Pool) worker(name string) {
-
 	logger.Info("Running worker: " + name)
 	for request := range w.EventsChannel {
-
 		metrics.Histogram(
 			"batch_idle_in_channel_milliseconds",
 			time.Since(request.TimePushed).Milliseconds(),

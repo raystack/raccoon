@@ -24,7 +24,6 @@ func loadCors() {
 	} else {
 		cors = func(h http.Handler) http.Handler { return h }
 	}
-
 }
 
 func GetCors() func(http.Handler) http.Handler {

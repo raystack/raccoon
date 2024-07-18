@@ -43,7 +43,6 @@ func TestServerWsConfig(t *testing.T) {
 	assert.Equal(t, "8080", ServerWs.AppPort)
 	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PingInterval)
 	assert.Equal(t, time.Duration(1)*time.Millisecond, ServerWs.PongWaitInterval)
-
 }
 
 func TestGRPCServerConfig(t *testing.T) {

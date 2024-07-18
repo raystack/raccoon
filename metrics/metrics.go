@@ -86,7 +86,6 @@ func Histogram(metricName string, value int64, labels map[string]string) error {
 }
 
 func Setup() error {
-
 	if config.MetricPrometheus.Enabled && config.MetricStatsd.Enabled {
 		return errors.New("only one instrumentation tool can be enabled")
 	}

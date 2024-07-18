@@ -56,7 +56,6 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.
 		AckFunc:              h.Ack(responseChannel, req.ReqGuid, identifier.Group),
 	})
 	return <-responseChannel, nil
-
 }
 
 func (h *Handler) Ack(responseChannel chan *pb.SendEventResponse, reqGuid, connGroup string) collector.AckFunc {

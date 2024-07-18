@@ -37,7 +37,6 @@ type Publisher struct {
 }
 
 func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
-
 	ctx, cancel := context.WithTimeout(globalCtx, p.publishSettings.Timeout)
 	defer cancel()
 
@@ -67,7 +66,6 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 						"event_type": event.Type,
 					},
 				)
-
 			}
 			errors[order] = err
 			continue
@@ -121,7 +119,6 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 }
 
 func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
-
 	p.topicLock.RLock()
 	topic, exists := p.topics[id]
 	p.topicLock.RUnlock()
@@ -239,7 +236,6 @@ func WithTopicFormat(format string) Opt {
 
 // NewPubSub creates a new PubSub publisher
 func New(client *pubsub.Client, opts ...Opt) (*Publisher, error) {
-
 	p := &Publisher{
 		client:          client,
 		topicFormat:     "%s",

@@ -38,12 +38,11 @@ func (s *Statsd) Count(metricName string, count int64, labels map[string]string)
 	tags := translateLabelIntoTags(labels)
 	s.c.Count(withTags(metricName, tags), int(count))
 	return nil
-
 }
 
 func (s *Statsd) Histogram(metricName string, value int64, labels map[string]string) error {
 	tags := translateLabelIntoTags(labels)
-	s.c.Timing(withTags(metricName,tags), value)
+	s.c.Timing(withTags(metricName, tags), value)
 	return nil
 }
 

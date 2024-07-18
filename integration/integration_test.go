@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -18,6 +17,7 @@ import (
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -48,7 +48,6 @@ func TestIntegration(t *testing.T) {
 		"X-User-ID": []string{"1234"},
 	}
 	t.Run("Should response with BadRequest when sending invalid request", func(t *testing.T) {
-
 		wss, _, err := websocket.DefaultDialer.Dial(wsurl, header)
 
 		if err != nil {
@@ -71,7 +70,10 @@ func TestIntegration(t *testing.T) {
 	})
 
 	t.Run("Should response with BadRequest when sending invalid GRPC request", func(t *testing.T) {
-		opts := []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}
+		opts := []grpc.DialOption{
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithBlock(),
+		}
 
 		conn, err := grpc.Dial(grpcServerAddr, opts...)
 		if err != nil {
@@ -84,7 +86,6 @@ func TestIntegration(t *testing.T) {
 
 		assert.NotEmpty(t, err)
 		assert.Empty(t, r)
-
 	})
 
 	t.Run("Should response with BadRequest when sending invalid json request", func(t *testing.T) {
@@ -123,7 +124,7 @@ func TestIntegration(t *testing.T) {
 			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
 			os.Exit(1)
 		}
-		defer io.Copy(ioutil.Discard, res.Body)
+		defer io.Copy(io.Discard, res.Body)
 		defer res.Body.Close()
 		r := &pb.SendEventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
@@ -148,7 +149,7 @@ func TestIntegration(t *testing.T) {
 			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
 			os.Exit(1)
 		}
-		defer io.Copy(ioutil.Discard, res.Body)
+		defer io.Copy(io.Discard, res.Body)
 		defer res.Body.Close()
 		r := &pb.SendEventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
@@ -192,7 +193,7 @@ func TestIntegration(t *testing.T) {
 			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
 			os.Exit(1)
 		}
-		defer io.Copy(ioutil.Discard, res.Body)
+		defer io.Copy(io.Discard, res.Body)
 		defer res.Body.Close()
 		r := &pb.SendEventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
@@ -201,7 +202,6 @@ func TestIntegration(t *testing.T) {
 		assert.Equal(t, pb.Status_STATUS_SUCCESS, r.Status)
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
-
 	})
 
 	t.Run("Should response with success when JSON request is processed", func(t *testing.T) {
@@ -245,7 +245,10 @@ func TestIntegration(t *testing.T) {
 	})
 
 	t.Run("Should response with success when correct GRPC request is processed", func(t *testing.T) {
-		opts := []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}
+		opts := []grpc.DialOption{
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithBlock(),
+		}
 
 		conn, err := grpc.Dial(grpcServerAddr, opts...)
 		if err != nil {
@@ -281,7 +284,6 @@ func TestIntegration(t *testing.T) {
 		assert.Equal(t, r.Status.String(), pb.Status_STATUS_SUCCESS.String())
 		assert.Equal(t, r.Reason, "")
 		assert.Equal(t, r.Data, map[string]string{"req_guid": "1234"})
-
 	})
 
 	t.Run("Should response with success when request is processed", func(t *testing.T) {
@@ -393,7 +395,6 @@ func TestIntegration(t *testing.T) {
 				}
 			}
 		})
-
 	})
 
 	t.Run("Should close connection when client is unresponsive", func(t *testing.T) {
@@ -531,7 +532,7 @@ func TestIntegration(t *testing.T) {
 			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
 			os.Exit(1)
 		}
-		defer io.Copy(ioutil.Discard, res.Body)
+		defer io.Copy(io.Discard, res.Body)
 		defer res.Body.Close()
 		r := &pb.SendEventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
@@ -580,7 +581,7 @@ func TestIntegration(t *testing.T) {
 			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
 			os.Exit(1)
 		}
-		defer io.Copy(ioutil.Discard, res.Body)
+		defer io.Copy(io.Discard, res.Body)
 		defer res.Body.Close()
 		r := &pb.SendEventResponse{}
 		err = json.NewDecoder(res.Body).Decode(r)
@@ -610,7 +611,7 @@ func TestIntegration(t *testing.T) {
 			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
 			os.Exit(1)
 		}
-		defer io.Copy(ioutil.Discard, res.Body)
+		defer io.Copy(io.Discard, res.Body)
 		defer res.Body.Close()
 		assert.Equal(t, res.StatusCode, http.StatusOK)
 		assert.Contains(t, res.Header, "Access-Control-Allow-Origin")
@@ -635,10 +636,9 @@ func TestIntegration(t *testing.T) {
 			assert.Fail(t, fmt.Sprintf("failed to connect to http server. %v", err))
 			os.Exit(1)
 		}
-		defer io.Copy(ioutil.Discard, res.Body)
+		defer io.Copy(io.Discard, res.Body)
 		defer res.Body.Close()
 		assert.Equal(t, res.StatusCode, http.StatusForbidden)
 		assert.NotContains(t, res.Header, "Access-Control-Allow-Origin")
 	})
-
 }

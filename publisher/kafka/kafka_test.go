@@ -38,7 +38,8 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 	suite.Parallel()
 	topic := "test_topic"
 	suite.Run("AllMessagesSuccessfulProduce", func(t *testing.T) {
-		t.Run("Should return nil when all message succesfully published", func(t *testing.T) {
+		t.Parallel()
+		t.Run("Should return nil when all message successfully published", func(t *testing.T) {
 			client := &mockClient{}
 			client.On("Produce", mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
 				go func() {

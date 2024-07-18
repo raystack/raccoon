@@ -213,7 +213,6 @@ func TestResponse_SetDataMap(t *testing.T) {
 }
 
 func TestResponse_Write(t *testing.T) {
-
 	res := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_SUCCESS,
 		Code:     pb.Code_CODE_OK,

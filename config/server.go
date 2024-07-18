@@ -118,7 +118,6 @@ func serverWsConfigLoader() {
 }
 
 func serverGRPCConfigLoader() {
-
 	viper.SetDefault("SERVER_GRPC_PORT", "8081")
 	ServerGRPC = serverGRPC{
 		Port: util.MustGetString("SERVER_GRPC_PORT"),

@@ -10,7 +10,6 @@ import (
 	"syscall"
 	"time"
 
-
 	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"
@@ -57,7 +56,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 }
 
 func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collector.CollectRequest, workerPool *worker.Pool, pub Publisher) {
-	signalChan := make(chan os.Signal)
+	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	for {
 		sig := <-signalChan

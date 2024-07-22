@@ -1,6 +1,6 @@
 # Raccoon
 
-![build workflow](https://github.com/raystack/raccoon/actions/workflows/build.yaml/badge.svg)
+![build workflow](https://github.com/raystack/raccoon/actions/workflows/test.yaml/badge.svg)
 ![package workflow](https://github.com/raystack/raccoon/actions/workflows/release.yaml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/raystack/raccoon/badge.svg?branch=main)](https://coveralls.io/github/raystack/raccoon?branch=main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)

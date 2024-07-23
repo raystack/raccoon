@@ -68,6 +68,16 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 					},
 				)
 			}
+			if isErrResourceExhausted(err) {
+				metrics.Increment(
+					"pubsub_topics_limit_exceeded_total",
+					map[string]string{
+						"topic":      topicName,
+						"conn_group": connGroup,
+						"event_type": event.Type,
+					},
+				)
+			}
 			errors[order] = err
 			continue
 		}

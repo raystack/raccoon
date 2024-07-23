@@ -304,7 +304,7 @@ func reportCreateError(err error, streamName, connGroup, eventType string) {
 
 	if isErrLimitExceeded(err) {
 		metrics.Increment(
-			"kinesis_stream_creation_limit_exceeded_total",
+			"kinesis_streams_limit_exceeded_total",
 			map[string]string{
 				"stream":     streamName,
 				"conn_group": connGroup,

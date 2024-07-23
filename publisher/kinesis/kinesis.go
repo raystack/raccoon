@@ -270,6 +270,13 @@ func reportPutError(err error, streamName, connGroup, eventType string) {
 			},
 		)
 	}
+
+	// BUG: AWS Kinesis API returns types.ProvisionedThroughputExceededException
+	// (which is checked by isErrThroughputExceeded) when there are too many
+	// `put`` requests in flight. However, the same error is also returned
+	// when the size of an individual message exceeds the message size threshold.
+	// That means means we need a more fine-grained method of detecting which
+	// of the two cases we're getting this error for.
 	if isErrThroughputExceeded(err) {
 		metrics.Increment(
 			"kinesis_stream_throughput_exceeded_total",

@@ -238,6 +238,11 @@ func isErrThroughputExceeded(e error) bool {
 	return errors.As(e, &t)
 }
 
+func isErrLimitExceeded(e error) bool {
+	var t *types.LimitExceededException
+	return errors.As(e, &t)
+}
+
 func reportPutError(err error, streamName, connGroup, eventType string) {
 	metrics.Increment(
 		"kinesis_messages_delivered_total",
@@ -289,6 +294,17 @@ func reportCreateError(err error, streamName, connGroup, eventType string) {
 	if isErrNotFound(err) {
 		metrics.Increment(
 			"kinesis_unknown_stream_failure_total",
+			map[string]string{
+				"stream":     streamName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
+
+	if isErrLimitExceeded(err) {
+		metrics.Increment(
+			"kinesis_stream_creation_limit_exceeded_total",
 			map[string]string{
 				"stream":     streamName,
 				"conn_group": connGroup,

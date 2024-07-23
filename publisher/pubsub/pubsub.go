@@ -12,6 +12,7 @@ import (
 	"github.com/googleapis/gax-go/v2/apierror"
 	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
+	raccoonv1 "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
 	"google.golang.org/grpc/codes"
 )
@@ -44,9 +45,9 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 	results := make([]*pubsub.PublishResult, len(events))
 
 	for order, event := range events {
-		topicId := strings.Replace(p.topicFormat, "%s", event.Type, 1)
+		topicName := p.topicNameFromEvent(event)
 
-		topic, err := p.topic(ctx, topicId)
+		topic, err := p.topic(ctx, topicName)
 		if err != nil {
 			metrics.Increment(
 				"pubsub_messages_delivered_total",
@@ -61,7 +62,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 				metrics.Increment(
 					"pubsub_unknown_topic_failure_total",
 					map[string]string{
-						"topic":      topicId,
+						"topic":      topicName,
 						"conn_group": connGroup,
 						"event_type": event.Type,
 					},
@@ -107,6 +108,16 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 					"event_type": events[order].Type,
 				},
 			)
+			if isErrResourceExhausted(err) {
+				metrics.Increment(
+					"pubsub_topic_throughput_exceeded_total",
+					map[string]string{
+						"topic":      p.topicNameFromEvent(events[order]),
+						"conn_group": connGroup,
+						"event_type": events[order].Type,
+					},
+				)
+			}
 			errors[order] = err
 			continue
 		}
@@ -116,6 +127,10 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		return &publisher.BulkError{Errors: errors}
 	}
 	return nil
+}
+
+func (p *Publisher) topicNameFromEvent(event *raccoonv1.Event) string {
+	return strings.Replace(p.topicFormat, "%s", event.Type, 1)
 }
 
 func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
@@ -156,7 +171,7 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 		topic, err = p.client.CreateTopicWithConfig(ctx, id, cfg)
 		if err != nil {
 			// in case a service replica created this topic before we could
-			if p.isAlreadyExistsError(err) {
+			if isErrAlreadyExists(err) {
 				topic = p.client.Topic(id)
 			} else {
 				return nil, fmt.Errorf("error creating topic %q: %w", id, err)
@@ -180,14 +195,6 @@ func (p *Publisher) Close() error {
 
 func (p *Publisher) Name() string {
 	return "pubsub"
-}
-
-func (p *Publisher) isAlreadyExistsError(e error) bool {
-	apiError, ok := e.(*apierror.APIError)
-	if !ok {
-		return false
-	}
-	return apiError.GRPCStatus().Code() == codes.AlreadyExists
 }
 
 type Opt func(*Publisher)
@@ -249,4 +256,20 @@ func New(client *pubsub.Client, opts ...Opt) (*Publisher, error) {
 	}
 
 	return p, nil
+}
+
+func isErrAlreadyExists(e error) bool {
+	return hasAPIErrorCode(e, codes.AlreadyExists)
+}
+
+func isErrResourceExhausted(e error) bool {
+	return hasAPIErrorCode(e, codes.ResourceExhausted)
+}
+
+func hasAPIErrorCode(e error, code codes.Code) bool {
+	apiError, ok := e.(*apierror.APIError)
+	if !ok {
+		return false
+	}
+	return apiError.GRPCStatus().Code() == code
 }

@@ -55,7 +55,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 						"event_type": event.Type,
 					},
 				)
-				if p.isErrNotFound(err) {
+				if isErrNotFound(err) {
 					metrics.Increment(
 						"kinesis_unknown_stream_failure_total",
 						map[string]string{
@@ -106,9 +106,19 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 					"event_type": event.Type,
 				},
 			)
-			if p.isErrNotFound(err) {
+			if isErrNotFound(err) {
 				metrics.Increment(
 					"kinesis_unknown_stream_failure_total",
+					map[string]string{
+						"stream":     streamName,
+						"conn_group": connGroup,
+						"event_type": event.Type,
+					},
+				)
+			}
+			if isErrThroughputExceeded(err) {
+				metrics.Increment(
+					"kinesis_stream_throughput_exceeded_total",
 					map[string]string{
 						"stream":     streamName,
 						"conn_group": connGroup,
@@ -145,7 +155,7 @@ func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 	)
 
 	if err != nil {
-		if !p.isErrNotFound(err) {
+		if !isErrNotFound(err) {
 			return err
 		}
 
@@ -188,14 +198,6 @@ func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 
 	p.streams[name] = true
 	return nil
-}
-
-func (*Publisher) isErrNotFound(e error) bool {
-	var (
-		errNotFound   *types.ResourceNotFoundException
-		isErrNotFound = errors.As(e, &errNotFound)
-	)
-	return isErrNotFound
 }
 
 func (*Publisher) Name() string { return "kinesis" }
@@ -276,4 +278,14 @@ func New(client *kinesis.Client, opts ...Opt) (*Publisher, error) {
 		}
 	}
 	return p, nil
+}
+
+func isErrNotFound(e error) bool {
+	var t *types.ResourceNotFoundException
+	return errors.As(e, &t)
+}
+
+func isErrThroughputExceeded(e error) bool {
+	var t *types.ProvisionedThroughputExceededException
+	return errors.As(e, &t)
 }

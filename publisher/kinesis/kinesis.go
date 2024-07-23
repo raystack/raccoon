@@ -47,24 +47,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		if p.streamAutocreate {
 			err := p.ensureStream(ctx, streamName)
 			if err != nil {
-				metrics.Increment(
-					"kinesis_messages_delivered_total",
-					map[string]string{
-						"success":    "false",
-						"conn_group": connGroup,
-						"event_type": event.Type,
-					},
-				)
-				if isErrNotFound(err) {
-					metrics.Increment(
-						"kinesis_unknown_stream_failure_total",
-						map[string]string{
-							"stream":     streamName,
-							"conn_group": connGroup,
-							"event_type": event.Type,
-						},
-					)
-				}
+				reportCreateError(err, streamName, connGroup, event.Type)
 				errors[order] = err
 				continue
 			}
@@ -90,42 +73,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		)
 
 		if err != nil {
-			metrics.Increment(
-				"kinesis_messages_delivered_total",
-				map[string]string{
-					"success":    "false",
-					"conn_group": connGroup,
-					"event_type": event.Type,
-				},
-			)
-			metrics.Increment(
-				"kinesis_messages_undelivered_total",
-				map[string]string{
-					"success":    "true",
-					"conn_group": connGroup,
-					"event_type": event.Type,
-				},
-			)
-			if isErrNotFound(err) {
-				metrics.Increment(
-					"kinesis_unknown_stream_failure_total",
-					map[string]string{
-						"stream":     streamName,
-						"conn_group": connGroup,
-						"event_type": event.Type,
-					},
-				)
-			}
-			if isErrThroughputExceeded(err) {
-				metrics.Increment(
-					"kinesis_stream_throughput_exceeded_total",
-					map[string]string{
-						"stream":     streamName,
-						"conn_group": connGroup,
-						"event_type": event.Type,
-					},
-				)
-			}
+			reportPutError(err, streamName, connGroup, event.Type)
 			errors[order] = err
 			continue
 		}
@@ -288,4 +236,64 @@ func isErrNotFound(e error) bool {
 func isErrThroughputExceeded(e error) bool {
 	var t *types.ProvisionedThroughputExceededException
 	return errors.As(e, &t)
+}
+
+func reportPutError(err error, streamName, connGroup, eventType string) {
+	metrics.Increment(
+		"kinesis_messages_delivered_total",
+		map[string]string{
+			"success":    "false",
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
+	metrics.Increment(
+		"kinesis_messages_undelivered_total",
+		map[string]string{
+			"success":    "true",
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
+	if isErrNotFound(err) {
+		metrics.Increment(
+			"kinesis_unknown_stream_failure_total",
+			map[string]string{
+				"stream":     streamName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
+	if isErrThroughputExceeded(err) {
+		metrics.Increment(
+			"kinesis_stream_throughput_exceeded_total",
+			map[string]string{
+				"stream":     streamName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
+}
+
+func reportCreateError(err error, streamName, connGroup, eventType string) {
+	metrics.Increment(
+		"kinesis_messages_delivered_total",
+		map[string]string{
+			"success":    "false",
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
+	if isErrNotFound(err) {
+		metrics.Increment(
+			"kinesis_unknown_stream_failure_total",
+			map[string]string{
+				"stream":     streamName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
 }

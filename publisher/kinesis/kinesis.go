@@ -47,7 +47,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		if p.streamAutocreate {
 			err := p.ensureStream(ctx, streamName)
 			if err != nil {
-				reportCreateError(err, streamName, connGroup, event.Type)
+				reportStreamError(err, streamName, connGroup, event.Type)
 				errors[order] = err
 				continue
 			}
@@ -279,7 +279,7 @@ func reportPutError(err error, streamName, connGroup, eventType string) {
 	}
 }
 
-func reportCreateError(err error, streamName, connGroup, eventType string) {
+func reportStreamError(err error, streamName, connGroup, eventType string) {
 	metrics.Increment(
 		"kinesis_messages_undelivered_total",
 		map[string]string{

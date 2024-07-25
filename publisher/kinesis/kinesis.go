@@ -76,7 +76,6 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 				"event_type": event.Type,
 			},
 		)
-
 	}
 	if cmp.Or(errors...) != nil {
 		return &publisher.BulkError{Errors: errors}

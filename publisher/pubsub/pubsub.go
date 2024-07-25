@@ -13,7 +13,6 @@ import (
 	"github.com/googleapis/gax-go/v2/apierror"
 	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
-	raccoonv1 "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
 	"google.golang.org/grpc/codes"
 )
@@ -87,7 +86,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 	return nil
 }
 
-func (p *Publisher) topicNameFromEvent(event *raccoonv1.Event) string {
+func (p *Publisher) topicNameFromEvent(event *pb.Event) string {
 	return strings.Replace(p.topicFormat, "%s", event.Type, 1)
 }
 

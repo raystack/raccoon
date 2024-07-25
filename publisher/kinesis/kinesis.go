@@ -53,15 +53,6 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 			}
 		}
 
-		metrics.Increment(
-			"kinesis_messages_delivered_total",
-			map[string]string{
-				"success":    "true",
-				"conn_group": connGroup,
-				"event_type": event.Type,
-			},
-		)
-
 		partitionKey := fmt.Sprintf("%d", rand.Int31())
 		_, err := p.client.PutRecord(
 			ctx,
@@ -77,6 +68,15 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 			errors[order] = err
 			continue
 		}
+
+		metrics.Increment(
+			"kinesis_messages_delivered_total",
+			map[string]string{
+				"conn_group": connGroup,
+				"event_type": event.Type,
+			},
+		)
+
 	}
 	if cmp.Or(errors...) != nil {
 		return &publisher.BulkError{Errors: errors}
@@ -245,17 +245,8 @@ func isErrLimitExceeded(e error) bool {
 
 func reportPutError(err error, streamName, connGroup, eventType string) {
 	metrics.Increment(
-		"kinesis_messages_delivered_total",
-		map[string]string{
-			"success":    "false",
-			"conn_group": connGroup,
-			"event_type": eventType,
-		},
-	)
-	metrics.Increment(
 		"kinesis_messages_undelivered_total",
 		map[string]string{
-			"success":    "true",
 			"conn_group": connGroup,
 			"event_type": eventType,
 		},
@@ -290,14 +281,6 @@ func reportPutError(err error, streamName, connGroup, eventType string) {
 }
 
 func reportCreateError(err error, streamName, connGroup, eventType string) {
-	metrics.Increment(
-		"kinesis_messages_delivered_total",
-		map[string]string{
-			"success":    "false",
-			"conn_group": connGroup,
-			"event_type": eventType,
-		},
-	)
 	if isErrNotFound(err) {
 		metrics.Increment(
 			"kinesis_unknown_stream_failure_total",

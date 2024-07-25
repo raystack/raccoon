@@ -53,7 +53,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 			}
 		}
 
-		partitionKey := fmt.Sprintf("%d", rand.Int31())
+		partitionKey := fmt.Sprintf("%010d", rand.Int31())
 		_, err := p.client.PutRecord(
 			ctx,
 			&kinesis.PutRecordInput{

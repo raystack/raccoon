@@ -3,6 +3,7 @@ package pubsub
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -49,16 +50,8 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 
 		topic, err := p.topic(ctx, topicName)
 		if err != nil {
-			metrics.Increment(
-				"pubsub_messages_delivered_total",
-				map[string]string{
-					"success":    "false",
-					"conn_group": connGroup,
-					"event_type": event.Type,
-				},
-			)
-			_, isUnknownTopic := err.(*unknownTopicError)
-			if isUnknownTopic {
+			switch {
+			case isErrUnknownTopic(err):
 				metrics.Increment(
 					"pubsub_unknown_topic_failure_total",
 					map[string]string{
@@ -67,8 +60,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 						"event_type": event.Type,
 					},
 				)
-			}
-			if isErrResourceExhausted(err) {
+			case isErrResourceExhausted(err):
 				metrics.Increment(
 					"pubsub_topics_limit_exceeded_total",
 					map[string]string{
@@ -85,15 +77,6 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		results[order] = topic.Publish(ctx, &pubsub.Message{
 			Data: event.EventBytes,
 		})
-
-		metrics.Increment(
-			"pubsub_messages_delivered_total",
-			map[string]string{
-				"success":    "true",
-				"conn_group": connGroup,
-				"event_type": event.Type,
-			},
-		)
 	}
 
 	for order, result := range results {
@@ -103,17 +86,8 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		_, err := result.Get(ctx)
 		if err != nil {
 			metrics.Increment(
-				"pubsub_messages_delivered_total",
-				map[string]string{
-					"success":    "false",
-					"conn_group": connGroup,
-					"event_type": events[order].Type,
-				},
-			)
-			metrics.Increment(
 				"pubsub_messages_undelivered_total",
 				map[string]string{
-					"success":    "true",
 					"conn_group": connGroup,
 					"event_type": events[order].Type,
 				},
@@ -131,6 +105,14 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 			errors[order] = err
 			continue
 		}
+
+		metrics.Increment(
+			"pubsub_messages_delivered_total",
+			map[string]string{
+				"conn_group": connGroup,
+				"event_type": events[order].Type,
+			},
+		)
 	}
 
 	if cmp.Or(errors...) != nil {
@@ -170,7 +152,7 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 
 	if !exists {
 		if !p.autoCreateTopic {
-			return nil, &unknownTopicError{Topic: id, Project: p.client.Project()}
+			return nil, unknownTopicError{Topic: id, Project: p.client.Project()}
 		}
 
 		cfg := &pubsub.TopicConfig{}
@@ -266,6 +248,10 @@ func New(client *pubsub.Client, opts ...Opt) (*Publisher, error) {
 	}
 
 	return p, nil
+}
+
+func isErrUnknownTopic(e error) bool {
+	return errors.As(e, &unknownTopicError{})
 }
 
 func isErrAlreadyExists(e error) bool {

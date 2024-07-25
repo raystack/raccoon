@@ -50,26 +50,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 
 		topic, err := p.topic(ctx, topicName)
 		if err != nil {
-			switch {
-			case isErrUnknownTopic(err):
-				metrics.Increment(
-					"pubsub_unknown_topic_failure_total",
-					map[string]string{
-						"topic":      topicName,
-						"conn_group": connGroup,
-						"event_type": event.Type,
-					},
-				)
-			case isErrResourceExhausted(err):
-				metrics.Increment(
-					"pubsub_topics_limit_exceeded_total",
-					map[string]string{
-						"topic":      topicName,
-						"conn_group": connGroup,
-						"event_type": event.Type,
-					},
-				)
-			}
+			reportTopicError(err, topicName, connGroup, event.Type)
 			errors[order] = err
 			continue
 		}
@@ -85,23 +66,8 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		}
 		_, err := result.Get(ctx)
 		if err != nil {
-			metrics.Increment(
-				"pubsub_messages_undelivered_total",
-				map[string]string{
-					"conn_group": connGroup,
-					"event_type": events[order].Type,
-				},
-			)
-			if isErrResourceExhausted(err) {
-				metrics.Increment(
-					"pubsub_topic_throughput_exceeded_total",
-					map[string]string{
-						"topic":      p.topicNameFromEvent(events[order]),
-						"conn_group": connGroup,
-						"event_type": events[order].Type,
-					},
-				)
-			}
+			event := events[order]
+			reportPublishError(err, p.topicNameFromEvent(event), connGroup, event.Type)
 			errors[order] = err
 			continue
 		}
@@ -268,4 +234,54 @@ func hasAPIErrorCode(e error, code codes.Code) bool {
 		return false
 	}
 	return apiError.GRPCStatus().Code() == code
+}
+
+func reportTopicError(err error, topicName, connGroup, eventType string) {
+	metrics.Increment(
+		"pubsub_messages_undelivered_total",
+		map[string]string{
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
+	switch {
+	case isErrUnknownTopic(err):
+		metrics.Increment(
+			"pubsub_unknown_topic_failure_total",
+			map[string]string{
+				"topic":      topicName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	case isErrResourceExhausted(err):
+		metrics.Increment(
+			"pubsub_topics_limit_exceeded_total",
+			map[string]string{
+				"topic":      topicName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
+}
+
+func reportPublishError(err error, topicName, connGroup, eventType string) {
+	metrics.Increment(
+		"pubsub_messages_undelivered_total",
+		map[string]string{
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
+	if isErrResourceExhausted(err) {
+		metrics.Increment(
+			"pubsub_topic_throughput_exceeded_total",
+			map[string]string{
+				"topic":      topicName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
 }

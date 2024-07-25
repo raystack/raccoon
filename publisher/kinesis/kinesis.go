@@ -281,6 +281,13 @@ func reportPutError(err error, streamName, connGroup, eventType string) {
 }
 
 func reportCreateError(err error, streamName, connGroup, eventType string) {
+	metrics.Increment(
+		"kinesis_messages_undelivered_total",
+		map[string]string{
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
 	if isErrNotFound(err) {
 		metrics.Increment(
 			"kinesis_unknown_stream_failure_total",

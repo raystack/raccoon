@@ -140,22 +140,22 @@ func getCounterMap() map[string]CounterVec {
 
 	counters["kafka_messages_delivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "kafka_messages_delivered_total",
-		Help: "Number of delivered events to Kafka"}, []string{"conn_group", "event_type"})
+		Help: "Number of delivered events to Kafka"}, []string{"topic", "conn_group", "event_type"})
 	counters["kafka_messages_undelivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "kafka_messages_undelivered_total",
-		Help: "Number of events that failed delivery"}, []string{"conn_group", "event_type"})
+		Help: "Number of events that failed delivery"}, []string{"topic", "conn_group", "event_type"})
 	counters["pubsub_messages_delivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "pubsub_messages_delivered_total",
-		Help: "Number of delivered events to PubSub"}, []string{"conn_group", "event_type"})
+		Help: "Number of delivered events to PubSub"}, []string{"topic", "conn_group", "event_type"})
 	counters["pubsub_messages_undelivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "pubsub_messages_undelivered_total",
-		Help: "Number of events that failed delivery"}, []string{"conn_group", "event_type"})
+		Help: "Number of events that failed delivery"}, []string{"topic", "conn_group", "event_type"})
 	counters["kinesis_messages_delivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "kinesis_messages_delivered_total",
-		Help: "Number of delivered events to Kinesis"}, []string{"conn_group", "event_type"})
+		Help: "Number of delivered events to Kinesis"}, []string{"stream", "conn_group", "event_type"})
 	counters["kinesis_messages_undelivered_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "kinesis_messages_undelivered_total",
-		Help: "Number of events that failed delivery"}, []string{"conn_group", "event_type"})
+		Help: "Number of events that failed delivery"}, []string{"stream", "conn_group", "event_type"})
 	counters["kinesis_stream_throughput_exceeded_total"] = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "kinesis_stream_throughput_exceeded_total",
 		Help: "Number of messages that failed to deliver because the operation exceeded shard limit or if the message size was too big"}, []string{"stream", "conn_group", "event_type"})

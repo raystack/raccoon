@@ -243,6 +243,7 @@ func reportTopicError(err error, topicName, connGroup, eventType string) {
 	metrics.Increment(
 		"pubsub_messages_undelivered_total",
 		map[string]string{
+			"topic":      topicName,
 			"conn_group": connGroup,
 			"event_type": eventType,
 		},
@@ -273,6 +274,7 @@ func reportPublishError(err error, topicName, connGroup, eventType string) {
 	metrics.Increment(
 		"pubsub_messages_undelivered_total",
 		map[string]string{
+			"topic":      topicName,
 			"conn_group": connGroup,
 			"event_type": eventType,
 		},

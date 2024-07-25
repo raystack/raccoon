@@ -72,9 +72,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		metrics.Increment(
 			"kinesis_messages_delivered_total",
 			map[string]string{
-				// topic instead of stream to keep the schema consistent
-				// between publishers
-				"topic":      streamName,
+				"stream":     streamName,
 				"conn_group": connGroup,
 				"event_type": event.Type,
 			},
@@ -249,6 +247,7 @@ func reportPutError(err error, streamName, connGroup, eventType string) {
 	metrics.Increment(
 		"kinesis_messages_undelivered_total",
 		map[string]string{
+			"stream":     streamName,
 			"conn_group": connGroup,
 			"event_type": eventType,
 		},
@@ -286,6 +285,7 @@ func reportStreamError(err error, streamName, connGroup, eventType string) {
 	metrics.Increment(
 		"kinesis_messages_undelivered_total",
 		map[string]string{
+			"stream":     streamName,
 			"conn_group": connGroup,
 			"event_type": eventType,
 		},

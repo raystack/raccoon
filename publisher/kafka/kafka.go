@@ -66,6 +66,7 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 			metrics.Increment(
 				"kafka_messages_undelivered_total",
 				map[string]string{
+					"topic":      topic,
 					"conn_group": connGroup,
 					"event_type": event.Type,
 				},
@@ -100,6 +101,7 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 			metrics.Increment(
 				"kafka_messages_undelivered_total",
 				map[string]string{
+					"topic":      *msg.TopicPartition.Topic,
 					"conn_group": connGroup,
 					"event_type": eventType,
 				},

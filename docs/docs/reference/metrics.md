@@ -14,9 +14,6 @@ This page contains the reference for all the metrics exposed by Raccoon.
   - [Kafka](#kafka)
   - [PubSub](#pubsub)
   - [Kinesis](#kinesis)
-- [PubSub Publisher](metrics.md#pubsub-publisher)
-- [Kinesis Publisher](metrics.md#kinesis-publisher)
-- [Resource Usage](metrics.md#resource-usage)
 - [Event Delivery](metrics.md#event-delivery)
 
 ## Server Connection
@@ -74,17 +71,17 @@ Number of connection close errors encountered
 ### Kafka
 #### `kafka_messages_delivered_total`
 
-Number of delivered events to Kafka. The metric also contains false increments. To find the true value, one should use the difference between this and `kafka_messages_undelivered_total` metric for the same tag/labels.
+Number of events delivered to Kafka. 
 
 - Type: `Count`
-- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+- Tags: `topic=topicname` `conn_group=*` `event_type=*`
 
 #### `kafka_messages_undelivered_total`
 
-The count of false increments done by `kafka_messages_delivered_total`. To be used in conjunction with the former for accurate metrics.
+Number of events not delivered to Kafka.
 
 - Type: `Count`
-- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+- Tags: `topic=topicname` `conn_group=*` `event_type=*`
 
 
 #### `kafka_unknown_topic_failure_total`
@@ -153,22 +150,36 @@ Response time of produce batch method of the kafka producer
 
 #### `pubsub_messages_delivered_total`
 
-Number of delivered events to PubSub. The metric also contains false increments. To find the true value, one should use the difference between this and `pubsub_messages_undelivered_total` metric for the same tag/labels.
+Number of events delivered to PubSub. 
 
 - Type: `Count`
-- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+- Tags: `topic=topicname` `conn_group=*` `event_type=*`
 
 #### `pubsub_messages_undelivered_total`
 
-The count of false increments done by `pubsub_messages_delivered_total`. To be used in conjunction with the former for accurate metrics.
+Number of events that were not delivered to PubSub.
 
 - Type: `Count`
-- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+- Tags: `topic=topicname` `conn_group=*` `event_type=*`
 
 
 #### `pubsub_unknown_topic_failure_total`
 
-Number of delivery failure caused by topic does not exist in PubSub.
+Number of delivery failures caused by non-existence of topic in PubSub.
+
+- Type: `Count`
+- Tags: `topic=topicname` `event_type=*` `conn_group=*`
+
+#### `pubsub_topic_throughput_exceeded_total`
+
+Number of delivery failures caused by exceeding throughput limits on PubSub.
+
+- Type: `Count`
+- Tags: `topic=topicname` `event_type=*` `conn_group=*`
+
+#### `pubsub_topics_limit_exceeded_total`
+
+Number of delivery failures caused by exceeding the limit on number of Topics on PubSub.
 
 - Type: `Count`
 - Tags: `topic=topicname` `event_type=*` `conn_group=*`
@@ -177,22 +188,36 @@ Number of delivery failure caused by topic does not exist in PubSub.
 
 #### `kinesis_messages_delivered_total`
 
-Number of delivered events to Kinesis. The metric also contains false increments. To find the true value, one should use the difference between this and `kinesis_messages_undelivered_total` metric for the same tag/labels.
+Number of events successfully delivered to Kinesis. 
 
 - Type: `Count`
-- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+- Tags: `stream=streamname` `conn_group=*` `event_type=*`
 
 #### `kinesis_messages_undelivered_total`
 
-The count of false increments done by `kinesis_messages_delivered_total`. To be used in conjunction with the former for accurate metrics.
+Number of events not delivered to Kinesis.
 
 - Type: `Count`
-- Tags: `success=false` `success=true` `conn_group=*` `event_type=*`
+- Tags: `stream=streamname` `conn_group=*` `event_type=*`
 
 
 #### `kinesis_unknown_stream_failure_total`
 
-Number of delivery failure caused by stream does not exist in Kinesis.
+Number of delivery failures caused by non-existence of stream in Kinesis.
+
+- Type: `Count`
+- Tags: `stream=streamname` `event_type=*` `conn_group=*`
+
+#### `kinesis_stream_throughput_exceeded_total`
+
+Number of delivery failures caused by exceeding shard throughput limits. This error can also occur if the message size of an event exceeds message size limit (1MiB as of the day of this writing). See [Limits and Quotas on Kinesis](https://docs.aws.amazon.com/streams/latest/dev/service-sizes-and-limits.html)
+
+- Type: `Count`
+- Tags: `stream=streamname` `event_type=*` `conn_group=*`
+
+#### `kinesis_streams_limit_exceeded_total`
+
+Number of delivery failures caused due to too many streams in `CREATING` mode. AWS Kinesis limits how many stream creation requests can be submitted in parallel to 5.
 
 - Type: `Count`
 - Tags: `stream=streamname` `event_type=*` `conn_group=*`

@@ -63,10 +63,13 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		if result == nil {
 			continue
 		}
+		var (
+			event     = events[order]
+			topicName = p.topicNameFromEvent(event)
+		)
 		_, err := result.Get(ctx)
 		if err != nil {
-			event := events[order]
-			reportPublishError(err, p.topicNameFromEvent(event), connGroup, event.Type)
+			reportPublishError(err, topicName, connGroup, event.Type)
 			errors[order] = err
 			continue
 		}
@@ -74,6 +77,7 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		metrics.Increment(
 			"pubsub_messages_delivered_total",
 			map[string]string{
+				"topic":      topicName,
 				"conn_group": connGroup,
 				"event_type": events[order].Type,
 			},

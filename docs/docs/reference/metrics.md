@@ -184,6 +184,13 @@ Number of delivery failures caused by exceeding the limit on number of Topics on
 - Type: `Count`
 - Tags: `topic=topicname` `event_type=*` `conn_group=*`
 
+#### `pubsub_producebulk_tt_ms`
+
+Response time of produce batch method of the pubsub producer
+
+- Type `Timing`
+- Tags: NA
+
 ### Kinesis
 
 #### `kinesis_messages_delivered_total`
@@ -221,6 +228,13 @@ Number of delivery failures caused due to too many streams in `CREATING` mode. A
 
 - Type: `Count`
 - Tags: `stream=streamname` `event_type=*` `conn_group=*`
+
+#### `kinesis_producebulk_tt_ms`
+
+Response time of produce batch method of the kinesis producer
+
+- Type `Timing`
+- Tags: NA
 
 ## Resource Usage
 

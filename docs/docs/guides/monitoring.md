@@ -153,3 +153,11 @@ Raccoon provides fine-grained metrics that denote latency. That gives clues as t
 - [`event_processing_duration_milliseconds`](reference/metrics.md#event_processing_duration_milliseconds) This metrics denotes overall latency. You need to look at other latency metrics to find the root cause when this metric is high.
 - [`server_processing_latency_milliseconds`](reference/metrics.md#server_processing_latency_milliseconds) Correlate this metric with `event_processing_duration_milliseconds` to infer whether the issue is with Raccoon itself, or something wrong with the network, or the way [sent_time](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto#L47) is generated.-
 - [`worker_processing_duration_milliseconds`](reference/metrics.md#worker_processing_duration_milliseconds) High value of this metric indicates that the publisher is slow or can't keep up.
+
+
+### Dashboard
+
+There is a pre-built [grafana dashboard](https://github.com/raystack/raccoon/tree/dashboards/raccoon.json) available with support for Prometheus data source.
+
+If you're running the statsd + telegraf setup, you can configure telegraf to push metrics to Prometheus.
+

@@ -36,7 +36,7 @@
             "type": "prometheus",
             "uid": "bdt4t6a61qn0ge"
           },
-          "description": "uration from the time request is processed to the time events are published. This metric is calculated per event by following formula(PublishedTime - ProcessedTime)/CountEvents",
+          "description": "duration from the time request is processed to the time events are published. This metric is calculated per event by following formula(PublishedTime - ProcessedTime)/CountEvents",
           "fieldConfig": {
             "defaults": {
               "color": {

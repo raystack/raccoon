@@ -1,0 +1,28 @@
+name: Release Client - Python
+
+on:
+  release:
+    types: [published]
+    workflow_dispatch:
+
+jobs:
+  publish-python-client:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install dependencies
+        working-directory: clients/python
+        run: poetry install --with=dev
+      - name: Build
+        working-directory: clients/python
+        run: |
+          poetry version $(cat ../../version.txt) 
+          poetry publish --build -u $PYPI_USERNAME -p $PYPI_PASSWORD --dry-run
+          
+        

@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "raccoon-client"
+version = "v0.2.1"
+description = "A python client to serve requests to raccoon server"
+authors = ["Punit Kulal <punitkulal1996@gmail.com>"]
+readme = "README.md"
+packages = [{include = "raccoon_client"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.31.0"
+protobuf = "^4.23.4"
+google = "^3.0.0"
+
+[tool.poetry.group.dev.dependencies]
+requests = "^2.31.0"
+black = "^23.7.0"
+pylint = "^2.17.5"
+ruff = "^0.0.285"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+extend-exclude = '.*_pb2.py|.*_pb2.pyi'
+
+[tool.ruff]
+ignore = ["E501"]
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = [
+    'no-name-in-module',
+    'line-too-long',
+    'missing-module-docstring',
+    'bad-indentation',
+    'missing-class-docstring',
+    'missing-function-docstring',
+    'protected-access'
+]
+
+[tool.pylint.MASTER]
+ignore-patterns = '.*_pb2.py|.*_pb2.pyi'

@@ -13,8 +13,12 @@ coverage
 .vscode
 *.env
 *.idea/
-raccoon
 .temp
+clients/python/venv
+clients/python/poetry.lock
+__pycache__
+raccoon
+!clients/python/raccoon_client/protos/raystack/raccoon/v1beta1/
 node_modules
 __debug.*
 

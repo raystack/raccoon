@@ -29,7 +29,7 @@ type Publisher struct {
 	streamAutocreate    bool
 	streamProbeInterval time.Duration
 	streamMode          types.StreamMode
-	defaultShardCount   int32
+	streamShards        int32
 	publishTimeout      time.Duration
 }
 
@@ -47,39 +47,13 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		if p.streamAutocreate {
 			err := p.ensureStream(ctx, streamName)
 			if err != nil {
-				metrics.Increment(
-					"kinesis_messages_delivered_total",
-					map[string]string{
-						"success":    "false",
-						"conn_group": connGroup,
-						"event_type": event.Type,
-					},
-				)
-				if p.isErrNotFound(err) {
-					metrics.Increment(
-						"kinesis_unknown_stream_failure_total",
-						map[string]string{
-							"stream":     streamName,
-							"conn_group": connGroup,
-							"event_type": event.Type,
-						},
-					)
-				}
+				reportStreamError(err, streamName, connGroup, event.Type)
 				errors[order] = err
 				continue
 			}
 		}
 
-		metrics.Increment(
-			"kinesis_messages_delivered_total",
-			map[string]string{
-				"success":    "true",
-				"conn_group": connGroup,
-				"event_type": event.Type,
-			},
-		)
-
-		partitionKey := fmt.Sprintf("%d", rand.Int31())
+		partitionKey := fmt.Sprintf("%010d", rand.Int31())
 		_, err := p.client.PutRecord(
 			ctx,
 			&kinesis.PutRecordInput{
@@ -90,35 +64,19 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		)
 
 		if err != nil {
-			metrics.Increment(
-				"kinesis_messages_delivered_total",
-				map[string]string{
-					"success":    "false",
-					"conn_group": connGroup,
-					"event_type": event.Type,
-				},
-			)
-			metrics.Increment(
-				"kinesis_messages_undelivered_total",
-				map[string]string{
-					"success":    "true",
-					"conn_group": connGroup,
-					"event_type": event.Type,
-				},
-			)
-			if p.isErrNotFound(err) {
-				metrics.Increment(
-					"kinesis_unknown_stream_failure_total",
-					map[string]string{
-						"stream":     streamName,
-						"conn_group": connGroup,
-						"event_type": event.Type,
-					},
-				)
-			}
+			reportPutError(err, streamName, connGroup, event.Type)
 			errors[order] = err
 			continue
 		}
+
+		metrics.Increment(
+			"kinesis_messages_delivered_total",
+			map[string]string{
+				"stream":     streamName,
+				"conn_group": connGroup,
+				"event_type": event.Type,
+			},
+		)
 	}
 	if cmp.Or(errors...) != nil {
 		return &publisher.BulkError{Errors: errors}
@@ -145,7 +103,7 @@ func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 	)
 
 	if err != nil {
-		if !p.isErrNotFound(err) {
+		if !isErrNotFound(err) {
 			return err
 		}
 
@@ -153,7 +111,7 @@ func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 			ctx,
 			&kinesis.CreateStreamInput{
 				StreamName: aws.String(name),
-				ShardCount: aws.Int32(p.defaultShardCount),
+				ShardCount: aws.Int32(p.streamShards),
 				StreamModeDetails: &types.StreamModeDetails{
 					StreamMode: p.streamMode,
 				},
@@ -188,14 +146,6 @@ func (p *Publisher) ensureStream(ctx context.Context, name string) error {
 
 	p.streams[name] = true
 	return nil
-}
-
-func (*Publisher) isErrNotFound(e error) bool {
-	var (
-		errNotFound   *types.ResourceNotFoundException
-		isErrNotFound = errors.As(e, &errNotFound)
-	)
-	return isErrNotFound
 }
 
 func (*Publisher) Name() string { return "kinesis" }
@@ -233,7 +183,7 @@ func WithStreamMode(mode types.StreamMode) Opt {
 
 func WithShards(n uint32) Opt {
 	return func(p *Publisher) error {
-		p.defaultShardCount = int32(n)
+		p.streamShards = int32(n)
 		return nil
 	}
 }
@@ -263,7 +213,7 @@ func New(client *kinesis.Client, opts ...Opt) (*Publisher, error) {
 	p := &Publisher{
 		client:              client,
 		streamPattern:       "%s",
-		defaultShardCount:   1,
+		streamShards:        1,
 		streamProbeInterval: time.Second,
 		streamMode:          types.StreamModeOnDemand,
 		streams:             make(map[string]bool),
@@ -276,4 +226,89 @@ func New(client *kinesis.Client, opts ...Opt) (*Publisher, error) {
 		}
 	}
 	return p, nil
+}
+
+func isErrNotFound(e error) bool {
+	var t *types.ResourceNotFoundException
+	return errors.As(e, &t)
+}
+
+func isErrThroughputExceeded(e error) bool {
+	var t *types.ProvisionedThroughputExceededException
+	return errors.As(e, &t)
+}
+
+func isErrLimitExceeded(e error) bool {
+	var t *types.LimitExceededException
+	return errors.As(e, &t)
+}
+
+func reportPutError(err error, streamName, connGroup, eventType string) {
+	metrics.Increment(
+		"kinesis_messages_undelivered_total",
+		map[string]string{
+			"stream":     streamName,
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
+	if isErrNotFound(err) {
+		metrics.Increment(
+			"kinesis_unknown_stream_failure_total",
+			map[string]string{
+				"stream":     streamName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
+
+	// BUG: AWS Kinesis API returns types.ProvisionedThroughputExceededException
+	// (which is checked by isErrThroughputExceeded) when there are too many
+	// `put` requests in flight. However, the same error is also returned
+	// when the size of an individual message exceeds the message size threshold.
+	// That means means we need a more fine-grained method of detecting which
+	// of the two cases we're getting this error for.
+	if isErrThroughputExceeded(err) {
+		metrics.Increment(
+			"kinesis_stream_throughput_exceeded_total",
+			map[string]string{
+				"stream":     streamName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
+}
+
+func reportStreamError(err error, streamName, connGroup, eventType string) {
+	metrics.Increment(
+		"kinesis_messages_undelivered_total",
+		map[string]string{
+			"stream":     streamName,
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
+	if isErrNotFound(err) {
+		metrics.Increment(
+			"kinesis_unknown_stream_failure_total",
+			map[string]string{
+				"stream":     streamName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
+
+	if isErrLimitExceeded(err) {
+		metrics.Increment(
+			"kinesis_streams_limit_exceeded_total",
+			map[string]string{
+				"stream":     streamName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
 }

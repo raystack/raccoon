@@ -49,7 +49,6 @@ type Kafka struct {
 }
 
 // ProduceBulk messages to kafka. Block until all messages are sent. Return array of error. Order of Errors is guaranteed.
-// DeliveryChannel needs to be exclusive. DeliveryChannel is exposed for recyclability purpose.
 func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 	errors := make([]error, len(events))
 	totalProcessed := 0
@@ -64,38 +63,60 @@ func (pr *Kafka) ProduceBulk(events []*pb.Event, connGroup string) error {
 
 		err := pr.kp.Produce(message, deliveryChannel)
 		if err != nil {
-			metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "false", "conn_group": connGroup, "event_type": event.Type})
+			metrics.Increment(
+				"kafka_messages_undelivered_total",
+				map[string]string{
+					"topic":      topic,
+					"conn_group": connGroup,
+					"event_type": event.Type,
+				},
+			)
 			if err.Error() == "Local: Unknown topic" {
 				errors[order] = fmt.Errorf("%v %s", err, topic)
-				metrics.Increment("kafka_unknown_topic_failure_total", map[string]string{"topic": topic, "event_type": event.Type, "conn_group": connGroup})
+				metrics.Increment(
+					"kafka_unknown_topic_failure_total",
+					map[string]string{
+						"topic":      topic,
+						"event_type": event.Type,
+						"conn_group": connGroup,
+					},
+				)
 			} else {
 				errors[order] = err
 			}
 			continue
 		}
-		metrics.Increment(
-			"kafka_messages_delivered_total",
-			map[string]string{
-				"success":    "true",
-				"conn_group": connGroup,
-				"event_type": event.Type,
-			},
-		)
-
 		totalProcessed++
 	}
 
 	// Wait for deliveryChannel as many as processed
 	for range totalProcessed {
-		d := <-deliveryChannel
-		m := d.(*kafka.Message)
-		if m.TopicPartition.Error != nil {
-			order := m.Opaque.(int)
-			eventType := events[order].Type
-			metrics.Increment("kafka_messages_undelivered_total", map[string]string{"success": "true", "conn_group": connGroup, "event_type": eventType})
-			metrics.Increment("kafka_messages_delivered_total", map[string]string{"success": "false", "conn_group": connGroup, "event_type": eventType})
-			errors[order] = m.TopicPartition.Error
+		var (
+			deliveryReport = <-deliveryChannel
+			msg            = deliveryReport.(*kafka.Message)
+			order          = msg.Opaque.(int)
+			eventType      = events[order].Type
+		)
+		if msg.TopicPartition.Error != nil {
+			metrics.Increment(
+				"kafka_messages_undelivered_total",
+				map[string]string{
+					"topic":      *msg.TopicPartition.Topic,
+					"conn_group": connGroup,
+					"event_type": eventType,
+				},
+			)
+			errors[order] = msg.TopicPartition.Error
+			continue
 		}
+		metrics.Increment(
+			"kafka_messages_delivered_total",
+			map[string]string{
+				"topic":      *msg.TopicPartition.Topic,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
 	}
 
 	if cmp.Or(errors...) != nil {

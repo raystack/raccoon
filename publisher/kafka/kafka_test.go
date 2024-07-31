@@ -50,6 +50,7 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 							Offset:    0,
 							Error:     nil,
 						},
+						Opaque: 0,
 					}
 				}()
 			})
@@ -65,16 +66,15 @@ func TestKafka_ProduceBulk(suite *testing.T) {
 			client := &mockClient{}
 			client.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("buffer full")).Once()
 			client.On("Produce", mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
-				go func() {
-					args.Get(1).(chan kafka.Event) <- &kafka.Message{
-						TopicPartition: kafka.TopicPartition{
-							Topic:     args.Get(0).(*kafka.Message).TopicPartition.Topic,
-							Partition: 0,
-							Offset:    0,
-							Error:     nil,
-						},
-					}
-				}()
+				args.Get(1).(chan kafka.Event) <- &kafka.Message{
+					TopicPartition: kafka.TopicPartition{
+						Topic:     args.Get(0).(*kafka.Message).TopicPartition.Topic,
+						Partition: 0,
+						Offset:    0,
+						Error:     nil,
+					},
+					Opaque: 1,
+				}
 			}).Once()
 			client.On("Produce", mock.Anything, mock.Anything).Return(fmt.Errorf("buffer full")).Once()
 			kp := NewFromClient(client, 10, "%s", 1)

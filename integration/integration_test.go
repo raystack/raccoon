@@ -30,18 +30,24 @@ var url, wsurl string
 var bootstrapServers string
 var grpcServerAddr string
 
+const envTestHost = "INTEGTEST_HOST"
+
 func TestMain(m *testing.M) {
 	uuid = fmt.Sprintf("%d-test", rand.Int())
 	timeout = 20 * time.Second
 	topicFormat = os.Getenv("INTEGTEST_TOPIC_FORMAT")
-	wsurl = fmt.Sprintf("ws://%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
-	url = fmt.Sprintf("http://%v/api/v1/events", os.Getenv("INTEGTEST_HOST"))
+	wsurl = fmt.Sprintf("ws://%v/api/v1/events", os.Getenv(envTestHost))
+	url = fmt.Sprintf("http://%v/api/v1/events", os.Getenv(envTestHost))
 	grpcServerAddr = os.Getenv("GRPC_SERVER_ADDR")
 	bootstrapServers = os.Getenv("INTEGTEST_BOOTSTRAP_SERVER")
 	os.Exit(m.Run())
 }
 
 func TestIntegration(t *testing.T) {
+	if os.Getenv(envTestHost) == "" {
+		t.Errorf("cannot run tests because %s env variable is not set", envTestHost)
+		return
+	}
 	var err error
 	assert.NoError(t, err)
 	header := http.Header{

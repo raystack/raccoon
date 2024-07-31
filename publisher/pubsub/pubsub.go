@@ -3,6 +3,7 @@ package pubsub
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -44,29 +45,11 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 	results := make([]*pubsub.PublishResult, len(events))
 
 	for order, event := range events {
-		topicId := strings.Replace(p.topicFormat, "%s", event.Type, 1)
+		topicName := p.topicNameFromEvent(event)
 
-		topic, err := p.topic(ctx, topicId)
+		topic, err := p.topic(ctx, topicName)
 		if err != nil {
-			metrics.Increment(
-				"pubsub_messages_delivered_total",
-				map[string]string{
-					"success":    "false",
-					"conn_group": connGroup,
-					"event_type": event.Type,
-				},
-			)
-			_, isUnknownTopic := err.(*unknownTopicError)
-			if isUnknownTopic {
-				metrics.Increment(
-					"pubsub_unknown_topic_failure_total",
-					map[string]string{
-						"topic":      topicId,
-						"conn_group": connGroup,
-						"event_type": event.Type,
-					},
-				)
-			}
+			reportTopicError(err, topicName, connGroup, event.Type)
 			errors[order] = err
 			continue
 		}
@@ -74,48 +57,41 @@ func (p *Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 		results[order] = topic.Publish(ctx, &pubsub.Message{
 			Data: event.EventBytes,
 		})
-
-		metrics.Increment(
-			"pubsub_messages_delivered_total",
-			map[string]string{
-				"success":    "true",
-				"conn_group": connGroup,
-				"event_type": event.Type,
-			},
-		)
 	}
 
 	for order, result := range results {
 		if result == nil {
 			continue
 		}
+		var (
+			event     = events[order]
+			topicName = p.topicNameFromEvent(event)
+		)
 		_, err := result.Get(ctx)
 		if err != nil {
-			metrics.Increment(
-				"pubsub_messages_delivered_total",
-				map[string]string{
-					"success":    "false",
-					"conn_group": connGroup,
-					"event_type": events[order].Type,
-				},
-			)
-			metrics.Increment(
-				"pubsub_messages_undelivered_total",
-				map[string]string{
-					"success":    "true",
-					"conn_group": connGroup,
-					"event_type": events[order].Type,
-				},
-			)
+			reportPublishError(err, topicName, connGroup, event.Type)
 			errors[order] = err
 			continue
 		}
+
+		metrics.Increment(
+			"pubsub_messages_delivered_total",
+			map[string]string{
+				"topic":      topicName,
+				"conn_group": connGroup,
+				"event_type": events[order].Type,
+			},
+		)
 	}
 
 	if cmp.Or(errors...) != nil {
 		return &publisher.BulkError{Errors: errors}
 	}
 	return nil
+}
+
+func (p *Publisher) topicNameFromEvent(event *pb.Event) string {
+	return strings.Replace(p.topicFormat, "%s", event.Type, 1)
 }
 
 func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error) {
@@ -145,7 +121,7 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 
 	if !exists {
 		if !p.autoCreateTopic {
-			return nil, &unknownTopicError{Topic: id, Project: p.client.Project()}
+			return nil, unknownTopicError{Topic: id, Project: p.client.Project()}
 		}
 
 		cfg := &pubsub.TopicConfig{}
@@ -156,7 +132,7 @@ func (p *Publisher) topic(ctx context.Context, id string) (*pubsub.Topic, error)
 		topic, err = p.client.CreateTopicWithConfig(ctx, id, cfg)
 		if err != nil {
 			// in case a service replica created this topic before we could
-			if p.isAlreadyExistsError(err) {
+			if isErrAlreadyExists(err) {
 				topic = p.client.Topic(id)
 			} else {
 				return nil, fmt.Errorf("error creating topic %q: %w", id, err)
@@ -180,14 +156,6 @@ func (p *Publisher) Close() error {
 
 func (p *Publisher) Name() string {
 	return "pubsub"
-}
-
-func (p *Publisher) isAlreadyExistsError(e error) bool {
-	apiError, ok := e.(*apierror.APIError)
-	if !ok {
-		return false
-	}
-	return apiError.GRPCStatus().Code() == codes.AlreadyExists
 }
 
 type Opt func(*Publisher)
@@ -249,4 +217,76 @@ func New(client *pubsub.Client, opts ...Opt) (*Publisher, error) {
 	}
 
 	return p, nil
+}
+
+func isErrUnknownTopic(e error) bool {
+	return errors.As(e, &unknownTopicError{})
+}
+
+func isErrAlreadyExists(e error) bool {
+	return hasAPIErrorCode(e, codes.AlreadyExists)
+}
+
+func isErrResourceExhausted(e error) bool {
+	return hasAPIErrorCode(e, codes.ResourceExhausted)
+}
+
+func hasAPIErrorCode(e error, code codes.Code) bool {
+	apiError, ok := e.(*apierror.APIError)
+	if !ok {
+		return false
+	}
+	return apiError.GRPCStatus().Code() == code
+}
+
+func reportTopicError(err error, topicName, connGroup, eventType string) {
+	metrics.Increment(
+		"pubsub_messages_undelivered_total",
+		map[string]string{
+			"topic":      topicName,
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
+	switch {
+	case isErrUnknownTopic(err):
+		metrics.Increment(
+			"pubsub_unknown_topic_failure_total",
+			map[string]string{
+				"topic":      topicName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	case isErrResourceExhausted(err):
+		metrics.Increment(
+			"pubsub_topics_limit_exceeded_total",
+			map[string]string{
+				"topic":      topicName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
+}
+
+func reportPublishError(err error, topicName, connGroup, eventType string) {
+	metrics.Increment(
+		"pubsub_messages_undelivered_total",
+		map[string]string{
+			"topic":      topicName,
+			"conn_group": connGroup,
+			"event_type": eventType,
+		},
+	)
+	if isErrResourceExhausted(err) {
+		metrics.Increment(
+			"pubsub_topic_throughput_exceeded_total",
+			map[string]string{
+				"topic":      topicName,
+				"conn_group": connGroup,
+				"event_type": eventType,
+			},
+		)
+	}
 }

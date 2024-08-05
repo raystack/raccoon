@@ -327,13 +327,12 @@ func bindServerFlags(cmd *cobra.Command) {
 		"Level available are [debug info warn error fatal panic]",
 	)
 
-	// todo:
-	// bindFlag(
-	// 	fs,
-	// 	&config.Event.Ack,
-	// 	"EVENT_ACK",
-	// 	"Whether to send acknowledgements to clients or not. 1 to enable, 0 to disable.",
-	// )
+	bindFlag(
+		fs,
+		&config.Event.Ack,
+		"EVENT_ACK",
+		"Whether to send acknowledgements to clients or not. 1 to enable, 0 to disable.",
+	)
 }
 
 func bindFlag(flag *pflag.FlagSet, ref any, name, desc string) {
@@ -347,6 +346,12 @@ func bindFlag(flag *pflag.FlagSet, ref any, name, desc string) {
 	typ := el.Type()
 
 	switch {
+	case typ.Name() == "Duration":
+		v := ref.(*time.Duration)
+		flag.Var(durationFlag{v}, flagName, desc)
+	case typ.Name() == "AckType":
+		v := ref.(*config.AckType)
+		flag.Var(ackTypeFlag{v}, flagName, desc)
 	case kind == reflect.String:
 		v := ref.(*string)
 		flag.StringVar(v, flagName, "", desc)
@@ -362,9 +367,6 @@ func bindFlag(flag *pflag.FlagSet, ref any, name, desc string) {
 	case kind == reflect.Slice && typ.Elem().String() == "string":
 		v := ref.(*[]string)
 		flag.StringSliceVar(v, flagName, nil, desc)
-	case typ.Name() == "Duration":
-		v := ref.(*time.Duration)
-		flag.Var(durationFlag{v}, flagName, desc)
 	default:
 		msg := fmt.Sprintf("unsupport flag. kind = %s, type = %s", kind, typ)
 		panic(msg)
@@ -413,4 +415,25 @@ func (bf boolFlag) Set(raw string) error {
 
 func (bf boolFlag) Type() string {
 	return "bool"
+}
+
+type ackTypeFlag struct {
+	value *config.AckType
+}
+
+func (af ackTypeFlag) String() string {
+	return ""
+}
+
+func (af ackTypeFlag) Set(raw string) error {
+	v, err := strconv.ParseInt(raw, 10, 0)
+	if err != nil {
+		return fmt.Errorf("error parsing bool: %w", err)
+	}
+	*af.value = config.AckType(v)
+	return nil
+}
+
+func (af ackTypeFlag) Type() string {
+	return "int"
 }

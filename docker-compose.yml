@@ -9,7 +9,6 @@ services:
     container_name: localstack-main
     ports:
       - "0.0.0.0:4566:4566"
-      # - "4510-4599"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
   pubsub-emulator:
@@ -56,7 +55,7 @@ services:
   cs:
     build:
       context: .
-    command: [ "/bin/sh", "-c", "./raccoon" ]
+    command: [ "/bin/sh", "-c", "./raccoon", "server" ]
     hostname: cs
     container_name: cs
     stdin_open: true

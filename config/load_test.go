@@ -74,7 +74,6 @@ func TestKafkaConfig_ToKafkaConfigMap(t *testing.T) {
 	assert.Equal(t, "kafka:9092", bootstrapServer)
 	assert.Equal(t, "", topic)
 	assert.NotEqual(t, something, "anything")
-	assert.Equal(t, 4, len(*kafkaConfig))
 }
 
 func TestWorkerConfig(t *testing.T) {

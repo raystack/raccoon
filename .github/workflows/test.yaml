@@ -47,6 +47,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build
         run: make build
+      - name: Smoke test
+        run: ./raccoon
   benchmark:
     runs-on: ubuntu-latest
     steps:

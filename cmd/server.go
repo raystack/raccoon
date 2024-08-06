@@ -36,9 +36,21 @@ func serverCommand() *cobra.Command {
 }
 
 func bindServerFlags(cmd *cobra.Command) {
-	var placeholder string
 	fs := cmd.Flags()
 	fs.SortFlags = false
+
+	bindFlag(
+		fs,
+		&config.Log.Level,
+		"LOG_LEVEL",
+		"Level available are [debug info warn error fatal panic]",
+	)
+	bindFlag(
+		fs,
+		&config.Event.Ack,
+		"EVENT_ACK",
+		"Whether to send acknowledgements to clients or not. 1 to enable, 0 to disable.",
+	)
 	bindFlag(
 		fs,
 		&config.ServerWs.AppPort,
@@ -187,6 +199,7 @@ func bindServerFlags(cmd *cobra.Command) {
 	// kafka client dynamic configuration doesn't have corresponding
 	// fields in configuration structs. So we use a placeholder reference
 	// to these values.
+	var placeholder string
 	bindFlag(
 		fs,
 		&placeholder,
@@ -361,19 +374,6 @@ func bindServerFlags(cmd *cobra.Command) {
 		"METRIC_PROMETHEUS_PORT",
 		"Port to expose prometheus metrics on",
 	)
-	bindFlag(
-		fs,
-		&config.Log.Level,
-		"LOG_LEVEL",
-		"Level available are [debug info warn error fatal panic]",
-	)
-
-	bindFlag(
-		fs,
-		&config.Event.Ack,
-		"EVENT_ACK",
-		"Whether to send acknowledgements to clients or not. 1 to enable, 0 to disable.",
-	)
 }
 
 func bindFlag(flag *pflag.FlagSet, ref any, name, desc string) {
@@ -421,7 +421,10 @@ type durationFlag struct {
 }
 
 func (df durationFlag) String() string {
-	return ""
+	if df.value == nil {
+		return "0"
+	}
+	return fmt.Sprintf("%d", *df.value/time.Millisecond)
 }
 
 func (df durationFlag) Set(raw string) error {

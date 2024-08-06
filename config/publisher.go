@@ -77,6 +77,9 @@ func publisherKafkaConfigLoader() {
 
 	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaClientConfigLoad()))
 
+	// required
+	_ = util.MustGetString("PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS")
+
 	PublisherKafka = publisherKafka{
 		FlushInterval: util.MustGetInt("PUBLISHER_KAFKA_FLUSH_INTERVAL_MS"),
 	}

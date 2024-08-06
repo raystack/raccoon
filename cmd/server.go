@@ -404,7 +404,7 @@ func bindFlag(flag *pflag.FlagSet, ref any, name, desc string) {
 		flag.Uint32Var(v, flagName, 0, desc)
 	case kind == reflect.Bool:
 		v := ref.(*bool)
-		flag.Var(boolFlag{v}, flagName, desc)
+		flag.BoolVar(v, flagName, *v, desc)
 	case kind == reflect.Slice && typ.Elem().String() == "string":
 		v := ref.(*[]string)
 		flag.StringSliceVar(v, flagName, nil, desc)
@@ -435,27 +435,6 @@ func (df durationFlag) Set(raw string) error {
 
 func (df durationFlag) Type() string {
 	return "int"
-}
-
-type boolFlag struct {
-	value *bool
-}
-
-func (bf boolFlag) String() string {
-	return ""
-}
-
-func (bf boolFlag) Set(raw string) error {
-	v, err := strconv.ParseBool(raw)
-	if err != nil {
-		return fmt.Errorf("error parsing bool: %w", err)
-	}
-	*bf.value = v
-	return nil
-}
-
-func (bf boolFlag) Type() string {
-	return "bool"
 }
 
 type ackTypeFlag struct {

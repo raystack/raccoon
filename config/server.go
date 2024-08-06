@@ -8,7 +8,9 @@ import (
 )
 
 var Server server
-var ServerWs serverWs
+var ServerWs = serverWs{
+	CheckOrigin: true,
+}
 var ServerGRPC serverGRPC
 var ServerCors serverCors
 

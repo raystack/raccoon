@@ -7,10 +7,9 @@ import (
 
 func New() *cobra.Command {
 	root := &cobra.Command{
-		Use:                   "raccoon",
-		Short:                 "Scalable event ingestion tool",
-		SilenceUsage:          true,
-		DisableFlagsInUseLine: true,
+		Use:          "raccoon",
+		Short:        "Scalable event ingestion tool",
+		SilenceUsage: true,
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
 		},

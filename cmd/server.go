@@ -442,7 +442,10 @@ type ackTypeFlag struct {
 }
 
 func (af ackTypeFlag) String() string {
-	return ""
+	if af.value == nil {
+		return "0"
+	}
+	return fmt.Sprintf("%d", *af.value)
 }
 
 func (af ackTypeFlag) Set(raw string) error {

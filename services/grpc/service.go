@@ -26,7 +26,7 @@ func NewGRPCService(c collector.Collector) *Service {
 }
 
 func (s *Service) Init(context.Context) error {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.ServerGRPC.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.Server.GRPC.Port))
 	if err != nil {
 		return err
 	}

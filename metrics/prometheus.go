@@ -42,7 +42,7 @@ type PrometheusCollector struct {
 
 func initPrometheusCollector() (*PrometheusCollector, error) {
 	serveMux := &http.ServeMux{}
-	server := &http.Server{Addr: fmt.Sprintf(":%d", config.MetricPrometheus.Port), Handler: serveMux}
+	server := &http.Server{Addr: fmt.Sprintf(":%d", config.Server.MetricPrometheus.Port), Handler: serveMux}
 	p := &PrometheusCollector{
 		counters:  getCounterMap(),
 		gauges:    getGaugeMap(),
@@ -54,7 +54,7 @@ func initPrometheusCollector() (*PrometheusCollector, error) {
 	if err != nil {
 		return nil, err
 	}
-	serveMux.Handle(config.MetricPrometheus.Path, promhttp.HandlerFor(p.registry, promhttp.HandlerOpts{Registry: p.registry}))
+	serveMux.Handle(config.Server.MetricPrometheus.Path, promhttp.HandlerFor(p.registry, promhttp.HandlerOpts{Registry: p.registry}))
 	go server.ListenAndServe()
 	return p, nil
 }

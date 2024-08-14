@@ -36,8 +36,8 @@ func TestHandler_SendEvent(t *testing.T) {
 	collector := new(collector.MockCollector)
 	ctx := context.Background()
 	meta := metadata.MD{}
-	meta.Set(config.ServerWs.ConnGroupHeader, "group")
-	meta.Set(config.ServerWs.ConnIDHeader, "1235")
+	meta.Set(config.Server.Websocket.ConnGroupHeader, "group")
+	meta.Set(config.Server.Websocket.ConnIDHeader, "1235")
 	sentTime := timestamppb.Now()
 	req := &pb.SendEventRequest{
 		ReqGuid:  "abcd",
@@ -48,7 +48,7 @@ func TestHandler_SendEvent(t *testing.T) {
 	collector.On("Collect", contextWithIDGroup, mock.Anything).Return(nil)
 
 	metaWithoutGroup := metadata.MD{}
-	metaWithoutGroup.Set(config.ServerWs.ConnIDHeader, "1235")
+	metaWithoutGroup.Set(config.Server.Websocket.ConnIDHeader, "1235")
 	contextWithoutGroup := metadata.NewIncomingContext(ctx, metaWithoutGroup)
 	collector.On("Collect", contextWithoutGroup, mock.Anything).Return(nil)
 

@@ -16,15 +16,15 @@ import (
 )
 
 func New() (*Kafka, error) {
-	kp, err := newKafkaClient(config.PublisherKafka.ToKafkaConfigMap())
+	kp, err := newKafkaClient(config.Server.PublisherKafka.ToKafkaConfigMap())
 	if err != nil {
 		return &Kafka{}, err
 	}
 	k := &Kafka{
 		kp:                  kp,
-		flushInterval:       config.PublisherKafka.FlushInterval,
-		topicFormat:         config.EventDistribution.PublisherPattern,
-		deliveryChannelSize: config.Worker.DeliveryChannelSize,
+		flushInterval:       config.Server.PublisherKafka.FlushInterval,
+		topicFormat:         config.Server.EventDistribution.PublisherPattern,
+		deliveryChannelSize: config.Server.Worker.DeliveryChannelSize,
 	}
 
 	go k.ReportStats()

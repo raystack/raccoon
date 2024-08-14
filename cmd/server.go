@@ -22,11 +22,14 @@ func serverCommand() *cobra.Command {
 		Use:   "server",
 		Short: "Start raccoon server",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			config.Load()
+			err := config.Load()
+			if err != nil {
+				return err
+			}
 			middleware.Load()
 			metrics.Setup()
 			defer metrics.Close()
-			logger.SetLevel(config.Log.Level)
+			logger.SetLevel(config.Server.Log.Level)
 			return app.Run()
 		},
 	}
@@ -41,157 +44,157 @@ func bindServerFlags(cmd *cobra.Command) {
 
 	bindFlag(
 		fs,
-		&config.Log.Level,
+		&config.Server.Log.Level,
 		"LOG_LEVEL",
 		"Level available are [debug info warn error fatal panic]",
 	)
 	bindFlag(
 		fs,
-		&config.Event.Ack,
+		&config.Server.Event.Ack,
 		"EVENT_ACK",
 		"Whether to send acknowledgements to clients or not. 1 to enable, 0 to disable.",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.AppPort,
+		&config.Server.Websocket.AppPort,
 		"SERVER_WEBSOCKET_PORT",
 		"Port for the service to listen",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.ServerMaxConn,
+		&config.Server.Websocket.ServerMaxConn,
 		"SERVER_WEBSOCKET_MAX_CONN",
 		"Maximum connection that can be handled by the server instance",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.ServerMaxConn,
+		&config.Server.Websocket.ServerMaxConn,
 		"SERVER_WEBSOCKET_READ_BUFFER_SIZE",
 		"Input buffer size in bytes",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.WriteBufferSize,
+		&config.Server.Websocket.WriteBufferSize,
 		"SERVER_WEBSOCKET_WRITE_BUFFER_SIZE",
 		"Output buffer size in bytes",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.ConnIDHeader,
+		&config.Server.Websocket.ConnIDHeader,
 		"SERVER_WEBSOCKET_CONN_ID_HEADER",
 		"Unique identifier for the server to maintain the connection",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.ConnGroupHeader,
+		&config.Server.Websocket.ConnGroupHeader,
 		"SERVER_WEBSOCKET_CONN_GROUP_HEADER",
 		"Additional identifier for the server to maintain the connection",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.ConnGroupDefault,
+		&config.Server.Websocket.ConnGroupDefault,
 		"SERVER_WEBSOCKET_CONN_GROUP_DEFAULT",
 		"Default connection group name",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.PingIntervalMS,
+		&config.Server.Websocket.PingIntervalMS,
 		"SERVER_WEBSOCKET_PING_INTERVAL_MS",
 		"Interval of each ping to client in milliseconds",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.PongWaitIntervalMS,
+		&config.Server.Websocket.PongWaitIntervalMS,
 		"SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS",
 		"Wait time for client to send Pong message in milliseconds",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.WriteWaitIntervalMS,
+		&config.Server.Websocket.WriteWaitIntervalMS,
 		"SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS",
 		"Timeout deadline set on the writes in milliseconds",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.PingerSize,
+		&config.Server.Websocket.PingerSize,
 		"SERVER_WEBSOCKET_PINGER_SIZE",
 		"Number of goroutine spawned to ping clients",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.CheckOrigin,
+		&config.Server.Websocket.CheckOrigin,
 		"SERVER_WEBSOCKET_CHECK_ORIGIN",
 		"Toggle CORS check on WebSocket API",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.DedupEnabled,
+		&config.Server.Websocket.DedupEnabled,
 		"SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED",
 		"Whether to discard duplicate messages",
 	)
 	bindFlag(
 		fs,
-		&config.ServerCors.Enabled,
+		&config.Server.CORS.Enabled,
 		"SERVER_CORS_ENABLED",
 		"Toggle CORS check on REST API",
 	)
 	bindFlag(
 		fs,
-		&config.ServerCors.AllowedOrigin,
+		&config.Server.CORS.AllowedOrigin,
 		"SERVER_CORS_ALLOWED_ORIGIN",
 		"Allowed origins for CORS. Use '*' to allow all",
 	)
 	bindFlag(
 		fs,
-		&config.ServerCors.AllowedMethods,
+		&config.Server.CORS.AllowedMethods,
 		"SERVER_CORS_ALLOWED_METHODS",
 		"Allowed HTTP Methods for CORS",
 	)
 	bindFlag(
 		fs,
-		&config.ServerCors.AllowedHeaders,
+		&config.Server.CORS.AllowedHeaders,
 		"SERVER_CORS_ALLOWED_HEADERS",
 		"Allowed HTTP Headers for CORS",
 	)
 	bindFlag(
 		fs,
-		&config.ServerCors.MaxAge,
+		&config.Server.CORS.MaxAge,
 		"SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS",
 		"Max Age of preflight responses",
 	)
 	bindFlag(
 		fs,
-		&config.Worker.ChannelSize,
+		&config.Server.Worker.ChannelSize,
 		"WORKER_BUFFER_CHANNEL_SIZE",
 		"Size of the buffer queue",
 	)
 	bindFlag(
 		fs,
-		&config.Worker.WorkerFlushTimeoutMS,
+		&config.Server.Worker.WorkerFlushTimeoutMS,
 		"WORKER_BUFFER_FLUSH_TIMEOUT_MS",
 		"Timeout for flushing leftover messages on shutdown",
 	)
 	bindFlag(
 		fs,
-		&config.Worker.WorkersPoolSize,
+		&config.Server.Worker.WorkersPoolSize,
 		"WORKER_POOL_SIZE",
 		"No of workers that processes the events concurrently",
 	)
 	bindFlag(
 		fs,
-		&config.Worker.DeliveryChannelSize,
+		&config.Server.Worker.DeliveryChannelSize,
 		"WORKER_KAFKA_DELIVERY_CHANNEL_SIZE",
 		"Delivery Channel size for Kafka publisher",
 	)
 	bindFlag(
 		fs,
-		&config.EventDistribution.PublisherPattern,
+		&config.Server.EventDistribution.PublisherPattern,
 		"EVENT_DISTRIBUTION_PUBLISHER_PATTERN",
 		"Topic template used for routing events",
 	)
 	bindFlag(
 		fs,
-		&config.Publisher,
+		&config.Server.Publisher,
 		"PUBLISHER_TYPE",
 		"Publisher to use for transmitting events",
 	)
@@ -238,146 +241,145 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKafka.FlushInterval,
+		&config.Server.PublisherKafka.FlushInterval,
 		"PUBLISHER_KAFKA_FLUSH_INTERVAL_MS",
 		"Timeout for sending leftover messages on kafka publisher shutdown",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.CredentialsFile,
+		&config.Server.PublisherPubSub.CredentialsFile,
 		"PUBLISHER_PUBSUB_CREDENTIALS",
 		"Path to file containing GCP cloud credentials",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.ProjectId,
+		&config.Server.PublisherPubSub.ProjectId,
 		"PUBLISHER_PUBSUB_PROJECT_ID",
 		"Destination Google Cloud Project ID",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.TopicAutoCreate,
+		&config.Server.PublisherPubSub.TopicAutoCreate,
 		"PUBLISHER_PUBSUB_TOPIC_AUTOCREATE",
 		"Whether to create topic if it doesn't exist in PubSub",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.TopicRetentionPeriodMS,
+		&config.Server.PublisherPubSub.TopicRetentionPeriodMS,
 		"PUBLISHER_PUBSUB_TOPIC_RETENTION_MS",
 		"Retention period of created topics in milliseconds",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.PublishDelayThresholdMS,
+		&config.Server.PublisherPubSub.PublishDelayThresholdMS,
 		"PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS",
 		"Maximum time to wait for before publishing a batch of events",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.PublishCountThreshold,
+		&config.Server.PublisherPubSub.PublishCountThreshold,
 		"PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD",
 		"Maximum number of events to accumulate before transmission",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.PublishByteThreshold,
+		&config.Server.PublisherPubSub.PublishByteThreshold,
 		"PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD",
 		"Maximum buffer size (in bytes)",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.PublishTimeoutMS,
+		&config.Server.PublisherPubSub.PublishTimeoutMS,
 		"PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS",
 		"How long to wait before aborting a publish operation",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKinesis.Region,
+		&config.Server.PublisherKinesis.Region,
 		"PUBLISHER_KINESIS_AWS_REGION",
 		"AWS Region of the target kinesis stream",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKinesis.CredentialsFile,
+		&config.Server.PublisherKinesis.CredentialsFile,
 		"PUBLISHER_KINESIS_CREDENTIALS",
 		"Path to file containing AWS credentials",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKinesis.StreamAutoCreate,
+		&config.Server.PublisherKinesis.StreamAutoCreate,
 		"PUBLISHER_KINESIS_STREAM_AUTOCREATE",
 		"Whether to create a stream if it doesn't exist in Kinesis",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKinesis.StreamMode,
+		&config.Server.PublisherKinesis.StreamMode,
 		"PUBLISHER_KINESIS_STREAM_MODE",
 		"Mode of auto-created streams. Valid values: [ON-DEMAND PROVISIONED]",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKinesis.DefaultShards,
+		&config.Server.PublisherKinesis.DefaultShards,
 		"PUBLISHER_KINESIS_STREAM_SHARDS",
 		"Number of shards in auto-created streams",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKinesis.StreamProbeIntervalMS,
+		&config.Server.PublisherKinesis.StreamProbeIntervalMS,
 		"PUBLISHER_KINESIS_STREAM_PROBE_INTERVAL_MS",
 		"time delay between stream status checks",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKinesis.PublishTimeoutMS,
+		&config.Server.PublisherKinesis.PublishTimeoutMS,
 		"PUBLISHER_KINESIS_PUBLISH_TIMEOUT_MS",
 		"how long to wait for before aborting a publish operation",
 	)
 	bindFlag(
 		fs,
-		&config.MetricInfo.RuntimeStatsRecordIntervalMS,
+		&config.Server.MetricInfo.RuntimeStatsRecordIntervalMS,
 		"METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS",
 		"Time interval between runtime metric collection",
 	)
 	bindFlag(
 		fs,
-		&config.MetricStatsd.Enabled,
+		&config.Server.MetricStatsd.Enabled,
 		"METRIC_STATSD_ENABLED",
 		"Enable statsd metric exporter",
 	)
 	bindFlag(
 		fs,
-		&config.MetricStatsd.Address,
+		&config.Server.MetricStatsd.Address,
 		"METRIC_STATSD_ADDRESS",
 		"Address to reports the service metrics",
 	)
 	bindFlag(
 		fs,
-		&config.MetricStatsd.FlushPeriodMS,
+		&config.Server.MetricStatsd.FlushPeriodMS,
 		"METRIC_STATSD_FLUSH_PERIOD_MS",
 		"Interval for the service to push metrics",
 	)
 	bindFlag(
 		fs,
-		&config.MetricPrometheus.Enabled,
+		&config.Server.MetricPrometheus.Enabled,
 		"METRIC_PROMETHEUS_ENABLED",
 		"Enable prometheus http server to expose service metrics",
 	)
 	bindFlag(
 		fs,
-		&config.MetricPrometheus.Path,
+		&config.Server.MetricPrometheus.Path,
 		"METRIC_PROMETHEUS_PATH",
 		"The path at which prometheus server should serve metrics",
 	)
 	bindFlag(
 		fs,
-		&config.MetricPrometheus.Port,
+		&config.Server.MetricPrometheus.Port,
 		"METRIC_PROMETHEUS_PORT",
 		"Port to expose prometheus metrics on",
 	)
 }
 
 func bindFlag(flag *pflag.FlagSet, ref any, name, desc string) {
-
 	flagName := strings.ReplaceAll(
 		strings.ToLower(name), "_", ".",
 	)
@@ -395,19 +397,22 @@ func bindFlag(flag *pflag.FlagSet, ref any, name, desc string) {
 		flag.Var(ackTypeFlag{v}, flagName, desc)
 	case kind == reflect.String:
 		v := ref.(*string)
-		flag.StringVar(v, flagName, "", desc)
+		flag.StringVar(v, flagName, *v, desc)
 	case kind == reflect.Int:
 		v := ref.(*int)
-		flag.IntVar(v, flagName, 0, desc)
+		flag.IntVar(v, flagName, *v, desc)
+	case kind == reflect.Int64:
+		v := ref.(*int64)
+		flag.Int64Var(v, flagName, *v, desc)
 	case kind == reflect.Uint32:
 		v := ref.(*uint32)
-		flag.Uint32Var(v, flagName, 0, desc)
+		flag.Uint32Var(v, flagName, *v, desc)
 	case kind == reflect.Bool:
 		v := ref.(*bool)
 		flag.BoolVar(v, flagName, *v, desc)
 	case kind == reflect.Slice && typ.Elem().String() == "string":
 		v := ref.(*[]string)
-		flag.StringSliceVar(v, flagName, nil, desc)
+		flag.StringSliceVar(v, flagName, *v, desc)
 	default:
 		msg := fmt.Sprintf("unsupport flag. kind = %s, type = %s", kind, typ)
 		panic(msg)

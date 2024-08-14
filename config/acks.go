@@ -1,7 +1,5 @@
 package config
 
-var Event event
-
 type AckType int
 
 const (

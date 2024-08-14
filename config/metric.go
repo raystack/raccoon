@@ -1,9 +1,5 @@
 package config
 
-var MetricStatsd metricStatsdCfg
-var MetricPrometheus metricPrometheusCfg
-var MetricInfo metricInfoCfg
-
 type metricStatsdCfg struct {
 	Enabled       bool   `mapstructure:"METRIC_STATSD_ENABLED" cmdx:"metric.statsd.enabled" default:"false" `
 	Address       string `mapstructure:"METRIC_STATSD_ADDRESS" cmdx:"metric.statsd.address" default:":8125"`

@@ -1,8 +1,5 @@
 package config
 
-// Worker contains configs for kafka publisher worker pool
-var Worker worker
-
 type worker struct {
 	// WorkersPoolSize number of worker to push to kafka initiated at the start of Raccoon
 	WorkersPoolSize int `mapstructure:"WORKER_POOL_SIZE" cmdx:"worker.pool.size" default:"5"`

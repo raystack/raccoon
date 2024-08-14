@@ -86,18 +86,18 @@ func Histogram(metricName string, value int64, labels map[string]string) error {
 }
 
 func Setup() error {
-	if config.MetricPrometheus.Enabled && config.MetricStatsd.Enabled {
+	if config.Server.MetricPrometheus.Enabled && config.Server.MetricStatsd.Enabled {
 		return errors.New("only one instrumentation tool can be enabled")
 	}
 
-	if config.MetricPrometheus.Enabled {
+	if config.Server.MetricPrometheus.Enabled {
 		prometheus, err := initPrometheusCollector()
 		if err != nil {
 			return err
 		}
 		instrument = prometheus
 	}
-	if config.MetricStatsd.Enabled {
+	if config.Server.MetricStatsd.Enabled {
 		statsD, err := initStatsd()
 		if err != nil {
 			return err

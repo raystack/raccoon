@@ -12,12 +12,6 @@ import (
 
 var Server server
 
-var ServerWs = serverWs{
-	CheckOrigin: true,
-}
-var ServerGRPC serverGRPC
-var ServerCors serverCors
-
 type server struct {
 	Publisher         string `mapstructure:"PUBLISHER_TYPE" cmdx:"publisher.type" default:"kafka"`
 	PublisherKafka    publisherKafka

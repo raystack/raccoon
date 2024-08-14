@@ -8,10 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var Publisher string
-var PublisherKafka publisherKafka
-var PublisherPubSub publisherPubSub
-var PublisherKinesis publisherKinesis
 var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
 
 type publisherPubSub struct {

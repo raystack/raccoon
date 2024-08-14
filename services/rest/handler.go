@@ -71,12 +71,12 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	d, s := serde.deserializer, serde.serializer
 
 	var group string
-	group = r.Header.Get(config.ServerWs.ConnGroupHeader)
+	group = r.Header.Get(config.Server.Websocket.ConnGroupHeader)
 	if group == "" {
-		group = config.ServerWs.ConnGroupDefault
+		group = config.Server.Websocket.ConnGroupDefault
 	}
 	identifier := identification.Identifier{
-		ID:    r.Header.Get(config.ServerWs.ConnIDHeader),
+		ID:    r.Header.Get(config.Server.Websocket.ConnIDHeader),
 		Group: group,
 	}
 
@@ -140,7 +140,7 @@ func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serial
 	res := &Response{
 		SendEventResponse: &pb.SendEventResponse{},
 	}
-	switch config.Event.Ack {
+	switch config.Server.Event.Ack {
 	case config.Asynchronous:
 
 		rw.WriteHeader(http.StatusOK)

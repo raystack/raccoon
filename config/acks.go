@@ -15,7 +15,7 @@ const (
 )
 
 type event struct {
-	Ack AckType
+	Ack AckType `mapstructure:"EVENT_ACK" cmdx:"event.ack" default:"0"`
 }
 
 func eventConfigLoader() {

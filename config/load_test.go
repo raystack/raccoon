@@ -25,12 +25,12 @@ func TestLogLevel(t *testing.T) {
 func TestServerConfig(t *testing.T) {
 	// default value test
 	serverConfigLoader()
-	assert.Equal(t, false, Server.DedupEnabled)
+	assert.Equal(t, false, ServerWs.DedupEnabled)
 
 	// override value test
 	os.Setenv("SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED", "true")
 	serverConfigLoader()
-	assert.Equal(t, true, Server.DedupEnabled)
+	assert.Equal(t, true, ServerWs.DedupEnabled)
 }
 
 func TestServerWsConfig(t *testing.T) {

@@ -125,6 +125,12 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
+		&config.ServerWs.DedupEnabled,
+		"SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED",
+		"Whether to discard duplicate messages",
+	)
+	bindFlag(
+		fs,
 		&config.ServerCors.Enabled,
 		"SERVER_CORS_ENABLED",
 		"Toggle CORS check on REST API",
@@ -152,12 +158,6 @@ func bindServerFlags(cmd *cobra.Command) {
 		&config.ServerCors.MaxAge,
 		"SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS",
 		"Max Age of preflight responses",
-	)
-	bindFlag(
-		fs,
-		&config.Server.DedupEnabled,
-		"SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED",
-		"Whether to discard duplicate messages",
 	)
 	bindFlag(
 		fs,

@@ -102,7 +102,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 			writeBadRequestResponse(conn, s, messageType, payload.ReqGuid, err)
 			continue
 		}
-		if config.Server.DedupEnabled {
+		if config.ServerWs.DedupEnabled {
 			// avoiding processing the same active connection's duplicate events.
 			if h.upgrader.Table.HasBatch(conn.Identifier, payload.ReqGuid) {
 				metrics.Increment("events_duplicate_total", map[string]string{"reason": "duplicate", "conn_group": conn.Identifier.Group})
@@ -131,7 +131,7 @@ func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serializa
 		return nil
 	case config.Synchronous:
 		return func(err error) {
-			if config.Server.DedupEnabled {
+			if config.ServerWs.DedupEnabled {
 				if err != nil {
 					h.upgrader.Table.RemoveBatch(conn.Identifier, reqGuid)
 				}

@@ -9,7 +9,7 @@ import (
 var Log log
 
 type log struct {
-	Level string
+	Level string `mapstructure:"LOG_LEVEL" cmdx:"log.level" default:"info" `
 }
 
 func logConfigLoader() {

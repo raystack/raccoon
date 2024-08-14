@@ -1,5 +1,15 @@
 package config
 
+import (
+	"bytes"
+	"fmt"
+	"os"
+	"slices"
+	"strings"
+
+	"github.com/spf13/viper"
+)
+
 var Server server
 
 var ServerWs = serverWs{
@@ -23,6 +33,89 @@ type server struct {
 	CORS              serverCors
 	GRPC              serverGRPC
 	Worker            worker
+}
+
+func (srv server) validate() error {
+	trim := strings.TrimSpace
+	if trim(srv.Websocket.ConnIDHeader) == "" {
+		return errFieldRequired(srv.Websocket, "ConnIDHeader")
+	}
+	if srv.Publisher == "pubsub" {
+		if trim(srv.PublisherPubSub.ProjectId) == "" {
+			return errFieldRequired(srv.PublisherPubSub, "ProjectId")
+		}
+		if trim(srv.PublisherPubSub.CredentialsFile) == "" {
+			return errFieldRequired(srv.PublisherPubSub, "CredentialsFile")
+		}
+	}
+
+	if srv.Publisher == "kinesis" {
+
+		hasAWSEnvCreds := trim(os.Getenv("AWS_ACCESS_KEY_ID")) != "" &&
+			trim(os.Getenv("AWS_SECRET_ACCESS_KEY")) != ""
+
+		if trim(srv.PublisherKinesis.CredentialsFile) == "" && !hasAWSEnvCreds {
+			return errFieldRequired(srv.PublisherKinesis, "CredentialsFile")
+		}
+	}
+
+	// there are no concrete fields that refer to this config
+	kafkaServers := "PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS"
+	if srv.Publisher == "kafka" && !viper.IsSet(kafkaServers) {
+		flag := strings.ToLower(kafkaServers)
+		flag = strings.ReplaceAll(flag, "_", ".")
+		return errRequired(kafkaServers, flag)
+	}
+
+	validPublishers := []string{
+		"kafka",
+		"kinesis",
+		"pubsub",
+	}
+	if !slices.Contains(validPublishers, srv.Publisher) {
+		return fmt.Errorf("unknown publisher: %s", srv.Publisher)
+	}
+
+	return nil
+}
+
+// prepare applies defaults and fallback values to Server.
+// prepare must be called after loading configs using viper
+func prepare(srv *server) {
+
+	// parse kafka dynamic config
+	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaClientConfigLoad()))
+
+	// add fallback for pubsub credentials
+	if srv.Publisher == "pubsub" {
+		defaultCredentials := strings.TrimSpace(
+			os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"),
+		)
+		if strings.TrimSpace(srv.PublisherPubSub.CredentialsFile) == "" && defaultCredentials != "" {
+			srv.PublisherPubSub.CredentialsFile = defaultCredentials
+		}
+	}
+
+	// add default CORS headers
+	corsHeaders := []string{"Content-Type"}
+	provisionalHeaders := []string{
+		"SERVER_WEBSOCKET_CONN_GROUP_HEADER",
+		"SERVER_WEBSOCKET_CONN_ID_HEADER",
+	}
+
+	for _, header := range provisionalHeaders {
+		value := strings.TrimSpace(os.Getenv(header))
+		if value != "" {
+			corsHeaders = append(corsHeaders, value)
+		}
+	}
+
+	for _, header := range corsHeaders {
+		if !slices.Contains(srv.CORS.AllowedHeaders, header) {
+			srv.CORS.AllowedHeaders = append(srv.CORS.AllowedHeaders, header)
+		}
+	}
+
 }
 
 type serverWs struct {

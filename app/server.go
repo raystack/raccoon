@@ -58,6 +58,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collector.CollectRequest, workerPool *worker.Pool, pub Publisher) {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	workerFlushTimeout := time.Duration(config.Worker.WorkerFlushTimeoutMS) * time.Millisecond
 	for {
 		sig := <-signalChan
 		switch sig {
@@ -65,7 +66,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			logger.Info(fmt.Sprintf("[App.Server] Received a signal %s", sig))
 			httpServices.Shutdown(ctx)
 			logger.Info("Server shutdown all the listeners")
-			timedOut := workerPool.FlushWithTimeOut(config.Worker.WorkerFlushTimeout)
+			timedOut := workerPool.FlushWithTimeOut(workerFlushTimeout)
 			if timedOut {
 				logger.Info(fmt.Sprintf("WorkerPool flush timedout %t", timedOut))
 			}
@@ -108,7 +109,8 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 
 func reportProcMetrics() {
 	m := &runtime.MemStats{}
-	for range time.Tick(config.MetricInfo.RuntimeStatsRecordInterval) {
+	reportInterval := time.Duration(config.MetricInfo.RuntimeStatsRecordIntervalMS) * time.Millisecond
+	for range time.Tick(reportInterval) {
 		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), map[string]string{})
 		runtime.ReadMemStats(m)
 		metrics.Gauge("server_mem_heap_alloc_bytes_current", m.HeapAlloc, map[string]string{})
@@ -135,15 +137,20 @@ func initPublisher() (Publisher, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error creating pubsub client: %w", err)
 		}
+		var (
+			topicRetention = time.Duration(config.PublisherPubSub.TopicRetentionPeriodMS) * time.Millisecond
+			delayThreshold = time.Duration(config.PublisherPubSub.PublishDelayThresholdMS) * time.Millisecond
+			publishTimeout = time.Duration(config.PublisherPubSub.PublishTimeoutMS) * time.Millisecond
+		)
 		return pubsub.New(
 			client,
 			pubsub.WithTopicFormat(config.EventDistribution.PublisherPattern),
 			pubsub.WithTopicAutocreate(config.PublisherPubSub.TopicAutoCreate),
-			pubsub.WithTopicRetention(config.PublisherPubSub.TopicRetentionPeriod),
-			pubsub.WithDelayThreshold(config.PublisherPubSub.PublishDelayThreshold),
+			pubsub.WithTopicRetention(topicRetention),
+			pubsub.WithDelayThreshold(delayThreshold),
 			pubsub.WithCountThreshold(config.PublisherPubSub.PublishCountThreshold),
 			pubsub.WithByteThreshold(config.PublisherPubSub.PublishByteThreshold),
-			pubsub.WithTimeout(config.PublisherPubSub.PublishTimeout),
+			pubsub.WithTimeout(publishTimeout),
 		)
 	case "kinesis":
 		cfg, err := awsconfig.LoadDefaultConfig(
@@ -156,15 +163,20 @@ func initPublisher() (Publisher, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error locating aws credentials: %w", err)
 		}
-		conf := config.PublisherKinesis
+		var (
+			conf           = config.PublisherKinesis
+			publishTimeout = time.Duration(conf.PublishTimeoutMS) * time.Millisecond
+			probeInterval  = time.Duration(conf.StreamProbeIntervalMS) * time.Millisecond
+		)
+
 		return kinesis.New(
 			kinesissdk.NewFromConfig(cfg),
 			kinesis.WithStreamPattern(config.EventDistribution.PublisherPattern),
 			kinesis.WithStreamAutocreate(conf.StreamAutoCreate),
 			kinesis.WithStreamMode(types.StreamMode(conf.StreamMode)),
 			kinesis.WithShards(conf.DefaultShards),
-			kinesis.WithPublishTimeout(conf.PublishTimeout),
-			kinesis.WithStreamProbleInterval(conf.StreamProbeInterval),
+			kinesis.WithPublishTimeout(publishTimeout),
+			kinesis.WithStreamProbleInterval(probeInterval),
 		)
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher)

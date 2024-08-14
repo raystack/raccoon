@@ -1,6 +1,9 @@
 package config
 
 import (
+	"bytes"
+
+	defaults "github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
 )
 
@@ -20,17 +23,10 @@ func Load() {
 	viper.SetConfigType("env")
 	viper.ReadInConfig()
 
-	logConfigLoader()
+	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaClientConfigLoad()))
 
-	publisherConfigLoader()
-	serverConfigLoader()
-	serverWsConfigLoader()
-	serverGRPCConfigLoader()
-	serverCorsConfigLoader()
-	workerConfigLoader()
-	metricCommonConfigLoader()
-	metricStatsdConfigLoader()
-	metricPrometheusConfigLoader()
-	eventDistributionConfigLoader()
-	eventConfigLoader()
+}
+
+func init() {
+	defaults.SetDefaults(&Server)
 }

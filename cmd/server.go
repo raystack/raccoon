@@ -95,19 +95,19 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.PingInterval,
+		&config.ServerWs.PingIntervalMS,
 		"SERVER_WEBSOCKET_PING_INTERVAL_MS",
 		"Interval of each ping to client in milliseconds",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.PongWaitInterval,
+		&config.ServerWs.PongWaitIntervalMS,
 		"SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS",
 		"Wait time for client to send Pong message in milliseconds",
 	)
 	bindFlag(
 		fs,
-		&config.ServerWs.WriteWaitInterval,
+		&config.ServerWs.WriteWaitIntervalMS,
 		"SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS",
 		"Timeout deadline set on the writes in milliseconds",
 	)
@@ -167,7 +167,7 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.Worker.WorkerFlushTimeout,
+		&config.Worker.WorkerFlushTimeoutMS,
 		"WORKER_BUFFER_FLUSH_TIMEOUT_MS",
 		"Timeout for flushing leftover messages on shutdown",
 	)
@@ -262,13 +262,13 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.TopicRetentionPeriod,
+		&config.PublisherPubSub.TopicRetentionPeriodMS,
 		"PUBLISHER_PUBSUB_TOPIC_RETENTION_MS",
 		"Retention period of created topics in milliseconds",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.PublishDelayThreshold,
+		&config.PublisherPubSub.PublishDelayThresholdMS,
 		"PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS",
 		"Maximum time to wait for before publishing a batch of events",
 	)
@@ -286,7 +286,7 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.PublisherPubSub.PublishTimeout,
+		&config.PublisherPubSub.PublishTimeoutMS,
 		"PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS",
 		"How long to wait before aborting a publish operation",
 	)
@@ -322,19 +322,19 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKinesis.StreamProbeInterval,
+		&config.PublisherKinesis.StreamProbeIntervalMS,
 		"PUBLISHER_KINESIS_STREAM_PROBE_INTERVAL_MS",
 		"time delay between stream status checks",
 	)
 	bindFlag(
 		fs,
-		&config.PublisherKinesis.PublishTimeout,
+		&config.PublisherKinesis.PublishTimeoutMS,
 		"PUBLISHER_KINESIS_PUBLISH_TIMEOUT_MS",
 		"how long to wait for before aborting a publish operation",
 	)
 	bindFlag(
 		fs,
-		&config.MetricInfo.RuntimeStatsRecordInterval,
+		&config.MetricInfo.RuntimeStatsRecordIntervalMS,
 		"METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS",
 		"Time interval between runtime metric collection",
 	)
@@ -352,7 +352,7 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.MetricStatsd.FlushPeriodMs,
+		&config.MetricStatsd.FlushPeriodMS,
 		"METRIC_STATSD_FLUSH_PERIOD_MS",
 		"Interval for the service to push metrics",
 	)

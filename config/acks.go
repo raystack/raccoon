@@ -1,10 +1,5 @@
 package config
 
-import (
-	"github.com/raystack/raccoon/config/util"
-	"github.com/spf13/viper"
-)
-
 var Event event
 
 type AckType int
@@ -16,11 +11,4 @@ const (
 
 type event struct {
 	Ack AckType `mapstructure:"EVENT_ACK" cmdx:"event.ack" default:"0"`
-}
-
-func eventConfigLoader() {
-	viper.SetDefault("EVENT_ACK", 0)
-	Event = event{
-		Ack: AckType(util.MustGetInt("EVENT_ACK")),
-	}
 }

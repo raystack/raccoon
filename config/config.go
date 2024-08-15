@@ -63,14 +63,14 @@ func prepare() {
 func validate() error {
 	trim := strings.TrimSpace
 	if trim(Server.Websocket.Conn.IDHeader) == "" {
-		return errFieldRequired(Server.Websocket, "ConnIDHeader")
+		return errCfgRequired("Server.Websocket.Conn.IDHeader")
 	}
 	if Publisher.Type == "pubsub" {
 		if trim(Publisher.PubSub.ProjectId) == "" {
-			return errFieldRequired(Publisher.PubSub, "ProjectId")
+			return errCfgRequired("Publisher.PubSub.ProjectId")
 		}
 		if trim(Publisher.PubSub.CredentialsFile) == "" {
-			return errFieldRequired(Publisher.PubSub, "CredentialsFile")
+			return errCfgRequired("Publisher.PubSub.CredentialsFile")
 		}
 	}
 
@@ -80,7 +80,7 @@ func validate() error {
 			trim(os.Getenv("AWS_SECRET_ACCESS_KEY")) != ""
 
 		if trim(Publisher.Kinesis.CredentialsFile) == "" && !hasAWSEnvCreds {
-			return errFieldRequired(Publisher.Kinesis, "CredentialsFile")
+			return errCfgRequired("Publisher.Kinesis.CredentialsFile")
 		}
 	}
 

@@ -11,14 +11,14 @@ import (
 )
 
 // configuration wrapper for initialising global configs
-type cfg struct {
+var cfg = struct {
 	Server    *server    `mapstructure:"server"`
 	Publisher *publisher `mapstructure:"publisher"`
 	Worker    *worker    `mapstructure:"worker"`
 	Event     *event     `mapstructure:"event"`
 	Metric    *metric    `mapstructure:"metric"`
 	Log       *log       `mapstructure:"log"`
-}
+}{&Server, &Publisher, &Worker, &Event, &Metric, &Log}
 
 // prepare applies defaults and fallback values to global configurations
 // prepare must be called after loading configs using viper

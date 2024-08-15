@@ -56,6 +56,12 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
+		&config.Event.DistributionPublisherPattern,
+		"EVENT_DISTRIBUTION_PUBLISHER_PATTERN",
+		"Topic template used for routing events",
+	)
+	bindFlag(
+		fs,
 		&config.Server.Websocket.AppPort,
 		"SERVER_WEBSOCKET_PORT",
 		"Port for the service to listen",
@@ -185,12 +191,6 @@ func bindServerFlags(cmd *cobra.Command) {
 		&config.Worker.DeliveryChannelSize,
 		"WORKER_KAFKA_DELIVERY_CHANNEL_SIZE",
 		"Delivery Channel size for Kafka publisher",
-	)
-	bindFlag(
-		fs,
-		&config.Event.DistributionPublisherPattern,
-		"EVENT_DISTRIBUTION_PUBLISHER_PATTERN",
-		"Topic template used for routing events",
 	)
 	bindFlag(
 		fs,

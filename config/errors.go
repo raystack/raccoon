@@ -10,7 +10,7 @@ func cfgMetadata(path string) (string, string, error) {
 
 	var (
 		fields = strings.Split(path, ".")
-		parent = reflect.TypeOf(cfg{})
+		parent = reflect.TypeOf(cfg)
 		field  reflect.StructField
 		found  bool
 		env    []string

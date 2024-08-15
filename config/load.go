@@ -5,21 +5,12 @@ import (
 
 	defaults "github.com/mcuadros/go-defaults"
 	"github.com/raystack/salt/config"
-	"github.com/spf13/viper"
 )
 
 // Load configs from env or yaml and set it to respective keys
 func Load() error {
-	conf := cfg{&Server, &Publisher, &Worker, &Event, &Metric, &Log}
-	loader := config.NewLoader(
-		config.WithViper(viper.GetViper()),
-		config.WithName(".env"),
-		config.WithPath("./"),
-		config.WithPath("../"),
-		config.WithPath("../../"),
-		config.WithType("env"),
-	)
-	err := loader.Load(&conf)
+	loader := config.NewLoader()
+	err := loader.Load(&cfg)
 	if err != nil && !errors.As(err, &config.ConfigFileNotFoundError{}) {
 		return err
 	}
@@ -29,5 +20,12 @@ func Load() error {
 }
 
 func init() {
+	// go-defaults doesn't work properly with nested pointer values,
+	// so we have to individually set defaults for each config class
 	defaults.SetDefaults(&Server)
+	defaults.SetDefaults(&Publisher)
+	defaults.SetDefaults(&Worker)
+	defaults.SetDefaults(&Event)
+	defaults.SetDefaults(&Metric)
+	defaults.SetDefaults(&Log)
 }

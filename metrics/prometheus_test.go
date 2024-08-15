@@ -258,9 +258,9 @@ func TestPrometheusSuite(t *testing.T) {
 
 func (suite *PrometheusTestSuite) SetupTest() {
 	var err error
-	config.Server.MetricPrometheus.Enabled = true
-	config.Server.MetricPrometheus.Path = prometheusPath
-	config.Server.MetricPrometheus.Port, err = strconv.Atoi(prometheusPort)
+	config.Metric.Prometheus.Enabled = true
+	config.Metric.Prometheus.Path = prometheusPath
+	config.Metric.Prometheus.Port, err = strconv.Atoi(prometheusPort)
 	assert.NoError(suite.T(), err)
 }
 

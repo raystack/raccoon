@@ -16,8 +16,8 @@ type Statsd struct {
 
 func initStatsd() (*Statsd, error) {
 	c, err := client.New(
-		client.Address(config.Server.MetricStatsd.Address),
-		client.FlushPeriod(time.Duration(config.Server.MetricStatsd.FlushPeriodMS)*time.Millisecond))
+		client.Address(config.Metric.StatsD.Address),
+		client.FlushPeriod(time.Duration(config.Metric.StatsD.FlushPeriodMS)*time.Millisecond))
 	if err != nil {
 		logger.Errorf("StatsD Set up failed to create client: %s", err.Error())
 		return nil, err

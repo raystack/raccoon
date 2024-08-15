@@ -35,20 +35,20 @@ type Publisher interface {
 
 // StartServer starts the server
 func StartServer(ctx context.Context, cancel context.CancelFunc) {
-	bufferChannel := make(chan collector.CollectRequest, config.Server.Worker.ChannelSize)
+	bufferChannel := make(chan collector.CollectRequest, config.Worker.Buffer.ChannelSize)
 	httpServices := services.Create(bufferChannel)
 	logger.Info("Start Server -->")
 	httpServices.Start(ctx, cancel)
-	logger.Infof("Start publisher --> %s", config.Server.Publisher)
+	logger.Infof("Start publisher --> %s", config.Publisher.Type)
 	publisher, err := initPublisher()
 	if err != nil {
-		logger.Errorf("Error creating %q publisher: %v\n", config.Server.Publisher, err)
+		logger.Errorf("Error creating %q publisher: %v\n", config.Publisher.Type, err)
 		logger.Info("Exiting server")
 		os.Exit(0)
 	}
 
 	logger.Info("Start worker -->")
-	workerPool := worker.CreateWorkerPool(config.Server.Worker.WorkersPoolSize, bufferChannel, config.Server.Worker.DeliveryChannelSize, publisher)
+	workerPool := worker.CreateWorkerPool(config.Worker.PoolSize, bufferChannel, config.Worker.DeliveryChannelSize, publisher)
 	workerPool.StartWorkers()
 
 	go reportProcMetrics()
@@ -58,7 +58,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices services.Services, bufferChannel chan collector.CollectRequest, workerPool *worker.Pool, pub Publisher) {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	workerFlushTimeout := time.Duration(config.Server.Worker.WorkerFlushTimeoutMS) * time.Millisecond
+	workerFlushTimeout := time.Duration(config.Worker.Buffer.FlushTimeoutMS) * time.Millisecond
 	for {
 		sig := <-signalChan
 		switch sig {
@@ -70,7 +70,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			if timedOut {
 				logger.Info(fmt.Sprintf("WorkerPool flush timedout %t", timedOut))
 			}
-			flushInterval := config.Server.PublisherKafka.FlushInterval
+			flushInterval := config.Publisher.Kafka.FlushInterval
 			logger.Infof("Closing %q producer\n", pub.Name())
 			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
 			eventsInProducer := 0
@@ -109,7 +109,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 
 func reportProcMetrics() {
 	m := &runtime.MemStats{}
-	reportInterval := time.Duration(config.Server.MetricInfo.RuntimeStatsRecordIntervalMS) * time.Millisecond
+	reportInterval := time.Duration(config.Metric.RuntimeStatsRecordIntervalMS) * time.Millisecond
 	for range time.Tick(reportInterval) {
 		metrics.Gauge("server_go_routines_count_current", runtime.NumGoroutine(), map[string]string{})
 		runtime.ReadMemStats(m)
@@ -125,53 +125,53 @@ func reportProcMetrics() {
 }
 
 func initPublisher() (Publisher, error) {
-	switch config.Server.Publisher {
+	switch config.Publisher.Type {
 	case "kafka":
 		return kafka.New()
 	case "pubsub":
 		client, err := pubsubsdk.NewClient(
 			context.Background(),
-			config.Server.PublisherPubSub.ProjectId,
-			option.WithCredentialsFile(config.Server.PublisherPubSub.CredentialsFile),
+			config.Publisher.PubSub.ProjectId,
+			option.WithCredentialsFile(config.Publisher.PubSub.CredentialsFile),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error creating pubsub client: %w", err)
 		}
 		var (
-			topicRetention = time.Duration(config.Server.PublisherPubSub.TopicRetentionPeriodMS) * time.Millisecond
-			delayThreshold = time.Duration(config.Server.PublisherPubSub.PublishDelayThresholdMS) * time.Millisecond
-			publishTimeout = time.Duration(config.Server.PublisherPubSub.PublishTimeoutMS) * time.Millisecond
+			topicRetention = time.Duration(config.Publisher.PubSub.TopicRetentionPeriodMS) * time.Millisecond
+			delayThreshold = time.Duration(config.Publisher.PubSub.PublishDelayThresholdMS) * time.Millisecond
+			publishTimeout = time.Duration(config.Publisher.PubSub.PublishTimeoutMS) * time.Millisecond
 		)
 		return pubsub.New(
 			client,
-			pubsub.WithTopicFormat(config.Server.EventDistribution.PublisherPattern),
-			pubsub.WithTopicAutocreate(config.Server.PublisherPubSub.TopicAutoCreate),
+			pubsub.WithTopicFormat(config.Event.DistributionPublisherPattern),
+			pubsub.WithTopicAutocreate(config.Publisher.PubSub.TopicAutoCreate),
 			pubsub.WithTopicRetention(topicRetention),
 			pubsub.WithDelayThreshold(delayThreshold),
-			pubsub.WithCountThreshold(config.Server.PublisherPubSub.PublishCountThreshold),
-			pubsub.WithByteThreshold(config.Server.PublisherPubSub.PublishByteThreshold),
+			pubsub.WithCountThreshold(config.Publisher.PubSub.PublishCountThreshold),
+			pubsub.WithByteThreshold(config.Publisher.PubSub.PublishByteThreshold),
 			pubsub.WithTimeout(publishTimeout),
 		)
 	case "kinesis":
 		cfg, err := awsconfig.LoadDefaultConfig(
 			context.Background(),
-			awsconfig.WithRegion(config.Server.PublisherKinesis.Region),
+			awsconfig.WithRegion(config.Publisher.Kinesis.Region),
 			awsconfig.WithSharedConfigFiles(
-				[]string{config.Server.PublisherKinesis.CredentialsFile},
+				[]string{config.Publisher.Kinesis.CredentialsFile},
 			),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error locating aws credentials: %w", err)
 		}
 		var (
-			conf           = config.Server.PublisherKinesis
+			conf           = config.Publisher.Kinesis
 			publishTimeout = time.Duration(conf.PublishTimeoutMS) * time.Millisecond
 			probeInterval  = time.Duration(conf.StreamProbeIntervalMS) * time.Millisecond
 		)
 
 		return kinesis.New(
 			kinesissdk.NewFromConfig(cfg),
-			kinesis.WithStreamPattern(config.Server.EventDistribution.PublisherPattern),
+			kinesis.WithStreamPattern(config.Event.DistributionPublisherPattern),
 			kinesis.WithStreamAutocreate(conf.StreamAutoCreate),
 			kinesis.WithStreamMode(types.StreamMode(conf.StreamMode)),
 			kinesis.WithShards(conf.DefaultShards),
@@ -179,6 +179,6 @@ func initPublisher() (Publisher, error) {
 			kinesis.WithStreamProbleInterval(probeInterval),
 		)
 	default:
-		return nil, fmt.Errorf("unknown publisher: %v", config.Server.Publisher)
+		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher.Type)
 	}
 }

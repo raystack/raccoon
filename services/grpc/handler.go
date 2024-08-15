@@ -21,16 +21,16 @@ type Handler struct {
 
 func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.SendEventResponse, error) {
 	metadata, _ := metadata.FromIncomingContext(ctx)
-	groups := metadata.Get(config.Server.Websocket.ConnGroupHeader)
+	groups := metadata.Get(config.Server.Websocket.Conn.GroupHeader)
 	var group string
 	if len(groups) > 0 {
 		group = groups[0]
 	} else {
-		group = config.Server.Websocket.ConnGroupDefault
+		group = config.Server.Websocket.Conn.GroupDefault
 	}
 
 	var id string
-	ids := metadata.Get(config.Server.Websocket.ConnIDHeader)
+	ids := metadata.Get(config.Server.Websocket.Conn.IDHeader)
 
 	if len(ids) > 0 {
 		id = ids[0]
@@ -59,7 +59,7 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.
 }
 
 func (h *Handler) Ack(responseChannel chan *pb.SendEventResponse, reqGuid, connGroup string) collector.AckFunc {
-	switch config.Server.Event.Ack {
+	switch config.Event.Ack {
 	case config.Asynchronous:
 		responseChannel <- &pb.SendEventResponse{
 			Status:   pb.Status_STATUS_SUCCESS,

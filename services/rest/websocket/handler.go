@@ -49,9 +49,9 @@ func NewHandler(pingC chan connection.Conn, collector collector.Collector) *Hand
 		MaxUser:           config.Server.Websocket.ServerMaxConn,
 		PongWaitInterval:  time.Duration(config.Server.Websocket.PongWaitIntervalMS) * time.Millisecond,
 		WriteWaitInterval: time.Duration(config.Server.Websocket.WriteWaitIntervalMS) * time.Millisecond,
-		ConnIDHeader:      config.Server.Websocket.ConnIDHeader,
-		ConnGroupHeader:   config.Server.Websocket.ConnGroupHeader,
-		ConnGroupDefault:  config.Server.Websocket.ConnGroupDefault,
+		ConnIDHeader:      config.Server.Websocket.Conn.IDHeader,
+		ConnGroupHeader:   config.Server.Websocket.Conn.GroupHeader,
+		ConnGroupDefault:  config.Server.Websocket.Conn.GroupDefault,
 	}
 
 	upgrader := connection.NewUpgrader(ugConfig)
@@ -102,7 +102,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 			writeBadRequestResponse(conn, s, messageType, payload.ReqGuid, err)
 			continue
 		}
-		if config.Server.Websocket.DedupEnabled {
+		if config.Server.Batch.DedupEnabled {
 			// avoiding processing the same active connection's duplicate events.
 			if h.upgrader.Table.HasBatch(conn.Identifier, payload.ReqGuid) {
 				metrics.Increment("events_duplicate_total", map[string]string{"reason": "duplicate", "conn_group": conn.Identifier.Group})
@@ -125,13 +125,13 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serialization.SerializeFunc, messageType int, reqGuid string, timeConsumed time.Time) collector.AckFunc {
-	switch config.Server.Event.Ack {
+	switch config.Event.Ack {
 	case config.Asynchronous:
 		writeSuccessResponse(conn, s, messageType, reqGuid)
 		return nil
 	case config.Synchronous:
 		return func(err error) {
-			if config.Server.Websocket.DedupEnabled {
+			if config.Server.Batch.DedupEnabled {
 				if err != nil {
 					h.upgrader.Table.RemoveBatch(conn.Identifier, reqGuid)
 				}

@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var Publisher publisher
+
 var dynamicKafkaClientConfigPrefix = "PUBLISHER_KAFKA_CLIENT_"
 
 type publisherPubSub struct {
@@ -32,7 +34,7 @@ type publisherKinesis struct {
 }
 
 type publisherKafka struct {
-	FlushInterval int `mapstructure:"PUBLISHER_KAFKA_FLUSH_INTERVAL_MS" cmdx:"publisher.kafka.flush.interval.ms" default:"1000"`
+	FlushInterval int `mapstructure:"flush_interval_ms" cmdx:"publisher.kafka.flush.interval.ms" default:"1000"`
 }
 
 func (k publisherKafka) ToKafkaConfigMap() *confluent.ConfigMap {
@@ -56,4 +58,11 @@ func dynamicKafkaClientConfigLoad() []byte {
 	yamlFormatted := []byte(
 		strings.Replace(strings.Join(kafkaConfigs, "\n"), "=", ": ", -1))
 	return yamlFormatted
+}
+
+type publisher struct {
+	Type    string           `mapstructure:"type" cmdx:"publisher.type" default:"kafka"`
+	Kafka   publisherKafka   `mapstructure:"kafka"`
+	PubSub  publisherPubSub  `mapstructure:"pubsub"`
+	Kinesis publisherKinesis `mapstructure:"kinesis"`
 }

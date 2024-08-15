@@ -58,7 +58,7 @@ func pingHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func reportConnectionMetrics(conn connection.Table) {
-	interval := time.Duration(config.Server.MetricInfo.RuntimeStatsRecordIntervalMS) * time.Millisecond
+	interval := time.Duration(config.Metric.RuntimeStatsRecordIntervalMS) * time.Millisecond
 	for range time.Tick(interval) {
 		for k, v := range conn.TotalConnectionPerGroup() {
 			metrics.Gauge("connections_count_current", v, map[string]string{"conn_group": k})

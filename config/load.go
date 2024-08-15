@@ -10,6 +10,7 @@ import (
 
 // Load configs from env or yaml and set it to respective keys
 func Load() error {
+	conf := cfg{&Server, &Publisher, &Worker, &Event, &Metric, &Log}
 	loader := config.NewLoader(
 		config.WithViper(viper.GetViper()),
 		config.WithName(".env"),
@@ -18,13 +19,13 @@ func Load() error {
 		config.WithPath("../../"),
 		config.WithType("env"),
 	)
-	err := loader.Load(&Server)
+	err := loader.Load(&conf)
 	if err != nil && !errors.As(err, &config.ConfigFileNotFoundError{}) {
 		return err
 	}
 
-	prepare(&Server)
-	return Server.validate()
+	prepare()
+	return validate()
 }
 
 func init() {

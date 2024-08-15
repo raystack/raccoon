@@ -59,10 +59,10 @@ func (m *mockMetricInstrument) Close() {
 }
 
 func Test_Prometheus_Setup(t *testing.T) {
-	config.Server.MetricPrometheus.Enabled = true
-	config.Server.MetricStatsd.Enabled = false
-	config.Server.MetricPrometheus.Path = "/metrics"
-	config.Server.MetricPrometheus.Port = 8080
+	config.Metric.Prometheus.Enabled = true
+	config.Metric.StatsD.Enabled = false
+	config.Metric.Prometheus.Path = "/metrics"
+	config.Metric.Prometheus.Port = 8080
 	Setup()
 	prometheusInstrument, ok := instrument.(*PrometheusCollector)
 	assert.True(t, ok, "prometheus collector was not initialised")
@@ -73,8 +73,8 @@ func Test_Prometheus_Setup(t *testing.T) {
 }
 
 func Test_Error_On_Both_Enabled(t *testing.T) {
-	config.Server.MetricPrometheus.Enabled = true
-	config.Server.MetricStatsd.Enabled = true
+	config.Metric.Prometheus.Enabled = true
+	config.Metric.StatsD.Enabled = true
 	assert.Error(t, Setup())
 	os.Setenv("METRIC_STATSD_ENABLED", "false")
 	os.Setenv("METRIC_PROMETHEUS_ENABLED", "false")

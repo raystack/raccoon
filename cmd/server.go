@@ -29,7 +29,7 @@ func serverCommand() *cobra.Command {
 			middleware.Load()
 			metrics.Setup()
 			defer metrics.Close()
-			logger.SetLevel(config.Server.Log.Level)
+			logger.SetLevel(config.Log.Level)
 			return app.Run()
 		},
 	}
@@ -44,13 +44,13 @@ func bindServerFlags(cmd *cobra.Command) {
 
 	bindFlag(
 		fs,
-		&config.Server.Log.Level,
+		&config.Log.Level,
 		"LOG_LEVEL",
 		"Level available are [debug info warn error fatal panic]",
 	)
 	bindFlag(
 		fs,
-		&config.Server.Event.Ack,
+		&config.Event.Ack,
 		"EVENT_ACK",
 		"Whether to send acknowledgements to clients or not. 1 to enable, 0 to disable.",
 	)
@@ -80,19 +80,19 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.Server.Websocket.ConnIDHeader,
+		&config.Server.Websocket.Conn.IDHeader,
 		"SERVER_WEBSOCKET_CONN_ID_HEADER",
 		"Unique identifier for the server to maintain the connection",
 	)
 	bindFlag(
 		fs,
-		&config.Server.Websocket.ConnGroupHeader,
+		&config.Server.Websocket.Conn.GroupHeader,
 		"SERVER_WEBSOCKET_CONN_GROUP_HEADER",
 		"Additional identifier for the server to maintain the connection",
 	)
 	bindFlag(
 		fs,
-		&config.Server.Websocket.ConnGroupDefault,
+		&config.Server.Websocket.Conn.GroupDefault,
 		"SERVER_WEBSOCKET_CONN_GROUP_DEFAULT",
 		"Default connection group name",
 	)
@@ -128,7 +128,7 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.Server.Websocket.DedupEnabled,
+		&config.Server.Batch.DedupEnabled,
 		"SERVER_BATCH_DEDUP_IN_CONNECTION_ENABLED",
 		"Whether to discard duplicate messages",
 	)
@@ -164,37 +164,37 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.Server.Worker.ChannelSize,
+		&config.Worker.Buffer.ChannelSize,
 		"WORKER_BUFFER_CHANNEL_SIZE",
 		"Size of the buffer queue",
 	)
 	bindFlag(
 		fs,
-		&config.Server.Worker.WorkerFlushTimeoutMS,
+		&config.Worker.Buffer.FlushTimeoutMS,
 		"WORKER_BUFFER_FLUSH_TIMEOUT_MS",
 		"Timeout for flushing leftover messages on shutdown",
 	)
 	bindFlag(
 		fs,
-		&config.Server.Worker.WorkersPoolSize,
+		&config.Worker.PoolSize,
 		"WORKER_POOL_SIZE",
 		"No of workers that processes the events concurrently",
 	)
 	bindFlag(
 		fs,
-		&config.Server.Worker.DeliveryChannelSize,
+		&config.Worker.DeliveryChannelSize,
 		"WORKER_KAFKA_DELIVERY_CHANNEL_SIZE",
 		"Delivery Channel size for Kafka publisher",
 	)
 	bindFlag(
 		fs,
-		&config.Server.EventDistribution.PublisherPattern,
+		&config.Event.DistributionPublisherPattern,
 		"EVENT_DISTRIBUTION_PUBLISHER_PATTERN",
 		"Topic template used for routing events",
 	)
 	bindFlag(
 		fs,
-		&config.Server.Publisher,
+		&config.Publisher.Type,
 		"PUBLISHER_TYPE",
 		"Publisher to use for transmitting events",
 	)
@@ -241,139 +241,139 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherKafka.FlushInterval,
+		&config.Publisher.Kafka.FlushInterval,
 		"PUBLISHER_KAFKA_FLUSH_INTERVAL_MS",
 		"Timeout for sending leftover messages on kafka publisher shutdown",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherPubSub.CredentialsFile,
+		&config.Publisher.PubSub.CredentialsFile,
 		"PUBLISHER_PUBSUB_CREDENTIALS",
 		"Path to file containing GCP cloud credentials",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherPubSub.ProjectId,
+		&config.Publisher.PubSub.ProjectId,
 		"PUBLISHER_PUBSUB_PROJECT_ID",
 		"Destination Google Cloud Project ID",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherPubSub.TopicAutoCreate,
+		&config.Publisher.PubSub.TopicAutoCreate,
 		"PUBLISHER_PUBSUB_TOPIC_AUTOCREATE",
 		"Whether to create topic if it doesn't exist in PubSub",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherPubSub.TopicRetentionPeriodMS,
+		&config.Publisher.PubSub.TopicRetentionPeriodMS,
 		"PUBLISHER_PUBSUB_TOPIC_RETENTION_MS",
 		"Retention period of created topics in milliseconds",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherPubSub.PublishDelayThresholdMS,
+		&config.Publisher.PubSub.PublishDelayThresholdMS,
 		"PUBLISHER_PUBSUB_PUBLISH_DELAY_THRESHOLD_MS",
 		"Maximum time to wait for before publishing a batch of events",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherPubSub.PublishCountThreshold,
+		&config.Publisher.PubSub.PublishCountThreshold,
 		"PUBLISHER_PUBSUB_PUBLISH_COUNT_THRESHOLD",
 		"Maximum number of events to accumulate before transmission",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherPubSub.PublishByteThreshold,
+		&config.Publisher.PubSub.PublishByteThreshold,
 		"PUBLISHER_PUBSUB_PUBLISH_BYTE_THRESHOLD",
 		"Maximum buffer size (in bytes)",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherPubSub.PublishTimeoutMS,
+		&config.Publisher.PubSub.PublishTimeoutMS,
 		"PUBLISHER_PUBSUB_PUBLISH_TIMEOUT_MS",
 		"How long to wait before aborting a publish operation",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherKinesis.Region,
+		&config.Publisher.Kinesis.Region,
 		"PUBLISHER_KINESIS_AWS_REGION",
 		"AWS Region of the target kinesis stream",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherKinesis.CredentialsFile,
+		&config.Publisher.Kinesis.CredentialsFile,
 		"PUBLISHER_KINESIS_CREDENTIALS",
 		"Path to file containing AWS credentials",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherKinesis.StreamAutoCreate,
+		&config.Publisher.Kinesis.StreamAutoCreate,
 		"PUBLISHER_KINESIS_STREAM_AUTOCREATE",
 		"Whether to create a stream if it doesn't exist in Kinesis",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherKinesis.StreamMode,
+		&config.Publisher.Kinesis.StreamMode,
 		"PUBLISHER_KINESIS_STREAM_MODE",
 		"Mode of auto-created streams. Valid values: [ON-DEMAND PROVISIONED]",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherKinesis.DefaultShards,
+		&config.Publisher.Kinesis.DefaultShards,
 		"PUBLISHER_KINESIS_STREAM_SHARDS",
 		"Number of shards in auto-created streams",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherKinesis.StreamProbeIntervalMS,
+		&config.Publisher.Kinesis.StreamProbeIntervalMS,
 		"PUBLISHER_KINESIS_STREAM_PROBE_INTERVAL_MS",
 		"time delay between stream status checks",
 	)
 	bindFlag(
 		fs,
-		&config.Server.PublisherKinesis.PublishTimeoutMS,
+		&config.Publisher.Kinesis.PublishTimeoutMS,
 		"PUBLISHER_KINESIS_PUBLISH_TIMEOUT_MS",
 		"how long to wait for before aborting a publish operation",
 	)
 	bindFlag(
 		fs,
-		&config.Server.MetricInfo.RuntimeStatsRecordIntervalMS,
+		&config.Metric.RuntimeStatsRecordIntervalMS,
 		"METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS",
 		"Time interval between runtime metric collection",
 	)
 	bindFlag(
 		fs,
-		&config.Server.MetricStatsd.Enabled,
+		&config.Metric.StatsD.Enabled,
 		"METRIC_STATSD_ENABLED",
 		"Enable statsd metric exporter",
 	)
 	bindFlag(
 		fs,
-		&config.Server.MetricStatsd.Address,
+		&config.Metric.StatsD.Address,
 		"METRIC_STATSD_ADDRESS",
 		"Address to reports the service metrics",
 	)
 	bindFlag(
 		fs,
-		&config.Server.MetricStatsd.FlushPeriodMS,
+		&config.Metric.StatsD.FlushPeriodMS,
 		"METRIC_STATSD_FLUSH_PERIOD_MS",
 		"Interval for the service to push metrics",
 	)
 	bindFlag(
 		fs,
-		&config.Server.MetricPrometheus.Enabled,
+		&config.Metric.Prometheus.Enabled,
 		"METRIC_PROMETHEUS_ENABLED",
 		"Enable prometheus http server to expose service metrics",
 	)
 	bindFlag(
 		fs,
-		&config.Server.MetricPrometheus.Path,
+		&config.Metric.Prometheus.Path,
 		"METRIC_PROMETHEUS_PATH",
 		"The path at which prometheus server should serve metrics",
 	)
 	bindFlag(
 		fs,
-		&config.Server.MetricPrometheus.Port,
+		&config.Metric.Prometheus.Port,
 		"METRIC_PROMETHEUS_PORT",
 		"Port to expose prometheus metrics on",
 	)

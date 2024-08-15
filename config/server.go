@@ -12,7 +12,7 @@ type server struct {
 type conn struct {
 	IDHeader     string `mapstructure:"id_header" cmdx:"server.websocket.conn.id.header"`
 	GroupHeader  string `mapstructure:"group_header" cmdx:"server.websocket.conn.group.header"`
-	GroupDefault string `mapstructure:"group_default" cmdx:"server.websocket.conn.group.default"`
+	GroupDefault string `mapstructure:"group_default" cmdx:"server.websocket.conn.group.default" default:"--default--"`
 }
 
 type batch struct {

@@ -18,11 +18,12 @@ import (
 )
 
 func serverCommand() *cobra.Command {
+	var configFile = "config.yaml"
 	command := &cobra.Command{
 		Use:   "server",
 		Short: "Start raccoon server",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := config.Load()
+			err := config.Load(configFile)
 			if err != nil {
 				return err
 			}
@@ -33,7 +34,7 @@ func serverCommand() *cobra.Command {
 			return app.Run()
 		},
 	}
-
+	command.Flags().StringVarP(&configFile, "config", "c", configFile, "path to config file")
 	bindServerFlags(command)
 	return command
 }

@@ -8,8 +8,10 @@ import (
 )
 
 // Load configs from env or yaml and set it to respective keys
-func Load() error {
-	loader := config.NewLoader()
+func Load(configFile string) error {
+	loader := config.NewLoader(
+		config.WithFile(configFile),
+	)
 	err := loader.Load(&cfg)
 	if err != nil && !errors.As(err, &config.ConfigFileNotFoundError{}) {
 		return err

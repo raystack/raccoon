@@ -48,7 +48,7 @@ func StartServer(ctx context.Context, cancel context.CancelFunc) {
 	}
 
 	logger.Info("Start worker -->")
-	workerPool := worker.CreateWorkerPool(config.Worker.PoolSize, bufferChannel, config.Worker.DeliveryChannelSize, publisher)
+	workerPool := worker.CreateWorkerPool(config.Worker.PoolSize, bufferChannel, publisher)
 	workerPool.StartWorkers()
 
 	go reportProcMetrics()

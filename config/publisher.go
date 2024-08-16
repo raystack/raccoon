@@ -34,7 +34,8 @@ type publisherKinesis struct {
 }
 
 type publisherKafka struct {
-	FlushInterval int `mapstructure:"flush_interval_ms" cmdx:"publisher.kafka.flush.interval.ms" default:"1000"`
+	FlushInterval       int `mapstructure:"flush_interval_ms" cmdx:"publisher.kafka.flush.interval.ms" default:"1000"`
+	DeliveryChannelSize int `mapstructure:"delivery_channel_size" cmdx:"publisher.kafka.delivery.channel.size" default:"10"`
 }
 
 func (k publisherKafka) ToKafkaConfigMap() *confluent.ConfigMap {

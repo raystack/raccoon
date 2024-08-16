@@ -173,13 +173,6 @@ No of workers that processes the events concurrently.
 - Type `Optional`
 - Default value: `5`
 
-### `WORKER_KAFKA_DELIVERY_CHANNEL_SIZE`
-
-Delivery channel is implementation detail where the kafka client asks for channel in the [produce API](https://github.com/confluentinc/confluent-kafka-go/blob/master/examples/producer_example/producer_example.go#L51). The publisher uses the channel to wait for the events to be delivered. The channel contains the status delivery of the events. Normally you won't need to touch this.
-
-- Type `Optional`
-- Default value: `10`
-
 ## Event Distribution
 
 ### `EVENT_DISTRIBUTION_PUBLISHER_PATTERN`
@@ -250,6 +243,14 @@ Maximum number of messages allowed on the producer queue. This queue is shared b
 
 - Type `Optional`
 - Default value: `100000`
+
+### `PUBLISHER_KAFKA_DELIVERY_CHANNEL_SIZE`
+
+Delivery channel is implementation detail where the kafka client asks for channel in the [produce API](https://github.com/confluentinc/confluent-kafka-go/blob/master/examples/producer_example/producer_example.go#L51). The publisher uses the channel to wait for the events to be delivered. The channel contains the status delivery of the events. Normally you won't need to touch this.
+
+- Type `Optional`
+- Default value: `10`
+
 
 #### `PUBLISHER_KAFKA_CLIENT_*`
 

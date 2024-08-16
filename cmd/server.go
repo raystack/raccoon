@@ -188,12 +188,6 @@ func bindServerFlags(cmd *cobra.Command) {
 	)
 	bindFlag(
 		fs,
-		&config.Worker.DeliveryChannelSize,
-		"WORKER_KAFKA_DELIVERY_CHANNEL_SIZE",
-		"Delivery Channel size for Kafka publisher",
-	)
-	bindFlag(
-		fs,
 		&config.Publisher.Type,
 		"PUBLISHER_TYPE",
 		"Publisher to use for transmitting events",
@@ -244,6 +238,12 @@ func bindServerFlags(cmd *cobra.Command) {
 		&config.Publisher.Kafka.FlushInterval,
 		"PUBLISHER_KAFKA_FLUSH_INTERVAL_MS",
 		"Timeout for sending leftover messages on kafka publisher shutdown",
+	)
+	bindFlag(
+		fs,
+		&config.Publisher.Kafka.DeliveryChannelSize,
+		"PUBLISHER_KAFKA_DELIVERY_CHANNEL_SIZE",
+		"Delivery Channel size for Kafka publisher",
 	)
 	bindFlag(
 		fs,

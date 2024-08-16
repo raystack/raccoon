@@ -24,7 +24,7 @@ func New() (*Kafka, error) {
 		kp:                  kp,
 		flushInterval:       config.Publisher.Kafka.FlushInterval,
 		topicFormat:         config.Event.DistributionPublisherPattern,
-		deliveryChannelSize: config.Worker.DeliveryChannelSize,
+		deliveryChannelSize: config.Publisher.Kafka.DeliveryChannelSize,
 	}
 
 	go k.ReportStats()

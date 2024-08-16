@@ -68,24 +68,24 @@ Default connection group name. The default is fallback when `SERVER_WEBSOCKET_CO
 
 ### `SERVER_WEBSOCKET_PING_INTERVAL_MS`
 
-Interval of each ping to client. The interval is in seconds.
+Interval of each ping to client. The interval is in milliseconds.
 
 - Type: `Optional`
-- Default value: `30`
+- Default value: `30000`
 
 ### `SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS`
 
 Wait time for client to send Pong message back after server sends Ping. When the time exceeded the connection will be dropped.
 
 - Type `Optional`
-- Default value: `60`
+- Default value: `60000`
 
 ### `SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS`
 
 Timeout Deadline set on the writes. On timeout the websocket state is corrupt and all future writes will return error: [Refer gorilla websocket API](https://pkg.go.dev/github.com/gorilla/websocket#Conn.SetWriteDeadline)
 
 - Type `Optional`
-- Default value: `5`
+- Default value: `5000`
 
 ### `SERVER_WEBSOCKET_PINGER_SIZE`
 

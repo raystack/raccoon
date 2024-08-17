@@ -18,8 +18,6 @@ jobs:
           go-version: "1.22.4"
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Initialise test config
-        run: cp .env.test .env
       - name: Start raccoon
         run: make docker-run
       - name: Run tests

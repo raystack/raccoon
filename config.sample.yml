@@ -1,0 +1,59 @@
+server:
+  websocket:
+    conn:
+      id_header: "X-User-ID"
+    port: 8080
+    max_conn: 30000
+    read_buffer_size: 10240
+    write_buffer_size: 10240
+    ping_interval_ms: 30000
+    pong_wait_interval: 60000
+    write_wait_interval: 5000
+    pinger_size: 1
+  cors:
+    enabled: true
+    allowed_origins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+    preflight_max_age_seconds: 60
+  grpc:
+    port: 8081
+
+worker:
+  buffer:
+    channel_size: 5
+    flush_timeout_ms: 5000
+  pool_size: 5
+
+event:
+  distribution_publisher_pattern: "clickstream-%s-log"
+
+publisher:
+  type: "kafka"
+  kafka:
+    client:
+      bootstrap_servers: "127.0.0.1:9092,127.0.0.1:9099"
+      acks: "1"
+      retries: "2"
+      retry_backoff_ms: "100"
+      statistics_interval_ms: "5000"
+      queue_buffering_max_messages: "100000"
+    flush_interval_ms: 1000
+    delivery_channel_size: 10
+
+metric:
+  runtime_stats_record_interval_ms: 1000
+  prometheus:
+    enabled: true
+  statsd:
+    enabled: true
+    address: ":8125"
+    flush_period_ms: 1000
+
+log:
+  level: "info"
+
+
+
+
+

@@ -23,7 +23,7 @@ server:
       - "OPTIONS"
     preflight_max_age_seconds: 60
 
-worker:
+event:
   distribution_publisher_pattern: "clickstream-%s-log"
 
 publisher:

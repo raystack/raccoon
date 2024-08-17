@@ -1,6 +1,11 @@
 package config
 
-var Server server
+var Server = server{
+	CORS: serverCors{
+		// go-defaults doesn't support populating slice variables
+		AllowedMethods: []string{"GET", "HEAD", "POST", "OPTIONS"},
+	},
+}
 
 type server struct {
 	CORS      serverCors `mapstructure:"cors"`
@@ -39,7 +44,7 @@ type serverGRPC struct {
 type serverCors struct {
 	Enabled          bool     `mapstructure:"enabled" cmdx:"server.cors.enabled" default:"false"`
 	AllowedOrigin    []string `mapstructure:"allowed_origin" cmdx:"server.cors.allowed.origin"`
-	AllowedMethods   []string `mapstructure:"allowed_methods" cmdx:"server.cors.allowed.methods" default:"GET,HEAD,POST,OPTIONS"`
+	AllowedMethods   []string `mapstructure:"allowed_methods" cmdx:"server.cors.allowed.methods"`
 	AllowedHeaders   []string `mapstructure:"allowed_headers" cmdx:"server.cors.allowed.headers"`
 	AllowCredentials bool     `mapstructure:"allow_credentials" cmdx:"server.cors.allow.credentials" default:"false"`
 	MaxAge           int      `mapstructure:"preflight_max_age_seconds" cmdx:"server.cors.preflight.max.age.seconds"`

@@ -110,21 +110,21 @@ The config decides whether to enable the cors middleware and thus allow CORS req
 
 ### `SERVER_CORS_ALLOWED_ORIGIN`
 
-The server decides which origin to allow. The configuration is expected to space separated. Multiple values are supported. The value requires `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
+The server decides which origin to allow. The configuration is expected to comma separated. Multiple values are supported. The value requires `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
 
 - Type `Optional`
 - Default Value ``
 
 ### `SERVER_CORS_ALLOWED_METHODS`
 
-The http methods allowed when it's a cross origin request. The http methods are expected to be space separated. 
+The http methods allowed when it's a cross origin request. The http methods are expected to be comma separated with no space in-between. 
 
 - Type `Optional`
-- Default Value `GET HEAD POST OPTIONS`
+- Default Value `GET,HEAD,POST,OPTIONS`
 
 ### `SERVER_CORS_ALLOWED_HEADERS`
 
-The http request headers which are allowed when request is cross origin. The input expects to add any additional headers which is going to be sent by the client ex: `Authorization`. Headers which are essential for the functioning of Raccoon like Content-Type, Connection-Id & Group headers are added by default and need not be passed as configuration.
+The http request headers which are allowed when request is cross origin. The input expects to add any additional headers which is going to be sent by the client ex: `Authorization`. Headers which are essential for the functioning of Raccoon like Content-Type, Connection-Id & Group headers are added by default and need not be passed as configuration. The value is expected to be a comma separated list.
 
 - Type `Optional`
 - Default Value ``

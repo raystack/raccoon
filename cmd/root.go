@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/MakeNowJust/heredoc"
+	"github.com/raystack/salt/cmdx"
 	"github.com/spf13/cobra"
 )
 
@@ -21,9 +22,22 @@ func New() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},
+		Annotations: map[string]string{
+			"group": "core",
+			"help:learn": heredoc.Doc(`
+				Use 'raccoon <command> --help' for more information about a command.
+				Read the manual at https://raystack.github.io/raccoon/
+			`),
+			"help:feedback": heredoc.Doc(`
+				Open an issue here https://github.com/raystack/raccoon/issues
+			`),
+		},
 	}
 
+	cmdx.SetHelp(root)
+	root.AddCommand(cmdx.SetCompletionCmd("raccoon"))
+	root.AddCommand(cmdx.SetRefCmd(root))
+
 	root.AddCommand(serverCommand())
-	root.SetHelpCommand(&cobra.Command{Hidden: true})
 	return root
 }

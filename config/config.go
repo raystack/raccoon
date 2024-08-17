@@ -1,13 +1,10 @@
 package config
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"slices"
 	"strings"
-
-	"github.com/spf13/viper"
 )
 
 // configuration wrapper for initialising global configs
@@ -23,9 +20,6 @@ var cfg = struct {
 // prepare applies defaults and fallback values to global configurations
 // prepare must be called after loading configs using viper
 func prepare() {
-
-	// parse kafka dynamic config
-	viper.MergeConfig(bytes.NewBuffer(dynamicKafkaClientConfigLoad()))
 
 	// add fallback for pubsub credentials
 	if Publisher.Type == "pubsub" {
@@ -84,12 +78,10 @@ func validate() error {
 		}
 	}
 
-	// there are no concrete fields that refer to this config
-	kafkaServers := "PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS"
-	if Publisher.Type == "kafka" && !viper.IsSet(kafkaServers) {
-		flag := strings.ToLower(kafkaServers)
-		flag = strings.ReplaceAll(flag, "_", ".")
-		return errRequired(kafkaServers, flag)
+	if Publisher.Type == "kafka" {
+		if strings.TrimSpace(Publisher.Kafka.ClientConfig.BootstrapServers) == "" {
+			return errCfgRequired("Publisher.Kafka.ClientConfig.BootstrapServers")
+		}
 	}
 
 	validPublishers := []string{

@@ -194,43 +194,39 @@ func bindServerFlags(cmd *cobra.Command) {
 		"Publisher to use for transmitting events",
 	)
 
-	// kafka client dynamic configuration doesn't have corresponding
-	// fields in configuration structs. So we use a placeholder reference
-	// to these values.
-	var placeholder string
 	bindFlag(
 		fs,
-		&placeholder,
+		&config.Publisher.Kafka.ClientConfig.BootstrapServers,
 		"PUBLISHER_KAFKA_CLIENT_BOOTSTRAP_SERVERS",
 		"Address of kafka brokers",
 	)
 	bindFlag(
 		fs,
-		&placeholder,
+		&config.Publisher.Kafka.ClientConfig.Acks,
 		"PUBLISHER_KAFKA_CLIENT_ACKS",
 		"Number of replica acknowledgement before kafka sends ack back to service",
 	)
 	bindFlag(
 		fs,
-		&placeholder,
+		&config.Publisher.Kafka.ClientConfig.Retries,
 		"PUBLISHER_KAFKA_CLIENT_RETRIES",
 		"Number of retries in case of failure",
 	)
 	bindFlag(
 		fs,
-		&placeholder,
+		&config.Publisher.Kafka.ClientConfig.RetryBackoffMS,
 		"PUBLISHER_KAFKA_CLIENT_RETRY_BACKOFF_MS",
 		"Backoff time on retry.",
 	)
 	bindFlag(
 		fs,
-		&placeholder,
+		&config.Publisher.Kafka.ClientConfig.StatisticsIntervalMS,
 		"PUBLISHER_KAFKA_CLIENT_STATISTICS_INTERVAL_MS",
 		"Interval of statistics emitted by kafka",
 	)
 	bindFlag(
 		fs,
-		&placeholder,
+		&config.Publisher.Kafka.ClientConfig.QueueBufferingMaxMessages,
 		"PUBLISHER_KAFKA_CLIENT_QUEUE_BUFFERING_MAX_MESSAGES",
 		"Maximum number of messages allowed on the producer queue",
 	)

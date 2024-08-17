@@ -94,9 +94,9 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 				fmt.Sprintf("%s_messages_delivered_total", pub.Name()),
 				int64(eventsInChannel+eventsInProducer),
 				map[string]string{
-					"success":    "false",
 					"conn_group": "NA",
 					"event_type": "NA",
+					"topic":      "NA",
 				},
 			)
 			logger.Info("Exiting server")

@@ -10,31 +10,31 @@ import (
 var Publisher publisher
 
 type publisherPubSub struct {
-	ProjectId               string `mapstructure:"project_id" cmdx:"publisher.pubsub.project.id"`
-	TopicAutoCreate         bool   `mapstructure:"topic_autocreate" cmdx:"publisher.pubsub.topic.autocreate" default:"false"`
-	TopicRetentionPeriodMS  int64  `mapstructure:"topic_retention_ms" cmdx:"publisher.pubsub.topic.retention.ms" default:"0"`
-	PublishTimeoutMS        int64  `mapstructure:"publish_timeout_ms" cmdx:"publisher.pubsub.publish.timeout.ms" default:"60000"`
-	PublishDelayThresholdMS int64  `mapstructure:"publish_delay_threshold_ms" cmdx:"publisher.pubsub.publish.delay.threshold.ms" default:"10"`
-	PublishCountThreshold   int    `mapstructure:"publish_count_threshold" cmdx:"publisher.pubsub.publish.count.threshold" default:"100"`
-	PublishByteThreshold    int    `mapstructure:"publish_byte_threshold" cmdx:"publisher.pubsub.publish.byte.threshold" default:"1000000"`
-	CredentialsFile         string `mapstructure:"credentials" cmdx:"publisher.pubsub.credentials"`
+	ProjectId               string `mapstructure:"project_id" cmdx:"publisher.pubsub.project.id" desc:"Destination Google Cloud Project ID"`
+	TopicAutoCreate         bool   `mapstructure:"topic_autocreate" cmdx:"publisher.pubsub.topic.autocreate" default:"false" desc:"Whether to create topic if it doesn't exist in PubSub"`
+	TopicRetentionPeriodMS  int64  `mapstructure:"topic_retention_ms" cmdx:"publisher.pubsub.topic.retention.ms" default:"0" desc:"Retention period of created topics in milliseconds"`
+	PublishTimeoutMS        int64  `mapstructure:"publish_timeout_ms" cmdx:"publisher.pubsub.publish.timeout.ms" default:"60000" desc:"How long to wait before aborting a publish operation"`
+	PublishDelayThresholdMS int64  `mapstructure:"publish_delay_threshold_ms" cmdx:"publisher.pubsub.publish.delay.threshold.ms" default:"10" desc:"Maximum time to wait for before publishing a batch of events"`
+	PublishCountThreshold   int    `mapstructure:"publish_count_threshold" cmdx:"publisher.pubsub.publish.count.threshold" default:"100" desc:"Maximum number of events to accumulate before transmission"`
+	PublishByteThreshold    int    `mapstructure:"publish_byte_threshold" cmdx:"publisher.pubsub.publish.byte.threshold" default:"1000000" desc:"Maximum buffer size (in bytes)"`
+	CredentialsFile         string `mapstructure:"credentials" cmdx:"publisher.pubsub.credentials" desc:"Path to file containing GCP cloud credentials"`
 }
 
 type publisherKinesis struct {
-	Region                string `mapstructure:"aws_region" cmdx:"publisher.kinesis.aws.region"`
-	CredentialsFile       string `mapstructure:"credentials" cmdx:"publisher.kinesis.credentials"`
-	StreamAutoCreate      bool   `mapstructure:"stream_autocreate" cmdx:"publisher.kinesis.stream.autocreate" default:"false"`
-	StreamProbeIntervalMS int64  `mapstructure:"stream_probe_interval_ms" cmdx:"publisher.kinesis.stream.probe.interval.ms" default:"1000"`
-	StreamMode            string `mapstructure:"stream_mode" cmdx:"publisher.kinesis.stream.mode" default:"ON_DEMAND"`
-	DefaultShards         uint32 `mapstructure:"stream_shards" cmdx:"publisher.kinesis.stream.shards" default:"4"`
-	PublishTimeoutMS      int64  `mapstructure:"publish_timeout_ms" cmdx:"publisher.kinesis.publish.timeout.ms" default:"60000"`
+	Region                string `mapstructure:"aws_region" cmdx:"publisher.kinesis.aws.region" desc:"AWS Region of the target kinesis stream"`
+	CredentialsFile       string `mapstructure:"credentials" cmdx:"publisher.kinesis.credentials" desc:"Path to file containing AWS credentials"`
+	StreamAutoCreate      bool   `mapstructure:"stream_autocreate" cmdx:"publisher.kinesis.stream.autocreate" default:"false" desc:"Whether to create a stream if it doesn't exist in Kinesis"`
+	StreamProbeIntervalMS int64  `mapstructure:"stream_probe_interval_ms" cmdx:"publisher.kinesis.stream.probe.interval.ms" default:"1000" desc:"time delay between stream status checks"`
+	StreamMode            string `mapstructure:"stream_mode" cmdx:"publisher.kinesis.stream.mode" default:"ON_DEMAND" desc:"Mode of auto-created streams. Valid values: [ON-DEMAND PROVISIONED]"`
+	DefaultShards         uint32 `mapstructure:"stream_shards" cmdx:"publisher.kinesis.stream.shards" default:"4" desc:"Number of shards in auto-created streams"`
+	PublishTimeoutMS      int64  `mapstructure:"publish_timeout_ms" cmdx:"publisher.kinesis.publish.timeout.ms" default:"60000" desc:"how long to wait for before aborting a publish operation"`
 }
 
 type kafkaClientConfig struct {
 	BuiltinFeatures                     string `mapstructure:"builtin_features" cmdx:"publisher.kafka.client.builtin.features" default:"gzip,snappy,ssl,sasl,regex,lz4,sasl_plain,sasl_scram,plugins,zstd,sasl_oauthbearer,http,oidc"`
 	ClientID                            string `mapstructure:"client_id" cmdx:"publisher.kafka.client.client.id" default:"rdkafka"`
 	MetadataBrokerList                  string `mapstructure:"metadata_broker_list" cmdx:"publisher.kafka.client.metadata.broker.list" default:""`
-	BootstrapServers                    string `mapstructure:"bootstrap_servers" cmdx:"publisher.kafka.client.bootstrap.servers" default:""`
+	BootstrapServers                    string `mapstructure:"bootstrap_servers" cmdx:"publisher.kafka.client.bootstrap.servers" default:"" desc:"Address of kafka brokers"`
 	MessageMaxBytes                     string `mapstructure:"message_max_bytes" cmdx:"publisher.kafka.client.message.max.bytes" default:"1000000"`
 	MessageCopyMaxBytes                 string `mapstructure:"message_copy_max_bytes" cmdx:"publisher.kafka.client.message.copy.max.bytes" default:"65535"`
 	ReceiveMessageMaxBytes              string `mapstructure:"receive_message_max_bytes" cmdx:"publisher.kafka.client.receive.message.max.bytes" default:"100000000"`
@@ -58,7 +58,7 @@ type kafkaClientConfig struct {
 	ConnectionsMaxIdleMS                string `mapstructure:"connections_max_idle_ms" cmdx:"publisher.kafka.client.connections.max.idle.ms" default:"0"`
 	ReconnectBackoffMS                  string `mapstructure:"reconnect_backoff_ms" cmdx:"publisher.kafka.client.reconnect.backoff.ms" default:"100"`
 	ReconnectBackoffMaxMS               string `mapstructure:"reconnect_backoff_max_ms" cmdx:"publisher.kafka.client.reconnect.backoff.max.ms" default:"10000"`
-	StatisticsIntervalMS                string `mapstructure:"statistics_interval_ms" cmdx:"publisher.kafka.client.statistics.interval.ms" default:"0"`
+	StatisticsIntervalMS                string `mapstructure:"statistics_interval_ms" cmdx:"publisher.kafka.client.statistics.interval.ms" default:"0" desc:"Interval of statistics emitted by kafka"`
 	LogQueue                            string `mapstructure:"log_queue" cmdx:"publisher.kafka.client.log.queue" default:"false"`
 	LogThreadName                       string `mapstructure:"log_thread_name" cmdx:"publisher.kafka.client.log.thread.name" default:"true"`
 	EnableRandomSeed                    string `mapstructure:"enable_random_seed" cmdx:"publisher.kafka.client.enable.random.seed" default:"true"`
@@ -109,20 +109,20 @@ type kafkaClientConfig struct {
 	TransactionTimeoutMS                string `mapstructure:"transaction_timeout_ms" cmdx:"publisher.kafka.client.transaction.timeout.ms" default:"60000"`
 	EnableIdempotence                   string `mapstructure:"enable_idempotence" cmdx:"publisher.kafka.client.enable.idempotence" default:"false"`
 	EnableGaplessGuarantee              string `mapstructure:"enable_gapless_guarantee" cmdx:"publisher.kafka.client.enable.gapless.guarantee" default:"false"`
-	QueueBufferingMaxMessages           string `mapstructure:"queue_buffering_max_messages" cmdx:"publisher.kafka.client.queue.buffering.max.messages" default:"100000"`
+	QueueBufferingMaxMessages           string `mapstructure:"queue_buffering_max_messages" cmdx:"publisher.kafka.client.queue.buffering.max.messages" default:"100000" desc:"Maximum number of messages allowed on the producer queue"`
 	QueueBufferingMaxKbytes             string `mapstructure:"queue_buffering_max_kbytes" cmdx:"publisher.kafka.client.queue.buffering.max.kbytes" default:"1048576"`
 	QueueBufferingMaxMS                 string `mapstructure:"queue_buffering_max_ms" cmdx:"publisher.kafka.client.queue.buffering.max.ms" default:"5"`
 	LingerMS                            string `mapstructure:"linger_ms" cmdx:"publisher.kafka.client.linger.ms" default:"5"`
 	MessageSendMaxRetries               string `mapstructure:"message_send_max_retries" cmdx:"publisher.kafka.client.message.send.max.retries" default:"2147483647"`
-	Retries                             string `mapstructure:"retries" cmdx:"publisher.kafka.client.retries" default:"2147483647"`
-	RetryBackoffMS                      string `mapstructure:"retry_backoff_ms" cmdx:"publisher.kafka.client.retry.backoff.ms" default:"100"`
+	Retries                             string `mapstructure:"retries" cmdx:"publisher.kafka.client.retries" default:"2147483647" desc:"Number of retries in case of failure"`
+	RetryBackoffMS                      string `mapstructure:"retry_backoff_ms" cmdx:"publisher.kafka.client.retry.backoff.ms" default:"100" desc:"Backoff time on retry."`
 	QueueBufferingBackpressureThreshold string `mapstructure:"queue_buffering_backpressure_threshold" cmdx:"publisher.kafka.client.queue.buffering.backpressure.threshold" default:"1"`
 	BatchNumMessages                    string `mapstructure:"batch_num_messages" cmdx:"publisher.kafka.client.batch.num.messages" default:"10000"`
 	BatchSize                           string `mapstructure:"batch_size" cmdx:"publisher.kafka.client.batch.size" default:"1000000"`
 	DeliveryReportOnlyError             string `mapstructure:"delivery_report_only_error" cmdx:"publisher.kafka.client.delivery.report.only.error" default:"false"`
 	StickyPartitioningLingerMS          string `mapstructure:"sticky_partitioning_linger_ms" cmdx:"publisher.kafka.client.sticky.partitioning.linger.ms" default:"10"`
 	RequestRequiredAcks                 string `mapstructure:"request_required_acks" cmdx:"publisher.kafka.client.request.required.acks" default:"-1"`
-	Acks                                string `mapstructure:"acks" cmdx:"publisher.kafka.client.acks" default:"-1"`
+	Acks                                string `mapstructure:"acks" cmdx:"publisher.kafka.client.acks" default:"-1" desc:"Number of replica acknowledgement before kafka sends ack back to service"`
 	RequestTimeoutMS                    string `mapstructure:"request_timeout_ms" cmdx:"publisher.kafka.client.request.timeout.ms" default:"30000"`
 	MessageTimeoutMS                    string `mapstructure:"message_timeout_ms" cmdx:"publisher.kafka.client.message.timeout.ms" default:"300000"`
 	DeliveryTimeoutMS                   string `mapstructure:"delivery_timeout_ms" cmdx:"publisher.kafka.client.delivery.timeout.ms" default:"300000"`
@@ -134,8 +134,8 @@ type kafkaClientConfig struct {
 }
 
 type publisherKafka struct {
-	FlushInterval       int               `mapstructure:"flush_interval_ms" cmdx:"publisher.kafka.flush.interval.ms" default:"1000"`
-	DeliveryChannelSize int               `mapstructure:"delivery_channel_size" cmdx:"publisher.kafka.delivery.channel.size" default:"10"`
+	FlushInterval       int               `mapstructure:"flush_interval_ms" cmdx:"publisher.kafka.flush.interval.ms" default:"1000" desc:"Timeout for sending leftover messages on kafka publisher shutdown"`
+	DeliveryChannelSize int               `mapstructure:"delivery_channel_size" cmdx:"publisher.kafka.delivery.channel.size" default:"10" desc:"Delivery Channel size for Kafka publisher"`
 	ClientConfig        kafkaClientConfig `mapstructure:"client"`
 }
 
@@ -156,7 +156,7 @@ func (k publisherKafka) ToKafkaConfigMap() *confluent.ConfigMap {
 }
 
 type publisher struct {
-	Type    string           `mapstructure:"type" cmdx:"publisher.type" default:"kafka"`
+	Type    string           `mapstructure:"type" cmdx:"publisher.type" default:"kafka" desc:"Publisher to use for transmitting events"`
 	Kafka   publisherKafka   `mapstructure:"kafka"`
 	PubSub  publisherPubSub  `mapstructure:"pubsub"`
 	Kinesis publisherKinesis `mapstructure:"kinesis"`

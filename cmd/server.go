@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"time"
 
 	"github.com/raystack/raccoon/app"
 	"github.com/raystack/raccoon/config"
@@ -40,54 +39,6 @@ func serverCommand() *cobra.Command {
 	return command
 }
 
-type durationFlag struct {
-	value *time.Duration
-}
-
-func (df durationFlag) String() string {
-	if df.value == nil {
-		return "0"
-	}
-	return fmt.Sprintf("%d", *df.value/time.Millisecond)
-}
-
-func (df durationFlag) Set(raw string) error {
-	v, err := strconv.ParseInt(raw, 10, 64)
-	if err != nil {
-		return fmt.Errorf("error parsing duration: %w", err)
-	}
-	*df.value = time.Millisecond * time.Duration(v)
-	return nil
-}
-
-func (df durationFlag) Type() string {
-	return "int"
-}
-
-type ackTypeFlag struct {
-	value *config.AckType
-}
-
-func (af ackTypeFlag) String() string {
-	if af.value == nil {
-		return "0"
-	}
-	return fmt.Sprintf("%d", *af.value)
-}
-
-func (af ackTypeFlag) Set(raw string) error {
-	v, err := strconv.ParseInt(raw, 10, 0)
-	if err != nil {
-		return fmt.Errorf("error parsing bool: %w", err)
-	}
-	*af.value = config.AckType(v)
-	return nil
-}
-
-func (af ackTypeFlag) Type() string {
-	return "int"
-}
-
 func bindFlag(flag *pflag.FlagSet, ref any, meta reflect.StructField) {
 
 	el := reflect.ValueOf(ref).Elem()
@@ -97,9 +48,6 @@ func bindFlag(flag *pflag.FlagSet, ref any, meta reflect.StructField) {
 	desc := meta.Tag.Get("desc")
 
 	switch {
-	case typ.Name() == "Duration":
-		v := ref.(*time.Duration)
-		flag.Var(durationFlag{v}, flagName, desc)
 	case typ.Name() == "AckType":
 		v := ref.(*config.AckType)
 		flag.Var(ackTypeFlag{v}, flagName, desc)
@@ -125,6 +73,28 @@ func bindFlag(flag *pflag.FlagSet, ref any, meta reflect.StructField) {
 		msg := fmt.Sprintf("unsupport flag. kind = %s, type = %s", kind, typ)
 		panic(msg)
 	}
+}
 
-	// viper.BindPFlag(name, flag.Lookup(flagName))
+type ackTypeFlag struct {
+	value *config.AckType
+}
+
+func (af ackTypeFlag) String() string {
+	if af.value == nil {
+		return "0"
+	}
+	return fmt.Sprintf("%d", *af.value)
+}
+
+func (af ackTypeFlag) Set(raw string) error {
+	v, err := strconv.ParseInt(raw, 10, 0)
+	if err != nil {
+		return fmt.Errorf("error parsing bool: %w", err)
+	}
+	*af.value = config.AckType(v)
+	return nil
+}
+
+func (af ackTypeFlag) Type() string {
+	return "int"
 }

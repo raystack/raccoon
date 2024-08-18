@@ -143,9 +143,12 @@ func (k publisherKafka) ToKafkaConfigMap() *confluent.ConfigMap {
 	configMap := &confluent.ConfigMap{}
 	cfg := reflect.ValueOf(k.ClientConfig)
 	for i := range cfg.NumField() {
+		value := cfg.Field(i).String()
+		if value == "" {
+			continue
+		}
 		key := cfg.Type().Field(i).Tag.Get("mapstructure")
 		key = strings.ReplaceAll(key, "_", ".")
-		value := cfg.Field(i).String()
 		configMap.SetKey(key, value)
 
 	}

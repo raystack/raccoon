@@ -55,10 +55,9 @@ services:
   cs:
     build:
       context: .
+    command: ["server"]
     hostname: cs
     container_name: cs
-    stdin_open: true
-    tty: true
     depends_on:
       - kafka
       # - telegraf

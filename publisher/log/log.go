@@ -19,8 +19,8 @@ func (p Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 	for _, e := range events {
 		var (
 			typ   = e.Type
-			kind  = ""
-			event = ""
+			kind  string
+			event string
 		)
 		if json.Valid(e.EventBytes) {
 			kind = "json"

@@ -1,15 +1,13 @@
 package log
 
 import (
+	"cmp"
 	"encoding/json"
 
 	"github.com/raystack/raccoon/logger"
 	pb "github.com/raystack/raccoon/proto"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protodesc"
-	"google.golang.org/protobuf/reflect/protoregistry"
-	"google.golang.org/protobuf/types/descriptorpb"
-	"google.golang.org/protobuf/types/dynamicpb"
+	"github.com/raystack/raccoon/publisher"
+	"github.com/turtleDev/protoraw"
 )
 
 // Publisher publishes message to the standard logger
@@ -17,31 +15,36 @@ import (
 type Publisher struct{}
 
 func (p Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
-	for _, event := range events {
-		if json.Valid(event.EventBytes) {
-			logger.Infof(
-				"\nLogPublisher:\n\tmessage_type: json\n\tevent_type: %s\n\tevent: %s",
-				event.Type,
-				event.EventBytes,
-			)
-			continue
+	var errs []error
+	for _, e := range events {
+		var (
+			typ   = e.Type
+			kind  = ""
+			event = ""
+		)
+		if json.Valid(e.EventBytes) {
+			kind = "json"
+			event = string(e.EventBytes)
+		} else {
+			kind = "protobuf"
+			var err error
+			event, err = protoraw.Decode(e.EventBytes)
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
 		}
-		fdp := &descriptorpb.FileDescriptorProto{
-			Name: proto.String("empty_message.proto"),
-			MessageType: []*descriptorpb.DescriptorProto{
-				&descriptorpb.DescriptorProto{
-					Name: proto.String("EmptyMessage"),
-				},
-			},
+		logger.Infof(
+			"[LogPublisher] kind = %s, event_type = %s, event = %s",
+			kind,
+			typ,
+			event,
+		)
+	}
+	if cmp.Or(errs...) != nil {
+		return &publisher.BulkError{
+			Errors: errs,
 		}
-		fd, err := protodesc.NewFile(fdp, &protoregistry.Files{})
-		if err != nil {
-			// todo
-			panic(err)
-		}
-		m := dynamicpb.NewMessage(fd.Messages().ByName("EmptyMessage"))
-		proto.Unmarshal(event.EventBytes, m)
-		logger.Info(m.String())
 	}
 	return nil
 }

@@ -1296,6 +1296,8 @@ github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1
 github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/turtleDev/protoraw v0.0.0-20240819172152-d2a01582953f h1:5cFB16pbQJKhB305f5mt0ajjpnvIZDJqTU50TFWpPJw=
 github.com/turtleDev/protoraw v0.0.0-20240819172152-d2a01582953f/go.mod h1:npkj3alYGMwHJvRKChzsxgP4IBeTYUszwbaZqVEZM4Y=
+github.com/turtleDev/protoraw v0.1.0 h1:cZeXs9YOl2fcnDIygfkEYUkE9HUZjCSAjhLxrKW0zU4=
+github.com/turtleDev/protoraw v0.1.0/go.mod h1:Zh9kG/zbx3m49JviwIqHSrlItouTt1Abs47oAhnilVc=
 github.com/tv42/httpunix v0.0.0-20191220191345-2ba4b9c3382c/go.mod h1:hzIxponao9Kjc7aWznkXaL4U4TWaDSs8zcsY4Ka08nM=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=
 github.com/urfave/cli v0.0.0-20171014202726-7bc6a0acffa5/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=

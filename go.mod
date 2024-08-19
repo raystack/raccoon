@@ -21,7 +21,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.9.0
-	github.com/turtleDev/protoraw v0.0.0-20240819172152-d2a01582953f
+	github.com/turtleDev/protoraw v0.1.0
 	google.golang.org/api v0.180.0
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.34.2

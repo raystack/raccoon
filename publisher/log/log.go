@@ -5,6 +5,11 @@ import (
 
 	"github.com/raystack/raccoon/logger"
 	pb "github.com/raystack/raccoon/proto"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protodesc"
+	"google.golang.org/protobuf/reflect/protoregistry"
+	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/dynamicpb"
 )
 
 // Publisher publishes message to the standard logger
@@ -21,7 +26,22 @@ func (p Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 			)
 			continue
 		}
-		logger.Info(event.EventBytes)
+		fdp := &descriptorpb.FileDescriptorProto{
+			Name: proto.String("empty_message.proto"),
+			MessageType: []*descriptorpb.DescriptorProto{
+				&descriptorpb.DescriptorProto{
+					Name: proto.String("EmptyMessage"),
+				},
+			},
+		}
+		fd, err := protodesc.NewFile(fdp, &protoregistry.Files{})
+		if err != nil {
+			// todo
+			panic(err)
+		}
+		m := dynamicpb.NewMessage(fd.Messages().ByName("EmptyMessage"))
+		proto.Unmarshal(event.EventBytes, m)
+		logger.Info(m.String())
 	}
 	return nil
 }

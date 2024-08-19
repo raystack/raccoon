@@ -1,6 +1,6 @@
 module github.com/raystack/raccoon
 
-go 1.22.4
+go 1.23.0
 
 require (
 	cloud.google.com/go/pubsub v1.38.0
@@ -21,9 +21,10 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.9.0
+	github.com/turtleDev/protoraw v0.0.0-20240819172152-d2a01582953f
 	google.golang.org/api v0.180.0
 	google.golang.org/grpc v1.63.2
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/protobuf v1.34.2
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0
 )
 

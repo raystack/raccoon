@@ -20,7 +20,6 @@ require (
 	github.com/spf13/cast v1.5.1
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/api v0.180.0
 	google.golang.org/grpc v1.63.2
@@ -94,6 +93,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.8.5 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/spf13/viper v1.16.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/yuin/goldmark v1.4.13 // indirect

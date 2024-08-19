@@ -88,6 +88,7 @@ func validate() error {
 		"kafka",
 		"kinesis",
 		"pubsub",
+		"log",
 	}
 	if !slices.Contains(validPublishers, Publisher.Type) {
 		return fmt.Errorf("unknown publisher: %s", Publisher.Type)

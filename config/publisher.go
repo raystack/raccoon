@@ -156,7 +156,7 @@ func (k publisherKafka) ToKafkaConfigMap() *confluent.ConfigMap {
 }
 
 type publisher struct {
-	Type    string           `mapstructure:"type" cmdx:"publisher.type" default:"kafka" desc:"Publisher to use for transmitting events"`
+	Type    string           `mapstructure:"type" cmdx:"publisher.type" default:"kafka" desc:"Publisher to use for transmitting events. Available Publishers: [kafka,pubsub,kinesis,log]"`
 	Kafka   publisherKafka   `mapstructure:"kafka"`
 	PubSub  publisherPubSub  `mapstructure:"pubsub"`
 	Kinesis publisherKinesis `mapstructure:"kinesis"`

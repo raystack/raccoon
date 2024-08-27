@@ -68,24 +68,24 @@ Default connection group name. The default is fallback when `SERVER_WEBSOCKET_CO
 
 ### `SERVER_WEBSOCKET_PING_INTERVAL_MS`
 
-Interval of each ping to client. The interval is in seconds.
+Interval of each ping to client. The interval is in milliseconds.
 
 - Type: `Optional`
-- Default value: `30`
+- Default value: `30000`
 
 ### `SERVER_WEBSOCKET_PONG_WAIT_INTERVAL_MS`
 
 Wait time for client to send Pong message back after server sends Ping. When the time exceeded the connection will be dropped.
 
 - Type `Optional`
-- Default value: `60`
+- Default value: `60000`
 
 ### `SERVER_WEBSOCKET_WRITE_WAIT_INTERVAL_MS`
 
 Timeout Deadline set on the writes. On timeout the websocket state is corrupt and all future writes will return error: [Refer gorilla websocket API](https://pkg.go.dev/github.com/gorilla/websocket#Conn.SetWriteDeadline)
 
 - Type `Optional`
-- Default value: `5`
+- Default value: `5000`
 
 ### `SERVER_WEBSOCKET_PINGER_SIZE`
 
@@ -110,21 +110,21 @@ The config decides whether to enable the cors middleware and thus allow CORS req
 
 ### `SERVER_CORS_ALLOWED_ORIGIN`
 
-The server decides which origin to allow. The configuration is expected to space separated. Multiple values are supported. The value requires `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
+The server decides which origin to allow. The configuration is expected to comma separated. Multiple values are supported. The value requires `SERVER_CORS_ENABLED` to be true to take effect. If you want to allow all host headers. You can pass `*` as the value.
 
 - Type `Optional`
 - Default Value ``
 
 ### `SERVER_CORS_ALLOWED_METHODS`
 
-The http methods allowed when it's a cross origin request. The http methods are expected to be space separated. 
+The http methods allowed when it's a cross origin request. The http methods are expected to be comma separated with no space in-between. 
 
 - Type `Optional`
-- Default Value `GET HEAD POST OPTIONS`
+- Default Value `GET,HEAD,POST,OPTIONS`
 
 ### `SERVER_CORS_ALLOWED_HEADERS`
 
-The http request headers which are allowed when request is cross origin. The input expects to add any additional headers which is going to be sent by the client ex: `Authorization`. Headers which are essential for the functioning of Raccoon like Content-Type, Connection-Id & Group headers are added by default and need not be passed as configuration.
+The http request headers which are allowed when request is cross origin. The input expects to add any additional headers which is going to be sent by the client ex: `Authorization`. Headers which are essential for the functioning of Raccoon like Content-Type, Connection-Id & Group headers are added by default and need not be passed as configuration. The value is expected to be a comma separated list.
 
 - Type `Optional`
 - Default Value ``
@@ -172,13 +172,6 @@ No of workers that processes the events concurrently.
 
 - Type `Optional`
 - Default value: `5`
-
-### `WORKER_KAFKA_DELIVERY_CHANNEL_SIZE`
-
-Delivery channel is implementation detail where the kafka client asks for channel in the [produce API](https://github.com/confluentinc/confluent-kafka-go/blob/master/examples/producer_example/producer_example.go#L51). The publisher uses the channel to wait for the events to be delivered. The channel contains the status delivery of the events. Normally you won't need to touch this.
-
-- Type `Optional`
-- Default value: `10`
 
 ## Event Distribution
 
@@ -250,6 +243,14 @@ Maximum number of messages allowed on the producer queue. This queue is shared b
 
 - Type `Optional`
 - Default value: `100000`
+
+### `PUBLISHER_KAFKA_DELIVERY_CHANNEL_SIZE`
+
+Delivery channel is implementation detail where the kafka client asks for channel in the [produce API](https://github.com/confluentinc/confluent-kafka-go/blob/master/examples/producer_example/producer_example.go#L51). The publisher uses the channel to wait for the events to be delivered. The channel contains the status delivery of the events. Normally you won't need to touch this.
+
+- Type `Optional`
+- Default value: `10`
+
 
 #### `PUBLISHER_KAFKA_CLIENT_*`
 
@@ -356,8 +357,7 @@ Path to [AWS Credentials file](https://docs.aws.amazon.com/sdkref/latest/guide/f
 
 You can also specify the credentials using `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables. 
 
-- Type `Optional`
-- Default value `$HOME/.aws/credentials`
+- Type `Required`
 
 #### `PUBLISHER_KINESIS_STREAM_AUTOCREATE`
 

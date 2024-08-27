@@ -9,7 +9,6 @@ services:
     container_name: localstack-main
     ports:
       - "0.0.0.0:4566:4566"
-      # - "4510-4599"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
   pubsub-emulator:
@@ -56,11 +55,9 @@ services:
   cs:
     build:
       context: .
-    command: [ "/bin/sh", "-c", "./raccoon" ]
+    command: ["server"]
     hostname: cs
     container_name: cs
-    stdin_open: true
-    tty: true
     depends_on:
       - kafka
       # - telegraf
@@ -68,8 +65,8 @@ services:
       SERVER_WEBSOCKET_PORT: "8080"
       SERVER_WEBSOCKET_CHECK_ORIGIN: "true"
       SERVER_CORS_ENABLED: "true"
-      SERVER_CORS_ALLOWED_ORIGIN: "http://localhost:3000 http://localhost:8080"
-      SERVER_CORS_ALLOWED_METHODS: "GET HEAD POST OPTIONS"
+      SERVER_CORS_ALLOWED_ORIGIN: "http://localhost:3000,http://localhost:8080"
+      SERVER_CORS_ALLOWED_METHODS: "GET,HEAD,POST,OPTIONS"
       SERVER_CORS_PREFLIGHT_MAX_AGE_SECONDS: 60
       SERVER_WEBSOCKET_MAX_CONN: "30000"
       SERVER_WEBSOCKET_READ_BUFFER_SIZE: "10240"

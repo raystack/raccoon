@@ -33,11 +33,10 @@ func TestWorker(t *testing.T) {
 			m.On("Count", "kafka_messages_delivered_total", 0, "success=false")
 			bc := make(chan collector.CollectRequest, 2)
 			worker := Pool{
-				Size:                1,
-				deliveryChannelSize: 0,
-				EventsChannel:       bc,
-				producer:            &kp,
-				wg:                  sync.WaitGroup{},
+				Size:          1,
+				EventsChannel: bc,
+				producer:      &kp,
+				wg:            sync.WaitGroup{},
 			}
 			worker.StartWorkers()
 
@@ -61,11 +60,10 @@ func TestWorker(t *testing.T) {
 			m.On("Count", "kafka_messages_delivered_total", 0, "success=true")
 
 			worker := Pool{
-				Size:                1,
-				deliveryChannelSize: 100,
-				EventsChannel:       bc,
-				producer:            &kp,
-				wg:                  sync.WaitGroup{},
+				Size:          1,
+				EventsChannel: bc,
+				producer:      &kp,
+				wg:            sync.WaitGroup{},
 			}
 			worker.StartWorkers()
 			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)

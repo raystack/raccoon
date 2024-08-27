@@ -3,6 +3,7 @@ package metrics
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/logger"
@@ -15,8 +16,8 @@ type Statsd struct {
 
 func initStatsd() (*Statsd, error) {
 	c, err := client.New(
-		client.Address(config.MetricStatsd.Address),
-		client.FlushPeriod(config.MetricStatsd.FlushPeriodMs))
+		client.Address(config.Metric.StatsD.Address),
+		client.FlushPeriod(time.Duration(config.Metric.StatsD.FlushPeriodMS)*time.Millisecond))
 	if err != nil {
 		logger.Errorf("StatsD Set up failed to create client: %s", err.Error())
 		return nil, err

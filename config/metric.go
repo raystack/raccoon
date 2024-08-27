@@ -1,58 +1,21 @@
 package config
 
-import (
-	"time"
-
-	"github.com/raystack/raccoon/config/util"
-
-	"github.com/spf13/viper"
-)
-
-var MetricStatsd metricStatsdCfg
-var MetricPrometheus metricPrometheusCfg
-var MetricInfo metricInfoCfg
+var Metric metric
 
 type metricStatsdCfg struct {
-	Enabled       bool
-	Address       string
-	FlushPeriodMs time.Duration
+	Enabled       bool   `mapstructure:"enabled" cmdx:"metric.statsd.enabled" default:"false"  desc:"Enable statsd metric exporter"`
+	Address       string `mapstructure:"address" cmdx:"metric.statsd.address" default:":8125" desc:"Address to reports the service metrics"`
+	FlushPeriodMS int64  `mapstructure:"flush_period_ms" cmdx:"metric.statsd.flush.period.ms" default:"10000" desc:"Interval for the service to push metrics"`
 }
 
 type metricPrometheusCfg struct {
-	Enabled bool
-	Port    int
-	Path    string
+	Enabled bool   `mapstructure:"enabled" cmdx:"metric.prometheus.enabled" default:"false" desc:"Enable prometheus http server to expose service metrics"`
+	Port    int    `mapstructure:"port" cmdx:"metric.prometheus.port" default:"9090" desc:"Port to expose prometheus metrics on"`
+	Path    string `mapstructure:"path" cmdx:"metric.prometheus.path" default:"/metrics" desc:"The path at which prometheus server should serve metrics"`
 }
 
-type metricInfoCfg struct {
-	RuntimeStatsRecordInterval time.Duration
-}
-
-func metricStatsdConfigLoader() {
-	viper.SetDefault("METRIC_STATSD_ENABLED", false)
-	viper.SetDefault("METRIC_STATSD_ADDRESS", ":8125")
-	viper.SetDefault("METRIC_STATSD_FLUSH_PERIOD_MS", 10000)
-	MetricStatsd = metricStatsdCfg{
-		Enabled:       util.MustGetBool("METRIC_STATSD_ENABLED"),
-		Address:       util.MustGetString("METRIC_STATSD_ADDRESS"),
-		FlushPeriodMs: util.MustGetDuration("METRIC_STATSD_FLUSH_PERIOD_MS", time.Millisecond),
-	}
-}
-
-func metricPrometheusConfigLoader() {
-	viper.SetDefault("METRIC_PROMETHEUS_ENABLED", false)
-	viper.SetDefault("METRIC_PROMETHEUS_PORT", 9090)
-	viper.SetDefault("METRIC_PROMETHEUS_PATH", "/metrics")
-	MetricPrometheus = metricPrometheusCfg{
-		Enabled: util.MustGetBool("METRIC_PROMETHEUS_ENABLED"),
-		Port:    util.MustGetInt("METRIC_PROMETHEUS_PORT"),
-		Path:    util.MustGetString("METRIC_PROMETHEUS_PATH"),
-	}
-}
-
-func metricCommonConfigLoader() {
-	viper.SetDefault("METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS", 10000)
-	MetricInfo = metricInfoCfg{
-		RuntimeStatsRecordInterval: util.MustGetDuration("METRIC_RUNTIME_STATS_RECORD_INTERVAL_MS", time.Millisecond),
-	}
+type metric struct {
+	RuntimeStatsRecordIntervalMS int64               `mapstructure:"runtime_stats_record_interval_ms" cmdx:"metric.runtime.stats.record.interval.ms" default:"10000" desc:"Time interval between runtime metric collection"`
+	StatsD                       metricStatsdCfg     `mapstructure:"statsd"`
+	Prometheus                   metricPrometheusCfg `mapstructure:"prometheus"`
 }

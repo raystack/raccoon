@@ -43,15 +43,15 @@ func getSerDeMap() map[int]*serDe {
 
 func NewHandler(pingC chan connection.Conn, collector collector.Collector) *Handler {
 	ugConfig := connection.UpgraderConfig{
-		ReadBufferSize:    config.ServerWs.ReadBufferSize,
-		WriteBufferSize:   config.ServerWs.WriteBufferSize,
-		CheckOrigin:       config.ServerWs.CheckOrigin,
-		MaxUser:           config.ServerWs.ServerMaxConn,
-		PongWaitInterval:  config.ServerWs.PongWaitInterval,
-		WriteWaitInterval: config.ServerWs.WriteWaitInterval,
-		ConnIDHeader:      config.ServerWs.ConnIDHeader,
-		ConnGroupHeader:   config.ServerWs.ConnGroupHeader,
-		ConnGroupDefault:  config.ServerWs.ConnGroupDefault,
+		ReadBufferSize:    config.Server.Websocket.ReadBufferSize,
+		WriteBufferSize:   config.Server.Websocket.WriteBufferSize,
+		CheckOrigin:       config.Server.Websocket.CheckOrigin,
+		MaxUser:           config.Server.Websocket.ServerMaxConn,
+		PongWaitInterval:  time.Duration(config.Server.Websocket.PongWaitIntervalMS) * time.Millisecond,
+		WriteWaitInterval: time.Duration(config.Server.Websocket.WriteWaitIntervalMS) * time.Millisecond,
+		ConnIDHeader:      config.Server.Websocket.Conn.IDHeader,
+		ConnGroupHeader:   config.Server.Websocket.Conn.GroupHeader,
+		ConnGroupDefault:  config.Server.Websocket.Conn.GroupDefault,
 	}
 
 	upgrader := connection.NewUpgrader(ugConfig)
@@ -102,7 +102,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 			writeBadRequestResponse(conn, s, messageType, payload.ReqGuid, err)
 			continue
 		}
-		if config.Server.DedupEnabled {
+		if config.Server.Batch.DedupEnabled {
 			// avoiding processing the same active connection's duplicate events.
 			if h.upgrader.Table.HasBatch(conn.Identifier, payload.ReqGuid) {
 				metrics.Increment("events_duplicate_total", map[string]string{"reason": "duplicate", "conn_group": conn.Identifier.Group})
@@ -131,7 +131,7 @@ func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serializa
 		return nil
 	case config.Synchronous:
 		return func(err error) {
-			if config.Server.DedupEnabled {
+			if config.Server.Batch.DedupEnabled {
 				if err != nil {
 					h.upgrader.Table.RemoveBatch(conn.Identifier, reqGuid)
 				}

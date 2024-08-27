@@ -23,21 +23,19 @@ type Producer interface {
 
 // Pool spawn goroutine as much as Size that will listen to EventsChannel. On Close, wait for all data in EventsChannel to be processed.
 type Pool struct {
-	Size                int
-	deliveryChannelSize int
-	EventsChannel       <-chan collector.CollectRequest
-	producer            Producer
-	wg                  sync.WaitGroup
+	Size          int
+	EventsChannel <-chan collector.CollectRequest
+	producer      Producer
+	wg            sync.WaitGroup
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
-func CreateWorkerPool(size int, eventsChannel <-chan collector.CollectRequest, deliveryChannelSize int, producer Producer) *Pool {
+func CreateWorkerPool(size int, eventsChannel <-chan collector.CollectRequest, producer Producer) *Pool {
 	return &Pool{
-		Size:                size,
-		deliveryChannelSize: deliveryChannelSize,
-		EventsChannel:       eventsChannel,
-		producer:            producer,
-		wg:                  sync.WaitGroup{},
+		Size:          size,
+		EventsChannel: eventsChannel,
+		producer:      producer,
+		wg:            sync.WaitGroup{},
 	}
 }
 

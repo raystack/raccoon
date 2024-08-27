@@ -20,9 +20,11 @@ type Service struct {
 }
 
 func NewRestService(c collector.Collector) *Service {
-	pingChannel := make(chan connection.Conn, config.ServerWs.ServerMaxConn)
+	pingInterval := time.Duration(config.Server.Websocket.PingIntervalMS) * time.Millisecond
+	writeWaitInterval := time.Duration(config.Server.Websocket.WriteWaitIntervalMS) * time.Millisecond
+	pingChannel := make(chan connection.Conn, config.Server.Websocket.ServerMaxConn)
 	wh := websocket.NewHandler(pingChannel, c)
-	go websocket.Pinger(pingChannel, config.ServerWs.PingerSize, config.ServerWs.PingInterval, config.ServerWs.WriteWaitInterval)
+	go websocket.Pinger(pingChannel, config.Server.Websocket.PingerSize, pingInterval, writeWaitInterval)
 
 	go reportConnectionMetrics(*wh.Table())
 
@@ -37,7 +39,7 @@ func NewRestService(c collector.Collector) *Service {
 
 	server := &http.Server{
 		Handler: applyMiddleware(router),
-		Addr:    ":" + config.ServerWs.AppPort,
+		Addr:    ":" + config.Server.Websocket.AppPort,
 	}
 	return &Service{
 		s:         server,
@@ -56,7 +58,8 @@ func pingHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func reportConnectionMetrics(conn connection.Table) {
-	for range time.Tick(config.MetricInfo.RuntimeStatsRecordInterval) {
+	interval := time.Duration(config.Metric.RuntimeStatsRecordIntervalMS) * time.Millisecond
+	for range time.Tick(interval) {
 		for k, v := range conn.TotalConnectionPerGroup() {
 			metrics.Gauge("connections_count_current", v, map[string]string{"conn_group": k})
 		}

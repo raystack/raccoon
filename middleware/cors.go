@@ -10,15 +10,15 @@ import (
 var cors func(http.Handler) http.Handler
 
 func loadCors() {
-	if config.ServerCors.Enabled {
-		opts := []handlers.CORSOption{handlers.AllowedHeaders(config.ServerCors.AllowedHeaders),
-			handlers.AllowedMethods(config.ServerCors.AllowedMethods),
-			handlers.AllowedOrigins(config.ServerCors.AllowedOrigin)}
-		if config.ServerCors.AllowCredentials {
+	if config.Server.CORS.Enabled {
+		opts := []handlers.CORSOption{handlers.AllowedHeaders(config.Server.CORS.AllowedHeaders),
+			handlers.AllowedMethods(config.Server.CORS.AllowedMethods),
+			handlers.AllowedOrigins(config.Server.CORS.AllowedOrigin)}
+		if config.Server.CORS.AllowCredentials {
 			opts = append(opts, handlers.AllowCredentials())
 		}
-		if config.ServerCors.MaxAge > 0 {
-			opts = append(opts, handlers.MaxAge(config.ServerCors.MaxAge))
+		if config.Server.CORS.MaxAge > 0 {
+			opts = append(opts, handlers.MaxAge(config.Server.CORS.MaxAge))
 		}
 		cors = handlers.CORS(opts...)
 	} else {

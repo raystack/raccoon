@@ -71,12 +71,12 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	d, s := serde.deserializer, serde.serializer
 
 	var group string
-	group = r.Header.Get(config.ServerWs.ConnGroupHeader)
+	group = r.Header.Get(config.Server.Websocket.Conn.GroupHeader)
 	if group == "" {
-		group = config.ServerWs.ConnGroupDefault
+		group = config.Server.Websocket.Conn.GroupDefault
 	}
 	identifier := identification.Identifier{
-		ID:    r.Header.Get(config.ServerWs.ConnIDHeader),
+		ID:    r.Header.Get(config.Server.Websocket.Conn.IDHeader),
 		Group: group,
 	}
 

@@ -1,36 +1,33 @@
 package config
 
 import (
-	"github.com/spf13/viper"
+	"errors"
+
+	defaults "github.com/mcuadros/go-defaults"
+	"github.com/raystack/salt/config"
 )
 
-var loaded bool
-
 // Load configs from env or yaml and set it to respective keys
-func Load() {
-	if loaded {
-		return
+func Load(configFile string) error {
+	loader := config.NewLoader(
+		config.WithFile(configFile),
+	)
+	err := loader.Load(&cfg)
+	if err != nil && !errors.As(err, &config.ConfigFileNotFoundError{}) {
+		return err
 	}
-	loaded = true
-	viper.AutomaticEnv()
-	viper.SetConfigName(".env")
-	viper.AddConfigPath("./")
-	viper.AddConfigPath("../")
-	viper.AddConfigPath("../../")
-	viper.SetConfigType("env")
-	viper.ReadInConfig()
 
-	logConfigLoader()
+	prepare()
+	return validate()
+}
 
-	publisherConfigLoader()
-	serverConfigLoader()
-	serverWsConfigLoader()
-	serverGRPCConfigLoader()
-	serverCorsConfigLoader()
-	workerConfigLoader()
-	metricCommonConfigLoader()
-	metricStatsdConfigLoader()
-	metricPrometheusConfigLoader()
-	eventDistributionConfigLoader()
-	eventConfigLoader()
+func init() {
+	// go-defaults doesn't work properly with nested pointer values,
+	// so we have to individually set defaults for each config class
+	defaults.SetDefaults(&Server)
+	defaults.SetDefaults(&Publisher)
+	defaults.SetDefaults(&Worker)
+	defaults.SetDefaults(&Event)
+	defaults.SetDefaults(&Metric)
+	defaults.SetDefaults(&Log)
 }

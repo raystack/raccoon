@@ -17,6 +17,7 @@ import (
 	"github.com/raystack/raccoon/publisher"
 	"github.com/raystack/raccoon/publisher/kafka"
 	"github.com/raystack/raccoon/publisher/kinesis"
+	logpub "github.com/raystack/raccoon/publisher/log"
 	"github.com/raystack/raccoon/publisher/pubsub"
 	"github.com/raystack/raccoon/services"
 	"github.com/raystack/raccoon/worker"
@@ -178,6 +179,8 @@ func initPublisher() (Publisher, error) {
 			kinesis.WithPublishTimeout(publishTimeout),
 			kinesis.WithStreamProbleInterval(probeInterval),
 		)
+	case "log":
+		return logpub.New(), nil
 	default:
 		return nil, fmt.Errorf("unknown publisher: %v", config.Publisher.Type)
 	}

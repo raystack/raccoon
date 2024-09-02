@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package raccoon.test;
+
+option go_package = "./testproto";
+
+message TestEvent {
+    string description = 1;
+    int32 count = 2;
+    repeated string tags = 3;
+}

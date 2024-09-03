@@ -154,8 +154,9 @@ func (pr *Kafka) ReportStats() {
 
 // Close wait for outstanding messages to be delivered within given flush interval timeout.
 func (pr *Kafka) Close() error {
+	logger.Infof("Flushing kafka producer (timeout: %d ms)", pr.flushInterval)
 	remaining := pr.kp.Flush(pr.flushInterval)
-	logger.Info(fmt.Sprintf("Outstanding events still un-flushed : %d", remaining))
+	logger.Infof("Outstanding events still un-flushed : %d", remaining)
 	pr.kp.Close()
 	if remaining > 0 {
 		return &publisher.UnflushedEventsError{Count: remaining}

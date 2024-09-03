@@ -73,9 +73,7 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			if timedOut {
 				logger.Infof("WorkerPool flush timed out")
 			}
-			flushInterval := config.Publisher.Kafka.FlushInterval
 			logger.Infof("Closing %q producer\n", pub.Name())
-			logger.Infof("Wait %d ms for all messages to be delivered", flushInterval)
 			eventsInProducer := 0
 
 			err := pub.Close()
@@ -93,6 +91,8 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			Until then we fall back to approximation */
 			eventsInChannel := len(bufferChannel) * 7
 			logger.Info(fmt.Sprintf("Outstanding unprocessed events in the channel, data lost ~ (No batches %d * 5 events) = ~%d", len(bufferChannel), eventsInChannel))
+
+			// NOTE(turtledev): aren't these metrics misleading?
 			metrics.Count(
 				fmt.Sprintf("%s_messages_delivered_total", pub.Name()),
 				int64(eventsInChannel+eventsInProducer),

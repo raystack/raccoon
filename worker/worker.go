@@ -27,6 +27,8 @@ type Pool struct {
 	EventsChannel <-chan collector.CollectRequest
 	producer      Producer
 	wg            sync.WaitGroup
+	instrument    metrics.MetricInstrument
+	timeSource    TimeSource
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
@@ -36,6 +38,8 @@ func CreateWorkerPool(size int, eventsChannel <-chan collector.CollectRequest, p
 		EventsChannel: eventsChannel,
 		producer:      producer,
 		wg:            sync.WaitGroup{},
+		instrument:    metrics.Instrument(),
+		timeSource:    DefaultTimeSource,
 	}
 }
 

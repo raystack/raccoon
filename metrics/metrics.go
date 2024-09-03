@@ -111,6 +111,12 @@ func SetVoid() {
 	instrument = voidInstrument{}
 }
 
+// Instrument returns the configured MetricInstrument
+// should be called once Setup() is done.
+func Instrument() MetricInstrument {
+	return instrument
+}
+
 func Close() {
 	if instrument != nil {
 		instrument.Close()

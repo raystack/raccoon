@@ -7,56 +7,7 @@ import (
 
 	"github.com/raystack/raccoon/config"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-type mockMetricInstrument struct {
-	mock.Mock
-}
-
-func (m *mockMetricInstrument) Increment(metricName string, labels map[string]string) error {
-	args := m.Called(metricName, labels)
-	err := args.Get(0)
-	if err != nil {
-		return args.Get(0).(error)
-	} else {
-		return nil
-	}
-}
-
-func (m *mockMetricInstrument) Count(metricName string, count int64, labels map[string]string) error {
-	args := m.Called(metricName, count, labels)
-	err := args.Get(0)
-	if err != nil {
-		return args.Get(0).(error)
-	} else {
-		return nil
-	}
-}
-
-func (m *mockMetricInstrument) Gauge(metricName string, value interface{}, labels map[string]string) error {
-	args := m.Called(metricName, value, labels)
-	err := args.Get(0)
-	if err != nil {
-		return args.Get(0).(error)
-	} else {
-		return nil
-	}
-}
-
-func (m *mockMetricInstrument) Histogram(metricName string, value int64, labels map[string]string) error {
-	args := m.Called(metricName, value, labels)
-	err := args.Get(0)
-	if err != nil {
-		return args.Get(0).(error)
-	} else {
-		return nil
-	}
-}
-
-func (m *mockMetricInstrument) Close() {
-	m.Called()
-}
 
 func Test_Prometheus_Setup(t *testing.T) {
 	config.Metric.Prometheus.Enabled = true
@@ -82,7 +33,7 @@ func Test_Error_On_Both_Enabled(t *testing.T) {
 }
 
 func Test_Count_Calls_Instrument_Count(t *testing.T) {
-	mockInstrumentImpl := &mockMetricInstrument{}
+	mockInstrumentImpl := &MockInstrument{}
 	instrument = mockInstrumentImpl
 	metricName := "abcd"
 	countValue := int64(9000)
@@ -95,7 +46,7 @@ func Test_Count_Calls_Instrument_Count(t *testing.T) {
 }
 
 func Test_Gauge_Calls_Instrument_Gauge(t *testing.T) {
-	mockInstrumentImpl := &mockMetricInstrument{}
+	mockInstrumentImpl := &MockInstrument{}
 	instrument = mockInstrumentImpl
 	metricName := "abcd"
 	countValue := int64(9000)
@@ -108,7 +59,7 @@ func Test_Gauge_Calls_Instrument_Gauge(t *testing.T) {
 }
 
 func Test_Histogram_Calls_Instrument_Histogram(t *testing.T) {
-	mockInstrumentImpl := &mockMetricInstrument{}
+	mockInstrumentImpl := &MockInstrument{}
 	instrument = mockInstrumentImpl
 	metricName := "abcd"
 	countValue := int64(9000)
@@ -121,7 +72,7 @@ func Test_Histogram_Calls_Instrument_Histogram(t *testing.T) {
 }
 
 func Test_Close_Calls_Instrument_Close(t *testing.T) {
-	mockInstrumentImpl := &mockMetricInstrument{}
+	mockInstrumentImpl := &MockInstrument{}
 	instrument = mockInstrumentImpl
 	mockInstrumentImpl.On("Close")
 	Close()

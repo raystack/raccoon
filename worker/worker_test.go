@@ -7,6 +7,7 @@ import (
 
 	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/identification"
+	"github.com/raystack/raccoon/metrics"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
 	"github.com/stretchr/testify/assert"
@@ -67,9 +68,9 @@ func TestWorker(t *testing.T) {
 			ackMock := &mockAck{}
 			ackMock.On("Ack", nil).Return().Once()
 			defer ackMock.AssertExpectations(t)
-			r := *request
-			r.AckFunc = ackMock.Ack
-			q <- r
+			req := *request
+			req.AckFunc = ackMock.Ack
+			q <- req
 			close(q)
 			assert.False(
 				t,
@@ -98,15 +99,80 @@ func TestWorker(t *testing.T) {
 				1, q, &kp,
 			)
 			worker.StartWorkers()
-
-			ackMock := &mockAck{}
-			ackMock.On("Ack", mock.Anything).Return().Twice()
-			defer ackMock.AssertExpectations(t)
-			r := *request
-			r.AckFunc = ackMock.Ack
-			q <- r
-			q <- r
+			q <- *request
+			q <- *request
 			close(q)
+			assert.False(
+				t,
+				worker.FlushWithTimeOut(time.Second),
+			)
+		})
+		t.Run("should publish metrics related to workers", func(t *testing.T) {
+			kp := mockKafkaPublisher{}
+			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+			kp.On("Name").Return("kafka")
+			defer kp.AssertExpectations(t)
+
+			eventsChannel := make(chan collector.CollectRequest, 1)
+
+			now := time.Now()
+			mockTs := &mockTimeSource{}
+			mockTs.On("Now").Return(now).Once()
+			mockTs.On("Now").Return(now.Add(2 * time.Millisecond)).Once()
+			defer mockTs.AssertExpectations(t)
+
+			req := *request
+			req.TimePushed = now.Add(-time.Millisecond)
+
+			mockInstrument := &metrics.MockInstrument{}
+			mockInstrument.On(
+				"Histogram",
+				"batch_idle_in_channel_milliseconds",
+				1,
+				mock.Anything,
+			).Return().Once()
+
+			mockInstrument.On(
+				"Histogram",
+				"kafka_producebulk_tt_ms",
+				2,
+				mock.Anything,
+			).Return().Once()
+
+			// TODO
+			mockInstrument.On(
+				"Histogram",
+				"event_processing_duration_milliseconds",
+				mock.Anything,
+				mock.Anything,
+			).Return().Once()
+			mockInstrument.On(
+				"Histogram",
+				"worker_processing_duration_milliseconds",
+				mock.Anything,
+				mock.Anything,
+			).Return().Once()
+			mockInstrument.On(
+				"Histogram",
+				"server_processing_latency_milliseconds",
+				mock.Anything,
+				mock.Anything,
+			).Return().Once()
+			// end TODO
+
+			defer mockInstrument.AssertExpectations(t)
+
+			worker := &Pool{
+				Size:          1,
+				EventsChannel: eventsChannel,
+				producer:      &kp,
+				instrument:    mockInstrument,
+				timeSource:    mockTs,
+			}
+			worker.StartWorkers()
+
+			eventsChannel <- req
+			close(eventsChannel)
 			assert.False(
 				t,
 				worker.FlushWithTimeOut(time.Second),

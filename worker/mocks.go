@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"time"
+
 	pb "github.com/raystack/raccoon/proto"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -26,4 +28,12 @@ type mockAck struct {
 
 func (m *mockAck) Ack(err error) {
 	m.Called(err)
+}
+
+type mockTimeSource struct {
+	mock.Mock
+}
+
+func (m *mockTimeSource) Now() time.Time {
+	return m.Called().Get(0).(time.Time)
 }

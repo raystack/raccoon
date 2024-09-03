@@ -33,20 +33,24 @@ func TestWorker(t *testing.T) {
 	t.Run("StartWorkers", func(t *testing.T) {
 		t.Run("Should publish messages on bufferChannel to kafka", func(t *testing.T) {
 			kp := mockKafkaPublisher{}
+			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Twice()
+			kp.On("Name").Return("kafka")
+			defer kp.AssertExpectations(t)
+
 			bc := make(chan collector.CollectRequest, 2)
 			worker := CreateWorkerPool(
 				1, bc, &kp,
 			)
 			worker.StartWorkers()
 
-			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Twice()
-			kp.On("Name").Return("kafka")
 			bc <- *request
 			bc <- *request
+			close(bc)
 
-			worker.FlushWithTimeOut(5 * time.Millisecond)
-
-			kp.AssertExpectations(t)
+			assert.False(
+				t,
+				worker.FlushWithTimeOut(time.Second),
+			)
 		})
 		t.Run("Should call ack function", func(t *testing.T) {
 			kp := mockKafkaPublisher{}
@@ -66,7 +70,11 @@ func TestWorker(t *testing.T) {
 			r := *request
 			r.AckFunc = ackMock.Ack
 			q <- r
-			worker.FlushWithTimeOut(5 * time.Millisecond)
+			close(q)
+			assert.False(
+				t,
+				worker.FlushWithTimeOut(time.Second),
+			)
 		})
 		t.Run("Should handle publisher error", func(t *testing.T) {
 
@@ -98,7 +106,11 @@ func TestWorker(t *testing.T) {
 			r.AckFunc = ackMock.Ack
 			q <- r
 			q <- r
-			worker.FlushWithTimeOut(5 * time.Millisecond)
+			close(q)
+			assert.False(
+				t,
+				worker.FlushWithTimeOut(time.Second),
+			)
 		})
 	})
 
@@ -117,7 +129,7 @@ func TestWorker(t *testing.T) {
 			bc <- *request
 			bc <- *request
 			close(bc)
-			timedOut := worker.FlushWithTimeOut(1 * time.Second)
+			timedOut := worker.FlushWithTimeOut(time.Second)
 			assert.False(t, timedOut)
 			assert.Equal(t, 0, len(bc))
 			kp.AssertExpectations(t)

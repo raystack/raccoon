@@ -27,10 +27,6 @@ func TestWorker(t *testing.T) {
 	t.Run("StartWorkers", func(t *testing.T) {
 		t.Run("Should publish messages on bufferChannel to kafka", func(t *testing.T) {
 			kp := mockKafkaPublisher{}
-			m := &mockMetric{}
-			m.On("Timing", "processing.latency", mock.Anything, "")
-			m.On("Count", "kafka_messages_delivered_total", 0, "success=true")
-			m.On("Count", "kafka_messages_delivered_total", 0, "success=false")
 			bc := make(chan collector.CollectRequest, 2)
 			worker := Pool{
 				Size:          1,
@@ -78,10 +74,6 @@ func TestWorker(t *testing.T) {
 		t.Run("Should block until all messages is processed", func(t *testing.T) {
 			kp := mockKafkaPublisher{}
 			bc := make(chan collector.CollectRequest, 2)
-			m := &mockMetric{}
-			m.On("Timing", "processing.latency", mock.Anything, "")
-			m.On("Count", "kafka_messages_delivered_total", 0, "success=false")
-			m.On("Count", "kafka_messages_delivered_total", 0, "success=true")
 
 			worker := Pool{
 				Size:          1,

@@ -44,9 +44,33 @@ func TestWorker(t *testing.T) {
 			kp.On("Name").Return("kafka")
 			bc <- *request
 			bc <- *request
-			time.Sleep(10 * time.Millisecond)
+
+			worker.FlushWithTimeOut(5 * time.Millisecond)
 
 			kp.AssertExpectations(t)
+		})
+		t.Run("should call ack function", func(t *testing.T) {
+			kp := mockKafkaPublisher{}
+			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+			kp.On("Name").Return("kafka")
+			defer kp.AssertExpectations(t)
+
+			q := make(chan collector.CollectRequest, 1)
+			worker := Pool{
+				Size:          1,
+				EventsChannel: q,
+				producer:      &kp,
+				wg:            sync.WaitGroup{},
+			}
+			worker.StartWorkers()
+
+			ackMock := &mockAck{}
+			ackMock.On("Ack", nil).Return().Once()
+			defer ackMock.AssertExpectations(t)
+			r := *request
+			r.AckFunc = ackMock.Ack
+			q <- r
+			worker.FlushWithTimeOut(5 * time.Millisecond)
 		})
 	})
 

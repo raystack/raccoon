@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/identification"
 	pb "github.com/raystack/raccoon/proto"
+	"github.com/raystack/raccoon/publisher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -21,6 +23,11 @@ func TestWorker(t *testing.T) {
 		},
 		SendEventRequest: &pb.SendEventRequest{
 			SentTime: &timestamppb.Timestamp{},
+			Events: []*pb.Event{
+				{
+					Type: "synthetic_event",
+				},
+			},
 		},
 	}
 
@@ -45,7 +52,7 @@ func TestWorker(t *testing.T) {
 
 			kp.AssertExpectations(t)
 		})
-		t.Run("should call ack function", func(t *testing.T) {
+		t.Run("Should call ack function", func(t *testing.T) {
 			kp := mockKafkaPublisher{}
 			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 			kp.On("Name").Return("kafka")
@@ -65,6 +72,41 @@ func TestWorker(t *testing.T) {
 			defer ackMock.AssertExpectations(t)
 			r := *request
 			r.AckFunc = ackMock.Ack
+			q <- r
+			worker.FlushWithTimeOut(5 * time.Millisecond)
+		})
+		t.Run("Should handle publisher error", func(t *testing.T) {
+
+			e := &publisher.BulkError{
+				Errors: []error{
+					fmt.Errorf("simulated error"),
+				},
+			}
+			kp := mockKafkaPublisher{}
+			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).
+				Return(e).
+				Once()
+			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).
+				Return(fmt.Errorf("publisher failure")).
+				Once()
+			kp.On("Name").Return("kafka")
+			defer kp.AssertExpectations(t)
+
+			q := make(chan collector.CollectRequest, 2)
+			worker := Pool{
+				Size:          1,
+				EventsChannel: q,
+				producer:      &kp,
+				wg:            sync.WaitGroup{},
+			}
+			worker.StartWorkers()
+
+			ackMock := &mockAck{}
+			ackMock.On("Ack", mock.Anything).Return().Twice()
+			defer ackMock.AssertExpectations(t)
+			r := *request
+			r.AckFunc = ackMock.Ack
+			q <- r
 			q <- r
 			worker.FlushWithTimeOut(5 * time.Millisecond)
 		})

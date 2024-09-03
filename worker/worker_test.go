@@ -2,7 +2,6 @@ package worker
 
 import (
 	"fmt"
-	"sync"
 	"testing"
 	"time"
 
@@ -35,12 +34,9 @@ func TestWorker(t *testing.T) {
 		t.Run("Should publish messages on bufferChannel to kafka", func(t *testing.T) {
 			kp := mockKafkaPublisher{}
 			bc := make(chan collector.CollectRequest, 2)
-			worker := Pool{
-				Size:          1,
-				EventsChannel: bc,
-				producer:      &kp,
-				wg:            sync.WaitGroup{},
-			}
+			worker := CreateWorkerPool(
+				1, bc, &kp,
+			)
 			worker.StartWorkers()
 
 			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Twice()
@@ -59,12 +55,9 @@ func TestWorker(t *testing.T) {
 			defer kp.AssertExpectations(t)
 
 			q := make(chan collector.CollectRequest, 1)
-			worker := Pool{
-				Size:          1,
-				EventsChannel: q,
-				producer:      &kp,
-				wg:            sync.WaitGroup{},
-			}
+			worker := CreateWorkerPool(
+				1, q, &kp,
+			)
 			worker.StartWorkers()
 
 			ackMock := &mockAck{}
@@ -93,12 +86,9 @@ func TestWorker(t *testing.T) {
 			defer kp.AssertExpectations(t)
 
 			q := make(chan collector.CollectRequest, 2)
-			worker := Pool{
-				Size:          1,
-				EventsChannel: q,
-				producer:      &kp,
-				wg:            sync.WaitGroup{},
-			}
+			worker := CreateWorkerPool(
+				1, q, &kp,
+			)
 			worker.StartWorkers()
 
 			ackMock := &mockAck{}
@@ -117,12 +107,9 @@ func TestWorker(t *testing.T) {
 			kp := mockKafkaPublisher{}
 			bc := make(chan collector.CollectRequest, 2)
 
-			worker := Pool{
-				Size:          1,
-				EventsChannel: bc,
-				producer:      &kp,
-				wg:            sync.WaitGroup{},
-			}
+			worker := CreateWorkerPool(
+				1, bc, &kp,
+			)
 			worker.StartWorkers()
 			kp.On("ProduceBulk", mock.Anything, mock.Anything, mock.Anything).Return(nil).Times(3).After(3 * time.Millisecond)
 			kp.On("Name").Return("kafka")

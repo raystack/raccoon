@@ -34,19 +34,19 @@ func cfgMetadata(path string) (string, string, error) {
 		}
 
 		if !found {
-			return "", "", fmt.Errorf("%s is missing field %s", parent, strings.Join(hist, "."))
+			return "", "", fmt.Errorf("config is missing field %s", strings.Join(hist, "."))
 		}
 
-		envPartial := strings.ToUpper(field.Tag.Get("mapstructure"))
+		envPartial := field.Tag.Get("mapstructure")
 		if strings.TrimSpace(envPartial) == "" {
-			return "", "", fmt.Errorf("%s.%s is missing mapstructure tag or is empty", parent, strings.Join(hist, "."))
+			return "", "", fmt.Errorf("config.%s is missing mapstructure tag or is empty", strings.Join(hist, "."))
 		}
-		env = append(env, envPartial)
+		env = append(env, strings.ToUpper(envPartial))
 
 		if len(fields) == 1 {
 			cmdxTag := field.Tag.Get("cmdx")
 			if strings.TrimSpace(cmdxTag) == "" {
-				return "", "", fmt.Errorf("%s.%s is missing cmdx tag or is empty", parent, strings.Join(hist, "."))
+				return "", "", fmt.Errorf("config.%s is missing cmdx tag or is empty", strings.Join(hist, "."))
 			}
 			cmd = cmdxTag
 		}

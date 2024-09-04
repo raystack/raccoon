@@ -134,6 +134,40 @@ func TestLoad(t *testing.T) {
 	}
 }
 
+func TestPrepare(t *testing.T) {
+	t.Run("should use ${GOOGLE_APPLICATION_CREDENTIALS} as value of pubsub credentials if latter is unspecified", func(t *testing.T) {
+		fd, err := newTempFile()
+		if err != nil {
+			t.Errorf("error creating temporary file: %v", err)
+			return
+		}
+		defer fd.Close()
+
+		cfg := heredoc.Doc(`
+			server:
+			  websocket:
+			    conn:
+			      id_header: "X-User-ID"
+			publisher:
+			  type: "pubsub"
+			  pubsub:
+			    project_id: simulated-project-001
+		`)
+		_, err = fmt.Fprint(fd, cfg)
+		if err != nil {
+			t.Errorf("error writing test config: %v", err)
+			return
+		}
+
+		creds := "/path/to/credentials"
+		os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", creds)
+		defer os.Unsetenv("GOOGLE_APPLICATION_CREDENTIALS")
+
+		assert.Nil(t, config.Load(fd.Name()))
+		assert.Equal(t, config.Publisher.PubSub.CredentialsFile, creds)
+	})
+}
+
 type tempFile struct {
 	*os.File
 }

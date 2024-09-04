@@ -30,10 +30,10 @@ func (m *mockAck) Ack(err error) {
 	m.Called(err)
 }
 
-type mockTimeSource struct {
+type mockClock struct {
 	mock.Mock
 }
 
-func (m *mockTimeSource) Now() time.Time {
+func (m *mockClock) Now() time.Time {
 	return m.Called().Get(0).(time.Time)
 }

@@ -116,12 +116,12 @@ func TestWorker(t *testing.T) {
 			eventsChannel := make(chan collector.CollectRequest, 1)
 
 			now := time.Now()
-			mockTs := &mockTimeSource{}
-			mockTs.On("Now").Return(now).Once()                           // batchReadTime
-			mockTs.On("Now").Return(now.Add(2 * time.Millisecond)).Once() // produceTime
-			mockTs.On("Now").Return(now.Add(3 * time.Millisecond)).Once() // eventTimingMs
-			mockTs.On("Now").Return(now.Add(4 * time.Millisecond)).Once() // (worker_server)_processing_*
-			defer mockTs.AssertExpectations(t)
+			clk := &mockClock{}
+			clk.On("Now").Return(now).Once()                           // batchReadTime
+			clk.On("Now").Return(now.Add(2 * time.Millisecond)).Once() // produceTime
+			clk.On("Now").Return(now.Add(3 * time.Millisecond)).Once() // eventTimingMs
+			clk.On("Now").Return(now.Add(4 * time.Millisecond)).Once() // (worker_server)_processing_*
+			defer clk.AssertExpectations(t)
 
 			req := *request
 			req.SentTime = timestamppb.New(now.Add(-3 * time.Millisecond)) // time when client sends the request
@@ -167,7 +167,7 @@ func TestWorker(t *testing.T) {
 				EventsChannel: eventsChannel,
 				producer:      &kp,
 				instrument:    mockInstrument,
-				timeSource:    mockTs,
+				clock:         clk,
 			}
 			worker.StartWorkers()
 

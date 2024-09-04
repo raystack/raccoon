@@ -28,7 +28,7 @@ type Pool struct {
 	producer      Producer
 	wg            sync.WaitGroup
 	instrument    metrics.MetricInstrument
-	timeSource    TimeSource
+	clock         Clock
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
@@ -39,14 +39,14 @@ func CreateWorkerPool(size int, eventsChannel <-chan collector.CollectRequest, p
 		producer:      producer,
 		wg:            sync.WaitGroup{},
 		instrument:    metrics.Instrument(),
-		timeSource:    DefaultTimeSource,
+		clock:         DefaultClock,
 	}
 }
 
 func (w *Pool) worker(name string) {
 	logger.Info("Running worker: " + name)
 	for request := range w.EventsChannel {
-		batchReadTime := w.timeSource.Now()
+		batchReadTime := w.clock.Now()
 		w.instrument.Histogram(
 			"batch_idle_in_channel_milliseconds",
 			batchReadTime.Sub(request.TimePushed).Milliseconds(),
@@ -56,7 +56,7 @@ func (w *Pool) worker(name string) {
 
 		err := w.producer.ProduceBulk(request.GetEvents(), request.ConnectionIdentifier.Group)
 
-		produceTime := w.timeSource.Now().Sub(batchReadTime)
+		produceTime := w.clock.Now().Sub(batchReadTime)
 		w.instrument.Histogram(
 			fmt.Sprintf("%s_producebulk_tt_ms", w.producer.Name()),
 			produceTime.Milliseconds(),
@@ -85,12 +85,12 @@ func (w *Pool) worker(name string) {
 		lenBatch := int64(len(request.GetEvents()))
 		logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch-int64(totalErr)))
 		if lenBatch > 0 {
-			eventTimingMs := w.timeSource.Now().Sub(request.GetSentTime().AsTime()).Milliseconds() / lenBatch
+			eventTimingMs := w.clock.Now().Sub(request.GetSentTime().AsTime()).Milliseconds() / lenBatch
 			w.instrument.Histogram(
 				"event_processing_duration_milliseconds",
 				eventTimingMs,
 				map[string]string{"conn_group": request.ConnectionIdentifier.Group})
-			now := w.timeSource.Now()
+			now := w.clock.Now()
 			w.instrument.Histogram(
 				"worker_processing_duration_milliseconds",
 				(now.Sub(batchReadTime).Milliseconds())/lenBatch,

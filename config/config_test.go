@@ -97,6 +97,20 @@ func TestLoad(t *testing.T) {
 			`),
 			Err: fmt.Errorf("unknown publisher: non-existent"),
 		},
+		{
+			Desc: "Should succeed when a valid config is specified",
+			Cfg: heredoc.Doc(`
+				server:
+				  websocket:
+				    conn:
+				      id_header: "X-User-ID"
+				publisher:
+				  type: "kafka"
+				  kafka:
+				    client:
+				      bootstrap_servers: localhost:8082
+			`),
+		},
 	}
 
 	for _, testCase := range testCases {

@@ -60,9 +60,13 @@ func errCfgRequired(path string) error {
 	if err != nil {
 		return err
 	}
-	return errRequired(env, cmd)
+	return ConfigError{env, cmd}
 }
 
-func errRequired(env, cmd string) error {
-	return fmt.Errorf("%s (--%s) is required", env, cmd)
+type ConfigError struct {
+	Env, Flag string
+}
+
+func (e ConfigError) Error() string {
+	return fmt.Sprintf("%s (--%s) is required", e.Env, e.Flag)
 }

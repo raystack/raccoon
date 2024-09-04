@@ -117,48 +117,48 @@ func TestWorker(t *testing.T) {
 
 			now := time.Now()
 			mockTs := &mockTimeSource{}
-			mockTs.On("Now").Return(now).Once()
-			mockTs.On("Now").Return(now.Add(2 * time.Millisecond)).Once()
+			mockTs.On("Now").Return(now).Once()                           // batchReadTime
+			mockTs.On("Now").Return(now.Add(2 * time.Millisecond)).Once() // produceTime
+			mockTs.On("Now").Return(now.Add(3 * time.Millisecond)).Once() // eventTimingMs
+			mockTs.On("Now").Return(now.Add(4 * time.Millisecond)).Once() // (worker_server)_processing_*
 			defer mockTs.AssertExpectations(t)
 
 			req := *request
-			req.TimePushed = now.Add(-time.Millisecond)
+			req.SentTime = timestamppb.New(now.Add(-3 * time.Millisecond)) // time when client sends the request
+			req.TimeConsumed = now.Add(-2 * time.Millisecond)              // time when service handlers send request to collector
+			req.TimePushed = now.Add(-time.Millisecond)                    // time when collector sends request to channel
 
 			mockInstrument := &metrics.MockInstrument{}
 			mockInstrument.On(
 				"Histogram",
 				"batch_idle_in_channel_milliseconds",
-				1,
+				int64(1),
 				mock.Anything,
-			).Return().Once()
-
+			).Return(nil).Once()
 			mockInstrument.On(
 				"Histogram",
 				"kafka_producebulk_tt_ms",
-				2,
+				int64(2),
 				mock.Anything,
-			).Return().Once()
-
-			// TODO
+			).Return(nil).Once()
 			mockInstrument.On(
 				"Histogram",
 				"event_processing_duration_milliseconds",
+				int64(6),
 				mock.Anything,
-				mock.Anything,
-			).Return().Once()
+			).Return(nil).Once()
 			mockInstrument.On(
 				"Histogram",
 				"worker_processing_duration_milliseconds",
+				int64(4),
 				mock.Anything,
-				mock.Anything,
-			).Return().Once()
+			).Return(nil).Once()
 			mockInstrument.On(
 				"Histogram",
 				"server_processing_latency_milliseconds",
+				int64(6),
 				mock.Anything,
-				mock.Anything,
-			).Return().Once()
-			// end TODO
+			).Return(nil).Once()
 
 			defer mockInstrument.AssertExpectations(t)
 
@@ -174,8 +174,7 @@ func TestWorker(t *testing.T) {
 			eventsChannel <- req
 			close(eventsChannel)
 			assert.False(
-				t,
-				worker.FlushWithTimeOut(time.Second),
+				t, worker.FlushWithTimeOut(time.Second),
 			)
 		})
 	})

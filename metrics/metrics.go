@@ -7,7 +7,7 @@ import (
 	"github.com/raystack/raccoon/logger"
 )
 
-var instrument MetricInstrument
+var instrument MetricInstrument = voidInstrument{}
 
 type MetricInstrument interface {
 	Increment(metricName string, labels map[string]string) error

@@ -94,11 +94,14 @@ services:
       METRIC_STATSD_ADDRESS: "telegraf:8125"
       METRIC_STATSD_FLUSH_PERIOD_MS: 100
       LOG_LEVEL: "info"
+      GOCOVERDIR: /app/raccoon-coverage
     ports:
       - "8080:8080"
       - "8081:8081"
     networks:
       - cs-network
+    volumes:
+      - ./raccoon-coverage/:/app/raccoon-coverage
   # telegraf:
   #   image: telegraf
   #   volumes:

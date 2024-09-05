@@ -2,21 +2,24 @@ package collector
 
 import (
 	"context"
-	"time"
+
+	"github.com/raystack/raccoon/clock"
 )
 
 type ChannelCollector struct {
-	ch chan CollectRequest
+	ch    chan CollectRequest
+	clock clock.Clock
 }
 
 func NewChannelCollector(c chan CollectRequest) Collector {
 	return &ChannelCollector{
-		ch: c,
+		ch:    c,
+		clock: clock.Default,
 	}
 }
 
 func (c *ChannelCollector) Collect(ctx context.Context, req *CollectRequest) error {
-	req.TimePushed = time.Now()
+	req.TimePushed = c.clock.Now()
 	c.ch <- *req
 	return nil
 }

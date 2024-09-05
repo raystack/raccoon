@@ -26,6 +26,15 @@ func TestProtoDeserilizer_Deserialize(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Return error for non-proto message",
+			d:    DeserializeProto,
+			args: args{
+				b: []byte{},
+				i: struct{}{},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

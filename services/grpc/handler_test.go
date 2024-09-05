@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"io"
 	"reflect"
 	"testing"
 
@@ -15,23 +16,16 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type void struct{}
-
-func (v void) Write(_ []byte) (int, error) {
-	return 0, nil
-}
-
 func TestHandler_SendEvent(t *testing.T) {
 	type fields struct {
-		C                               collector.Collector
-		UnimplementedEventServiceServer pb.UnimplementedEventServiceServer
+		C collector.Collector
 	}
 	type args struct {
 		ctx context.Context
 		req *pb.SendEventRequest
 	}
 
-	logger.SetOutput(void{})
+	logger.SetOutput(io.Discard)
 	metrics.SetVoid()
 	collector := new(collector.MockCollector)
 	ctx := context.Background()

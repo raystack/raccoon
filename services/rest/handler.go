@@ -141,7 +141,7 @@ func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serial
 		SendEventResponse: &pb.SendEventResponse{},
 	}
 	switch config.Event.Ack {
-	case config.Asynchronous:
+	case config.AckTypeAsync:
 
 		rw.WriteHeader(http.StatusOK)
 		_, err := res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).
@@ -151,7 +151,7 @@ func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serial
 		}
 		resChannel <- struct{}{}
 		return nil
-	case config.Synchronous:
+	case config.AckTypeSync:
 		return func(err error) {
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)

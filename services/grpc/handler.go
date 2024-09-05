@@ -60,7 +60,7 @@ func (h *Handler) SendEvent(ctx context.Context, req *pb.SendEventRequest) (*pb.
 
 func (h *Handler) Ack(responseChannel chan *pb.SendEventResponse, reqGuid, connGroup string) collector.AckFunc {
 	switch config.Event.Ack {
-	case config.Asynchronous:
+	case config.AckTypeAsync:
 		responseChannel <- &pb.SendEventResponse{
 			Status:   pb.Status_STATUS_SUCCESS,
 			Code:     pb.Code_CODE_OK,
@@ -70,7 +70,7 @@ func (h *Handler) Ack(responseChannel chan *pb.SendEventResponse, reqGuid, connG
 			},
 		}
 		return nil
-	case config.Synchronous:
+	case config.AckTypeSync:
 		return func(err error) {
 			if err != nil {
 				logger.Errorf("[grpc.Ack] publish message failed for %s: %v", connGroup, err)

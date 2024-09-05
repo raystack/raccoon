@@ -5,8 +5,8 @@ var Event event
 type AckType int
 
 const (
-	Asynchronous AckType = 0
-	Synchronous  AckType = 1
+	AckTypeAsync AckType = 0
+	AckTypeSync  AckType = 1
 )
 
 type event struct {

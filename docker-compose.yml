@@ -101,7 +101,7 @@ services:
     networks:
       - cs-network
     volumes:
-      - /tmp/raccoon-coverage/:/app/raccoon-coverage
+      - ./raccoon-coverage/:/app/raccoon-coverage
   # telegraf:
   #   image: telegraf
   #   volumes:

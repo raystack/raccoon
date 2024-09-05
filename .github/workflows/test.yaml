@@ -20,8 +20,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Start raccoon
         run: make docker-run
+      - name: Create coverage data directory
+        run: mkdir raccoon-coverage
       - name: Run tests
-        run: go test ./... -v -cover -test.gocoverdir=/tmp/raccoon-coverage/
+        run: go test ./... -v -cover -test.gocoverdir=$PWD/raccoon-coverage/
         env:
           INTEGTEST_BOOTSTRAP_SERVER: 'localhost:9094'
           INTEGTEST_HOST: 'localhost:8080'
@@ -32,7 +34,7 @@ jobs:
       - name: Stop raccoon
         run: docker compose down
       - name: Merge coverage data
-        run: go tool covdata -i=/tmp/raccoon-coverage -o coverage.out
+        run: go tool covdata -i=raccoon-coverage -o coverage.out
       - name: Upload coverage data 
         uses: shogo82148/actions-goveralls@v1
         with:

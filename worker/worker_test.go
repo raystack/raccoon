@@ -200,5 +200,20 @@ func TestWorker(t *testing.T) {
 			assert.Equal(t, 0, len(bc))
 			kp.AssertExpectations(t)
 		})
+
+		t.Run("Should return true if timed-out", func(t *testing.T) {
+
+			kp := mockKafkaPublisher{}
+			defer kp.AssertExpectations(t)
+
+			bc := make(chan collector.CollectRequest)
+			defer close(bc)
+
+			worker := CreateWorkerPool(
+				1, bc, &kp,
+			)
+			worker.StartWorkers()
+			assert.True(t, worker.FlushWithTimeOut(time.Millisecond))
+		})
 	})
 }

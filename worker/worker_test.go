@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/raystack/raccoon/clock"
 	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/identification"
 	"github.com/raystack/raccoon/metrics"
@@ -116,7 +117,7 @@ func TestWorker(t *testing.T) {
 			eventsChannel := make(chan collector.CollectRequest, 1)
 
 			now := time.Now()
-			clk := &mockClock{}
+			clk := &clock.Mock{}
 			clk.On("Now").Return(now).Once()                           // batchReadTime
 			clk.On("Now").Return(now.Add(2 * time.Millisecond)).Once() // produceTime
 			clk.On("Now").Return(now.Add(3 * time.Millisecond)).Once() // eventTimingMs

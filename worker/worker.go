@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/raystack/raccoon/clock"
 	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
@@ -28,7 +29,7 @@ type Pool struct {
 	producer      Producer
 	wg            sync.WaitGroup
 	instrument    metrics.MetricInstrument
-	clock         Clock
+	clock         clock.Clock
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
@@ -39,7 +40,7 @@ func CreateWorkerPool(size int, eventsChannel <-chan collector.CollectRequest, p
 		producer:      producer,
 		wg:            sync.WaitGroup{},
 		instrument:    metrics.Instrument(),
-		clock:         DefaultClock,
+		clock:         clock.Default,
 	}
 }
 

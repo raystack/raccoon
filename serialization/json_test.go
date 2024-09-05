@@ -1,7 +1,6 @@
 package serialization
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -36,7 +35,6 @@ func TestJSONSerializer_Serialize(t *testing.T) {
 				t.Errorf("JSONSerializer.Serialize() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			fmt.Println(string(got))
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("JSONSerializer.Serialize() = %v, want %v", got, tt.want)
 			}

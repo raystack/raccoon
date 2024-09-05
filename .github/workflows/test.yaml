@@ -35,10 +35,15 @@ jobs:
         run: docker compose down
       - name: Merge coverage data
         run: go tool covdata textfmt -i=raccoon-coverage -o coverage.out
-      - name: Upload coverage data 
+      - name: Upload coverage data to coveralls
         uses: shogo82148/actions-goveralls@v1
         with:
           path-to-profile: coverage.out
+      - name: Upload coverage data as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.out
   smoke-test:
     runs-on: ubuntu-latest
     steps:

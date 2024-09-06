@@ -23,7 +23,7 @@ jobs:
       - name: Start raccoon
         run: make docker-run
       - name: Run tests
-        run: go test $(go list ./... | grep -v proto) -v -cover -test.gocoverdir=$PWD/raccoon-coverage/
+        run: go test ./... -v -cover -test.gocoverdir=$PWD/raccoon-coverage/
         env:
           INTEGTEST_BOOTSTRAP_SERVER: 'localhost:9094'
           INTEGTEST_HOST: 'localhost:8080'

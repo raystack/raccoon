@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"reflect"
 	"testing"
@@ -17,8 +18,14 @@ import (
 )
 
 func TestHandler_SendEvent(t *testing.T) {
+	// todo(turtledev): refactor this test
+	// it has the following issues:
+	//  1. collector is shared across all tests cases
+	//  2. test case specific parameters are kept in shared scope
+
 	type fields struct {
-		C collector.Collector
+		C   collector.Collector
+		ack config.AckType
 	}
 	type args struct {
 		ctx context.Context
@@ -27,7 +34,6 @@ func TestHandler_SendEvent(t *testing.T) {
 
 	logger.SetOutput(io.Discard)
 	metrics.SetVoid()
-	collector := new(collector.MockCollector)
 	ctx := context.Background()
 	meta := metadata.MD{}
 	meta.Set(config.Server.Websocket.Conn.GroupHeader, "group")
@@ -38,25 +44,36 @@ func TestHandler_SendEvent(t *testing.T) {
 		SentTime: sentTime,
 		Events:   []*pb.Event{},
 	}
+	mockCollector := new(collector.MockCollector)
 	contextWithIDGroup := metadata.NewIncomingContext(ctx, meta)
-	collector.On("Collect", contextWithIDGroup, mock.Anything).Return(nil)
+	mockCollector.On("Collect", contextWithIDGroup, mock.Anything).Return(nil).Once()
+
+	mockCollector.On("Collect", contextWithIDGroup, mock.Anything).Return(nil).Once().Run(func(args mock.Arguments) {
+		args.Get(1).(*collector.CollectRequest).AckFunc(nil)
+	})
+
+	mockCollector.On("Collect", contextWithIDGroup, mock.Anything).Return(nil).Once().Run(func(args mock.Arguments) {
+		args.Get(1).(*collector.CollectRequest).AckFunc(fmt.Errorf("simulated error"))
+	})
 
 	metaWithoutGroup := metadata.MD{}
 	metaWithoutGroup.Set(config.Server.Websocket.Conn.IDHeader, "1235")
 	contextWithoutGroup := metadata.NewIncomingContext(ctx, metaWithoutGroup)
-	collector.On("Collect", contextWithoutGroup, mock.Anything).Return(nil)
+	mockCollector.On("Collect", contextWithoutGroup, mock.Anything).Return(nil).Once()
 
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
+		ack     config.AckType
 		want    *pb.SendEventResponse
 		wantErr bool
 	}{
 		{
 			name: "Sending normal event",
 			fields: fields{
-				C: collector,
+				C:   mockCollector,
+				ack: config.AckTypeAsync,
 			},
 			args: args{
 				ctx: contextWithIDGroup,
@@ -72,9 +89,48 @@ func TestHandler_SendEvent(t *testing.T) {
 			},
 		},
 		{
+			name: "Sending normal event with synchronous ack",
+			fields: fields{
+				C:   mockCollector,
+				ack: config.AckTypeSync,
+			},
+			args: args{
+				ctx: contextWithIDGroup,
+				req: req,
+			},
+			want: &pb.SendEventResponse{
+				Status:   pb.Status_STATUS_SUCCESS,
+				Code:     pb.Code_CODE_OK,
+				SentTime: sentTime.Seconds,
+				Data: map[string]string{
+					"req_guid": req.ReqGuid,
+				},
+			},
+		},
+		{
+			name: "Sending normal event with synchronous ack and collector error",
+			fields: fields{
+				C:   mockCollector,
+				ack: config.AckTypeSync,
+			},
+			args: args{
+				ctx: contextWithIDGroup,
+				req: req,
+			},
+			want: &pb.SendEventResponse{
+				Status:   pb.Status_STATUS_ERROR,
+				Code:     pb.Code_CODE_INTERNAL_ERROR,
+				SentTime: sentTime.Seconds,
+				Data: map[string]string{
+					"req_guid": req.ReqGuid,
+				},
+			},
+		},
+		{
 			name: "Sending without group",
 			fields: fields{
-				C: collector,
+				C:   mockCollector,
+				ack: config.AckTypeAsync,
 			},
 			args: args{
 				ctx: contextWithoutGroup,
@@ -93,7 +149,8 @@ func TestHandler_SendEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := &Handler{
-				C: tt.fields.C,
+				C:       tt.fields.C,
+				ackType: tt.fields.ack,
 			}
 			got, err := h.SendEvent(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {

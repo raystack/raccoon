@@ -34,7 +34,7 @@ jobs:
       - name: Stop raccoon
         run: docker compose down
       - name: Merge coverage data
-        run: go tool covdata textfmt -i=raccoon-coverage -pkg "$(go list ./... | grep -v proto)" -o coverage.out
+        run: go tool covdata textfmt -i=raccoon-coverage -pkg "$(go list ./... | grep -v proto | paste -sd ',')" -o coverage.out
       - name: Upload coverage data to coveralls
         uses: shogo82148/actions-goveralls@v1
         with:

@@ -55,6 +55,7 @@ services:
   cs:
     build:
       context: .
+      dockerfile: Dockerfile.test
     command: ["server"]
     hostname: cs
     container_name: cs

@@ -10,6 +10,10 @@ jobs:
     steps: 
       - name: Setup Docker
         uses: docker-practice/actions-setup-docker@master
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.5.0
+          with:
+            key: docker-${{ runner.os }}-${{ hashFiles('docker-compose.yml') }}
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
       - name: Setup Go

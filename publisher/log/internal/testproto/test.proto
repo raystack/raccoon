@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package raccoon.test;
 
-option go_package = "./raccoonv1";
+option go_package = "./testproto";
 
 message TestEvent {
     string description = 1;

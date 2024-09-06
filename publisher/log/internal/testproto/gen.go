@@ -1,2 +1,2 @@
 //go:generate protoc --go_out=paths=source_relative:. ./test.proto
-package raccoonv1
+package testproto

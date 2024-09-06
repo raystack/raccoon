@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	raccoonv1 "github.com/raystack/raccoon/proto"
-	"github.com/raystack/raccoon/publisher/log/internal/testproto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -58,7 +57,7 @@ func TestLogPublisher(t *testing.T) {
 		assert.Equal(t, expected, em.Messages[0])
 	})
 	t.Run("should emit protobuf events correctly", func(t *testing.T) {
-		msg := &testproto.TestEvent{
+		msg := &raccoonv1.TestEvent{
 			Description: "test event",
 			Count:       420,
 			Tags:        []string{"log", "protobuf"},

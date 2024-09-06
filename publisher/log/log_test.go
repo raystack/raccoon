@@ -82,7 +82,7 @@ func TestLogPublisher(t *testing.T) {
 			"[LogPublisher] kind = %s, event_type = %s, event = %s",
 			"protobuf",
 			"unknown",
-			`1:"test event"  2:420  3:"log"  3:"protobuf"`,
+			`1:"test event" 2:420 3:"log" 3:"protobuf"`,
 		)
 		assert.Equal(t, expected, em.Messages[0])
 	})

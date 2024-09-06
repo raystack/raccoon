@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -47,5 +48,26 @@ func TestHandler(t *testing.T) {
 		assert.Equal(t, res.Code, pb.Code_CODE_INTERNAL_ERROR)
 		assert.Equal(t, res.Status, pb.Status_STATUS_ERROR)
 		assert.Equal(t, res.Reason, "deserialization failure")
+	})
+
+	t.Run("should return an error if request body is malformed", func(t *testing.T) {
+		h := NewHandler(nil)
+
+		payload := "}{}"
+		rr := httptest.NewRequest("POST", "/api/v1/events", bytes.NewBufferString(payload))
+		rr.Header.Set("Content-Type", "application/json")
+
+		rw := httptest.NewRecorder()
+
+		h.RESTAPIHandler(rw, rr)
+
+		assert.Equal(t, rw.Code, http.StatusBadRequest)
+
+		res := &apiResponse{}
+		assert.Nil(t, json.NewDecoder(rw.Body).Decode(res))
+		assert.Equal(t, res.Code, pb.Code_CODE_BAD_REQUEST)
+		assert.Equal(t, res.Status, pb.Status_STATUS_ERROR)
+		assert.Equal(t, res.Reason, "deserialization failure")
+
 	})
 }

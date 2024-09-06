@@ -80,18 +80,6 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		Group: group,
 	}
 
-	if r.Body == nil {
-		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "emptybody", "conn_group": identifier.Group})
-		logger.Errorf("[rest.GetRESTAPIHandler] %s no body", identifier)
-		rw.WriteHeader(http.StatusBadRequest)
-		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("no body present").
-			SetSentTime(time.Now().Unix()).Write(rw, s)
-		if err != nil {
-			logger.Errorf("[rest.GetRESTAPIHandler] %s error sending response: %v", identifier, err)
-		}
-		return
-	}
-
 	defer io.Copy(io.Discard, r.Body)
 	defer r.Body.Close()
 

@@ -42,7 +42,11 @@ func TestHandler_SendEvent(t *testing.T) {
 	req := &pb.SendEventRequest{
 		ReqGuid:  "abcd",
 		SentTime: sentTime,
-		Events:   []*pb.Event{},
+		Events: []*pb.Event{
+			{
+				Type: "unknown",
+			},
+		},
 	}
 	mockCollector := new(collector.MockCollector)
 	contextWithIDGroup := metadata.NewIncomingContext(ctx, meta)

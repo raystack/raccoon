@@ -28,6 +28,7 @@ type serDe struct {
 type Handler struct {
 	serDeMap  map[string]*serDe
 	collector collector.Collector
+	ackType   config.AckType
 }
 
 func NewHandler(collector collector.Collector) *Handler {
@@ -44,6 +45,7 @@ func NewHandler(collector collector.Collector) *Handler {
 	return &Handler{
 		serDeMap:  serDeMap,
 		collector: collector,
+		ackType:   config.Event.Ack,
 	}
 }
 
@@ -128,17 +130,7 @@ func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serial
 	res := &Response{
 		SendEventResponse: &pb.SendEventResponse{},
 	}
-	switch config.Event.Ack {
-	case config.AckTypeAsync:
-
-		rw.WriteHeader(http.StatusOK)
-		_, err := res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).
-			SetDataMap(map[string]string{"req_guid": reqGuid}).Write(rw, s)
-		if err != nil {
-			logger.Errorf("[RESTAPIHandler.Ack] %s error sending error response: %v", connGroup, err)
-		}
-		resChannel <- struct{}{}
-		return nil
+	switch h.ackType {
 	case config.AckTypeSync:
 		return func(err error) {
 			if err != nil {

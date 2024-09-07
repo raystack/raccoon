@@ -12,7 +12,7 @@ import (
 )
 
 func TestKinesisProducer_UnitTest(t *testing.T) {
-	t.Run("should return an error if stream creation fails", func(t *testing.T) {
+	t.Run("should return an error if stream existence check fails", func(t *testing.T) {
 		events := []*pb.Event{
 			{
 				Type: "unknown",

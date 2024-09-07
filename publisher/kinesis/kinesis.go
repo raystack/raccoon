@@ -20,8 +20,14 @@ import (
 
 var globalCtx = context.Background()
 
+type KinesisClient interface {
+	PutRecord(context.Context, *kinesis.PutRecordInput, ...func(*kinesis.Options)) (*kinesis.PutRecordOutput, error)
+	DescribeStreamSummary(context.Context, *kinesis.DescribeStreamSummaryInput, ...func(*kinesis.Options)) (*kinesis.DescribeStreamSummaryOutput, error)
+	CreateStream(context.Context, *kinesis.CreateStreamInput, ...func(*kinesis.Options)) (*kinesis.CreateStreamOutput, error)
+}
+
 type Publisher struct {
-	client *kinesis.Client
+	client KinesisClient
 
 	streamLock          sync.RWMutex
 	streams             map[string]bool

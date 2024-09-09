@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/core/collector"
 	"github.com/raystack/raccoon/pkg/metrics"
-	"github.com/raystack/raccoon/pkg/middleware"
 	"github.com/raystack/raccoon/server/rest/websocket"
 	"github.com/raystack/raccoon/server/rest/websocket/connection"
 )
@@ -38,7 +38,7 @@ func NewRestService(c collector.Collector) *Service {
 	subRouter.HandleFunc("/events", restHandler.RESTAPIHandler).Methods(http.MethodPost).Name("events")
 
 	server := &http.Server{
-		Handler: applyMiddleware(router),
+		Handler: withCORS(router),
 		Addr:    ":" + config.Server.Websocket.AppPort,
 	}
 	return &Service{
@@ -47,9 +47,20 @@ func NewRestService(c collector.Collector) *Service {
 	}
 }
 
-func applyMiddleware(router http.Handler) http.Handler {
-	h := middleware.GetCors()(router)
-	return h
+func withCORS(router http.Handler) http.Handler {
+	if !config.Server.CORS.Enabled {
+		return router
+	}
+	opts := []handlers.CORSOption{handlers.AllowedHeaders(config.Server.CORS.AllowedHeaders),
+		handlers.AllowedMethods(config.Server.CORS.AllowedMethods),
+		handlers.AllowedOrigins(config.Server.CORS.AllowedOrigin)}
+	if config.Server.CORS.AllowCredentials {
+		opts = append(opts, handlers.AllowCredentials())
+	}
+	if config.Server.CORS.MaxAge > 0 {
+		opts = append(opts, handlers.MaxAge(config.Server.CORS.MaxAge))
+	}
+	return handlers.CORS(opts...)(router)
 }
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {

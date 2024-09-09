@@ -9,7 +9,7 @@ import (
 	"time"
 
 	pubsubsdk "cloud.google.com/go/pubsub"
-	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/pkg/logger"
 	raccoonv1 "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher/pubsub"
 	"github.com/stretchr/testify/assert"

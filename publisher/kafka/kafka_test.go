@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/pkg/logger"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
 	"github.com/stretchr/testify/assert"

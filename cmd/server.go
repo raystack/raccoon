@@ -7,9 +7,9 @@ import (
 
 	"github.com/raystack/raccoon/app"
 	"github.com/raystack/raccoon/config"
-	"github.com/raystack/raccoon/logger"
-	"github.com/raystack/raccoon/metrics"
-	"github.com/raystack/raccoon/middleware"
+	"github.com/raystack/raccoon/pkg/logger"
+	"github.com/raystack/raccoon/pkg/metrics"
+	"github.com/raystack/raccoon/pkg/middleware"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

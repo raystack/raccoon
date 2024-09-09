@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/raystack/raccoon/core/serialization"
+	"github.com/raystack/raccoon/core/serde"
 	pb "github.com/raystack/raccoon/proto"
 )
 
@@ -233,7 +233,7 @@ func TestResponse_Write(t *testing.T) {
 		SendEventResponse *pb.SendEventResponse
 	}
 	type args struct {
-		s serialization.SerializeFunc
+		s serde.SerializeFunc
 	}
 	tests := []struct {
 		name    string

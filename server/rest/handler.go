@@ -8,9 +8,8 @@ import (
 
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/core/collector"
-	"github.com/raystack/raccoon/core/deserialization"
 	"github.com/raystack/raccoon/core/identification"
-	"github.com/raystack/raccoon/core/serialization"
+	"github.com/raystack/raccoon/core/serde"
 	"github.com/raystack/raccoon/pkg/logger"
 	"github.com/raystack/raccoon/pkg/metrics"
 	pb "github.com/raystack/raccoon/proto"
@@ -22,8 +21,8 @@ const (
 )
 
 type serDe struct {
-	serializer   serialization.SerializeFunc
-	deserializer deserialization.DeserializeFunc
+	serializer   serde.SerializeFunc
+	deserializer serde.DeserializeFunc
 }
 type Handler struct {
 	serDeMap  map[string]*serDe
@@ -34,13 +33,13 @@ type Handler struct {
 func NewHandler(collector collector.Collector) *Handler {
 	serDeMap := make(map[string]*serDe)
 	serDeMap[ContentJSON] = &serDe{
-		serializer:   serialization.SerializeJSON,
-		deserializer: deserialization.DeserializeJSON,
+		serializer:   serde.SerializeJSON,
+		deserializer: serde.DeserializeJSON,
 	}
 
 	serDeMap[ContentProto] = &serDe{
-		serializer:   serialization.SerializeProto,
-		deserializer: deserialization.DeserializeProto,
+		serializer:   serde.SerializeProto,
+		deserializer: serde.DeserializeProto,
 	}
 	return &Handler{
 		serDeMap:  serDeMap,
@@ -57,20 +56,20 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 		SendEventResponse: &pb.SendEventResponse{},
 	}
 
-	serde, ok := h.serDeMap[contentType]
+	sd, ok := h.serDeMap[contentType]
 
 	if !ok {
 		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "unknowncontentype", "conn_group": "NA"})
 		logger.Errorf("[rest.GetRESTAPIHandler] invalid content type %s", contentType)
 		rw.WriteHeader(http.StatusBadRequest)
 		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("invalid content type").
-			SetSentTime(time.Now().Unix()).Write(rw, serialization.SerializeJSON)
+			SetSentTime(time.Now().Unix()).Write(rw, serde.SerializeJSON)
 		if err != nil {
 			logger.Errorf("[rest.GetRESTAPIHandler] error sending response: %v", err)
 		}
 		return
 	}
-	d, s := serde.deserializer, serde.serializer
+	d, s := sd.deserializer, sd.serializer
 
 	var group string
 	group = r.Header.Get(config.Server.Websocket.Conn.GroupHeader)
@@ -126,7 +125,7 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	<-resChannel
 }
 
-func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serialization.SerializeFunc, reqGuid string, connGroup string) collector.AckFunc {
+func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serde.SerializeFunc, reqGuid string, connGroup string) collector.AckFunc {
 	res := &Response{
 		SendEventResponse: &pb.SendEventResponse{},
 	}

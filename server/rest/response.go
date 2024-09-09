@@ -3,7 +3,7 @@ package rest
 import (
 	"io"
 
-	"github.com/raystack/raccoon/core/serialization"
+	"github.com/raystack/raccoon/core/serde"
 	pb "github.com/raystack/raccoon/proto"
 )
 
@@ -36,7 +36,7 @@ func (r *Response) SetDataMap(data map[string]string) *Response {
 	return r
 }
 
-func (r *Response) Write(w io.Writer, s serialization.SerializeFunc) (int, error) {
+func (r *Response) Write(w io.Writer, s serde.SerializeFunc) (int, error) {
 	b, err := s(r)
 	if err != nil {
 		return 0, err

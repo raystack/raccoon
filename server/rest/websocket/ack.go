@@ -3,7 +3,7 @@ package websocket
 import (
 	"time"
 
-	"github.com/raystack/raccoon/core/serialization"
+	"github.com/raystack/raccoon/core/serde"
 	"github.com/raystack/raccoon/pkg/metrics"
 	"github.com/raystack/raccoon/server/rest/websocket/connection"
 )
@@ -15,7 +15,7 @@ type AckInfo struct {
 	RequestGuid     string
 	Err             error
 	Conn            connection.Conn
-	serializer      serialization.SerializeFunc
+	serializer      serde.SerializeFunc
 	TimeConsumed    time.Time
 	AckTimeConsumed time.Time
 }

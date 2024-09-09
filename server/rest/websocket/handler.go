@@ -8,8 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/raystack/raccoon/config"
 	"github.com/raystack/raccoon/core/collector"
-	"github.com/raystack/raccoon/core/deserialization"
-	"github.com/raystack/raccoon/core/serialization"
+	"github.com/raystack/raccoon/core/serde"
 	"github.com/raystack/raccoon/pkg/logger"
 	"github.com/raystack/raccoon/pkg/metrics"
 	pb "github.com/raystack/raccoon/proto"
@@ -17,8 +16,8 @@ import (
 )
 
 type serDe struct {
-	serializer   serialization.SerializeFunc
-	deserializer deserialization.DeserializeFunc
+	serializer   serde.SerializeFunc
+	deserializer serde.DeserializeFunc
 }
 type Handler struct {
 	upgrader    *connection.Upgrader
@@ -30,13 +29,13 @@ type Handler struct {
 func getSerDeMap() map[int]*serDe {
 	serDeMap := make(map[int]*serDe)
 	serDeMap[websocket.BinaryMessage] = &serDe{
-		serializer:   serialization.SerializeProto,
-		deserializer: deserialization.DeserializeProto,
+		serializer:   serde.SerializeProto,
+		deserializer: serde.DeserializeProto,
 	}
 
 	serDeMap[websocket.TextMessage] = &serDe{
-		serializer:   serialization.SerializeJSON,
-		deserializer: deserialization.DeserializeJSON,
+		serializer:   serde.SerializeJSON,
+		deserializer: serde.DeserializeJSON,
 	}
 	return serDeMap
 }
@@ -124,7 +123,7 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serialization.SerializeFunc, messageType int, reqGuid string, timeConsumed time.Time) collector.AckFunc {
+func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serde.SerializeFunc, messageType int, reqGuid string, timeConsumed time.Time) collector.AckFunc {
 	switch config.Event.Ack {
 	case config.AckTypeAsync:
 		writeSuccessResponse(conn, s, messageType, reqGuid)
@@ -159,7 +158,7 @@ func (h *Handler) sendEventCounters(events []*pb.Event, group string) {
 	}
 }
 
-func writeSuccessResponse(conn connection.Conn, serialize serialization.SerializeFunc, messageType int, requestGUID string) {
+func writeSuccessResponse(conn connection.Conn, serialize serde.SerializeFunc, messageType int, requestGUID string) {
 	response := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_SUCCESS,
 		Code:     pb.Code_CODE_OK,
@@ -173,7 +172,7 @@ func writeSuccessResponse(conn connection.Conn, serialize serialization.Serializ
 	conn.WriteMessage(messageType, success)
 }
 
-func writeBadRequestResponse(conn connection.Conn, serialize serialization.SerializeFunc, messageType int, reqGuid string, err error) {
+func writeBadRequestResponse(conn connection.Conn, serialize serde.SerializeFunc, messageType int, reqGuid string, err error) {
 	response := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_ERROR,
 		Code:     pb.Code_CODE_BAD_REQUEST,
@@ -188,7 +187,7 @@ func writeBadRequestResponse(conn connection.Conn, serialize serialization.Seria
 	conn.WriteMessage(messageType, failure)
 }
 
-func writeFailedResponse(conn connection.Conn, serialize serialization.SerializeFunc, messageType int, reqGuid string, err error) {
+func writeFailedResponse(conn connection.Conn, serialize serde.SerializeFunc, messageType int, reqGuid string, err error) {
 	response := &pb.SendEventResponse{
 		Status:   pb.Status_STATUS_ERROR,
 		Code:     pb.Code_CODE_INTERNAL_ERROR,

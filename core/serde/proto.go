@@ -1,4 +1,4 @@
-package serialization
+package serde
 
 import (
 	"errors"
@@ -16,4 +16,12 @@ func SerializeProto(m interface{}) ([]byte, error) {
 		return nil, ErrInvalidProtoMessage
 	}
 	return proto.Marshal(msg)
+}
+
+func DeserializeProto(b []byte, i interface{}) error {
+	msg, ok := i.(proto.Message)
+	if !ok {
+		return ErrInvalidProtoMessage
+	}
+	return proto.Unmarshal(b, msg)
 }

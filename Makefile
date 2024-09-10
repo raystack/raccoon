@@ -46,6 +46,11 @@ build: ## Build the raccoon binary
 	go build ${BUILD_FLAGS} ${LD_FLAGS} ${NAME}
 	@echo "Build complete"
 
+build-cov: ## Build raccoon with coverage instrumentation
+	@echo "Building raccoon version ${VERSION}..."
+	go build -cover ${BUILD_FLAGS} ${LD_FLAGS} ${NAME}
+	@echo "Build complete"
+
 install:
 	@echo "Installing Raccoon to ${GOBIN}..."
 	go install ${BUILD_FLAGS} ${LD_FLAGS} ${NAME}

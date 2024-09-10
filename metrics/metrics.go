@@ -7,7 +7,7 @@ import (
 	"github.com/raystack/raccoon/logger"
 )
 
-var instrument MetricInstrument
+var instrument MetricInstrument = voidInstrument{}
 
 type MetricInstrument interface {
 	Increment(metricName string, labels map[string]string) error
@@ -109,6 +109,12 @@ func Setup() error {
 
 func SetVoid() {
 	instrument = voidInstrument{}
+}
+
+// Instrument returns the configured MetricInstrument
+// should be called once Setup() is done.
+func Instrument() MetricInstrument {
+	return instrument
 }
 
 func Close() {

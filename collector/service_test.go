@@ -1,8 +1,13 @@
 package collector
 
 import (
+	"context"
 	"reflect"
 	"testing"
+	"time"
+
+	"github.com/raystack/raccoon/clock"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewChannelCollector(t *testing.T) {
@@ -22,7 +27,8 @@ func TestNewChannelCollector(t *testing.T) {
 				c: c,
 			},
 			want: &ChannelCollector{
-				ch: c,
+				ch:    c,
+				clock: clock.Default,
 			},
 		},
 	}
@@ -33,4 +39,33 @@ func TestNewChannelCollector(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCollect(t *testing.T) {
+	t.Run("It should mutate TimePushed to the time the collect request is acknowledged", func(t *testing.T) {
+		now := time.Now()
+		clk := &clock.Mock{}
+		clk.On("Now").Return(now).Once()
+		defer clk.AssertExpectations(t)
+
+		ch := make(chan CollectRequest)
+		defer close(ch)
+
+		collector := &ChannelCollector{
+			ch:    ch,
+			clock: clk,
+		}
+
+		consumer := func(requests chan CollectRequest) {
+			for range requests {
+			}
+		}
+		go consumer(collector.ch)
+
+		req := &CollectRequest{}
+		assert.Nil(
+			t, collector.Collect(context.Background(), req),
+		)
+		assert.Equal(t, req.TimePushed, now)
+	})
 }

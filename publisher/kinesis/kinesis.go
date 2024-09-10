@@ -20,8 +20,15 @@ import (
 
 var globalCtx = context.Background()
 
+// Client is an interface to *kinesis.Client
+type Client interface {
+	PutRecord(context.Context, *kinesis.PutRecordInput, ...func(*kinesis.Options)) (*kinesis.PutRecordOutput, error)
+	DescribeStreamSummary(context.Context, *kinesis.DescribeStreamSummaryInput, ...func(*kinesis.Options)) (*kinesis.DescribeStreamSummaryOutput, error)
+	CreateStream(context.Context, *kinesis.CreateStreamInput, ...func(*kinesis.Options)) (*kinesis.CreateStreamOutput, error)
+}
+
 type Publisher struct {
-	client *kinesis.Client
+	client Client
 
 	streamLock          sync.RWMutex
 	streams             map[string]bool
@@ -209,7 +216,7 @@ func WithStreamProbleInterval(interval time.Duration) Opt {
 	}
 }
 
-func New(client *kinesis.Client, opts ...Opt) (*Publisher, error) {
+func New(client Client, opts ...Opt) (*Publisher, error) {
 	p := &Publisher{
 		client:              client,
 		streamPattern:       "%s",

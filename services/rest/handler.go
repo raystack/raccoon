@@ -28,6 +28,7 @@ type serDe struct {
 type Handler struct {
 	serDeMap  map[string]*serDe
 	collector collector.Collector
+	ackType   config.AckType
 }
 
 func NewHandler(collector collector.Collector) *Handler {
@@ -44,6 +45,7 @@ func NewHandler(collector collector.Collector) *Handler {
 	return &Handler{
 		serDeMap:  serDeMap,
 		collector: collector,
+		ackType:   config.Event.Ack,
 	}
 }
 
@@ -78,18 +80,6 @@ func (h *Handler) RESTAPIHandler(rw http.ResponseWriter, r *http.Request) {
 	identifier := identification.Identifier{
 		ID:    r.Header.Get(config.Server.Websocket.Conn.IDHeader),
 		Group: group,
-	}
-
-	if r.Body == nil {
-		metrics.Increment("batches_read_total", map[string]string{"status": "failed", "reason": "emptybody", "conn_group": identifier.Group})
-		logger.Errorf("[rest.GetRESTAPIHandler] %s no body", identifier)
-		rw.WriteHeader(http.StatusBadRequest)
-		_, err := res.SetCode(pb.Code_CODE_BAD_REQUEST).SetStatus(pb.Status_STATUS_ERROR).SetReason("no body present").
-			SetSentTime(time.Now().Unix()).Write(rw, s)
-		if err != nil {
-			logger.Errorf("[rest.GetRESTAPIHandler] %s error sending response: %v", identifier, err)
-		}
-		return
 	}
 
 	defer io.Copy(io.Discard, r.Body)
@@ -140,18 +130,8 @@ func (h *Handler) Ack(rw http.ResponseWriter, resChannel chan struct{}, s serial
 	res := &Response{
 		SendEventResponse: &pb.SendEventResponse{},
 	}
-	switch config.Event.Ack {
-	case config.Asynchronous:
-
-		rw.WriteHeader(http.StatusOK)
-		_, err := res.SetCode(pb.Code_CODE_OK).SetStatus(pb.Status_STATUS_SUCCESS).SetSentTime(time.Now().Unix()).
-			SetDataMap(map[string]string{"req_guid": reqGuid}).Write(rw, s)
-		if err != nil {
-			logger.Errorf("[RESTAPIHandler.Ack] %s error sending error response: %v", connGroup, err)
-		}
-		resChannel <- struct{}{}
-		return nil
-	case config.Synchronous:
+	switch h.ackType {
+	case config.AckTypeSync:
 		return func(err error) {
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)

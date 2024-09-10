@@ -64,16 +64,16 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 		sig := <-signalChan
 		switch sig {
 		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-			logger.Info(fmt.Sprintf("[App.Server] Received a signal %s", sig))
+			logger.Infof("[App.Server] Received a signal %s", sig)
 			httpServices.Shutdown(ctx)
 			logger.Info("Server shutdown all the listeners")
+			close(bufferChannel)
+			logger.Info("Flushing workers")
 			timedOut := workerPool.FlushWithTimeOut(workerFlushTimeout)
 			if timedOut {
-				logger.Info(fmt.Sprintf("WorkerPool flush timedout %t", timedOut))
+				logger.Infof("WorkerPool flush timed out")
 			}
-			flushInterval := config.Publisher.Kafka.FlushInterval
 			logger.Infof("Closing %q producer\n", pub.Name())
-			logger.Info(fmt.Sprintf("Wait %d ms for all messages to be delivered", flushInterval))
 			eventsInProducer := 0
 
 			err := pub.Close()
@@ -91,6 +91,8 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 			Until then we fall back to approximation */
 			eventsInChannel := len(bufferChannel) * 7
 			logger.Info(fmt.Sprintf("Outstanding unprocessed events in the channel, data lost ~ (No batches %d * 5 events) = ~%d", len(bufferChannel), eventsInChannel))
+
+			// NOTE(turtledev): aren't these metrics misleading?
 			metrics.Count(
 				fmt.Sprintf("%s_messages_delivered_total", pub.Name()),
 				int64(eventsInChannel+eventsInProducer),
@@ -101,9 +103,13 @@ func shutDownServer(ctx context.Context, cancel context.CancelFunc, httpServices
 				},
 			)
 			logger.Info("Exiting server")
+
+			// NOTE(turtledev): what's the purpose of this?
+			// everything has exited at this point. The context
+			// is not saved by any instances.
 			cancel()
 		default:
-			logger.Info(fmt.Sprintf("[App.Server] Received a unexpected signal %s", sig))
+			logger.Infof("[App.Server] Received a unexpected signal %s", sig)
 		}
 	}
 }

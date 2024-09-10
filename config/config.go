@@ -33,6 +33,9 @@ func prepare() {
 
 	// add default CORS headers
 	corsHeaders := []string{"Content-Type"}
+
+	// TODO(turtledev): evalute the need for this block.
+	// It may be a candiate for removal
 	provisionalHeaders := []string{
 		"SERVER_WEBSOCKET_CONN_GROUP_HEADER",
 		"SERVER_WEBSOCKET_CONN_ID_HEADER",

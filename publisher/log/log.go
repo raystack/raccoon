@@ -3,6 +3,7 @@ package log
 import (
 	"cmp"
 	"encoding/json"
+	"fmt"
 
 	"github.com/raystack/raccoon/logger"
 	pb "github.com/raystack/raccoon/proto"
@@ -10,9 +11,13 @@ import (
 	"github.com/turtleDev/protoraw"
 )
 
+type logEmitter func(string)
+
 // Publisher publishes message to the standard logger
 // This is intended for development use.
-type Publisher struct{}
+type Publisher struct {
+	emit logEmitter
+}
 
 func (p Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 	var errs []error
@@ -34,12 +39,13 @@ func (p Publisher) ProduceBulk(events []*pb.Event, connGroup string) error {
 				continue
 			}
 		}
-		logger.Infof(
+		line := fmt.Sprintf(
 			"[LogPublisher] kind = %s, event_type = %s, event = %s",
 			kind,
 			typ,
 			event,
 		)
+		p.emit(line)
 	}
 	if cmp.Or(errs...) != nil {
 		return &publisher.BulkError{
@@ -58,5 +64,9 @@ func (p Publisher) Close() error {
 }
 
 func New() Publisher {
-	return Publisher{}
+	return Publisher{
+		emit: func(line string) {
+			logger.Info(line)
+		},
+	}
 }

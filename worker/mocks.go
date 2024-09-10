@@ -20,14 +20,10 @@ func (m *mockKafkaPublisher) Name() string {
 	return m.Called().String(0)
 }
 
-type mockMetric struct {
+type mockAck struct {
 	mock.Mock
 }
 
-func (m *mockMetric) Count(bucket string, val int, tags string) {
-	m.Called(bucket, val, tags)
-}
-
-func (m *mockMetric) Timing(bucket string, t int64, tags string) {
-	m.Called(bucket, t, tags)
+func (m *mockAck) Ack(err error) {
+	m.Called(err)
 }

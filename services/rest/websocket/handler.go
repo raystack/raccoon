@@ -126,10 +126,10 @@ func (h *Handler) HandlerWSEvents(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Ack(conn connection.Conn, resChannel chan AckInfo, s serialization.SerializeFunc, messageType int, reqGuid string, timeConsumed time.Time) collector.AckFunc {
 	switch config.Event.Ack {
-	case config.Asynchronous:
+	case config.AckTypeAsync:
 		writeSuccessResponse(conn, s, messageType, reqGuid)
 		return nil
-	case config.Synchronous:
+	case config.AckTypeSync:
 		return func(err error) {
 			if config.Server.Batch.DedupEnabled {
 				if err != nil {

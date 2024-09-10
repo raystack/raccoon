@@ -18,7 +18,11 @@ type Service struct {
 
 func NewGRPCService(c collector.Collector) *Service {
 	server := grpc.NewServer()
-	pb.RegisterEventServiceServer(server, &Handler{C: c})
+	handler := &Handler{
+		C:       c,
+		ackType: config.Event.Ack,
+	}
+	pb.RegisterEventServiceServer(server, handler)
 	return &Service{
 		s:         server,
 		Collector: c,

@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package raystack.raccoon;
-
-message SampleEvent {
-  string description = 1;
-}

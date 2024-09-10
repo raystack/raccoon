@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/raystack/raccoon/clock"
 	"github.com/raystack/raccoon/collector"
 	"github.com/raystack/raccoon/logger"
 	"github.com/raystack/raccoon/metrics"
@@ -27,6 +28,8 @@ type Pool struct {
 	EventsChannel <-chan collector.CollectRequest
 	producer      Producer
 	wg            sync.WaitGroup
+	instrument    metrics.MetricInstrument
+	clock         clock.Clock
 }
 
 // CreateWorkerPool create new Pool struct given size and EventsChannel worker.
@@ -36,24 +39,26 @@ func CreateWorkerPool(size int, eventsChannel <-chan collector.CollectRequest, p
 		EventsChannel: eventsChannel,
 		producer:      producer,
 		wg:            sync.WaitGroup{},
+		instrument:    metrics.Instrument(),
+		clock:         clock.Default,
 	}
 }
 
 func (w *Pool) worker(name string) {
 	logger.Info("Running worker: " + name)
 	for request := range w.EventsChannel {
-		metrics.Histogram(
+		batchReadTime := w.clock.Now()
+		w.instrument.Histogram(
 			"batch_idle_in_channel_milliseconds",
-			time.Since(request.TimePushed).Milliseconds(),
+			batchReadTime.Sub(request.TimePushed).Milliseconds(),
 			map[string]string{"worker": name})
 
-		batchReadTime := time.Now()
 		//@TODO - Should add integration tests to prove that the worker receives the same message that it produced, on the delivery channel it created
 
 		err := w.producer.ProduceBulk(request.GetEvents(), request.ConnectionIdentifier.Group)
 
-		produceTime := time.Since(batchReadTime)
-		metrics.Histogram(
+		produceTime := w.clock.Now().Sub(batchReadTime)
+		w.instrument.Histogram(
 			fmt.Sprintf("%s_producebulk_tt_ms", w.producer.Name()),
 			produceTime.Milliseconds(),
 			map[string]string{},
@@ -81,17 +86,17 @@ func (w *Pool) worker(name string) {
 		lenBatch := int64(len(request.GetEvents()))
 		logger.Debug(fmt.Sprintf("Success sending messages, %v", lenBatch-int64(totalErr)))
 		if lenBatch > 0 {
-			eventTimingMs := time.Since(request.GetSentTime().AsTime()).Milliseconds() / lenBatch
-			metrics.Histogram(
+			eventTimingMs := w.clock.Now().Sub(request.GetSentTime().AsTime()).Milliseconds() / lenBatch
+			w.instrument.Histogram(
 				"event_processing_duration_milliseconds",
 				eventTimingMs,
 				map[string]string{"conn_group": request.ConnectionIdentifier.Group})
-			now := time.Now()
-			metrics.Histogram(
+			now := w.clock.Now()
+			w.instrument.Histogram(
 				"worker_processing_duration_milliseconds",
 				(now.Sub(batchReadTime).Milliseconds())/lenBatch,
 				map[string]string{"worker": name})
-			metrics.Histogram(
+			w.instrument.Histogram(
 				"server_processing_latency_milliseconds",
 				(now.Sub(request.TimeConsumed)).Milliseconds()/lenBatch,
 				map[string]string{"conn_group": request.ConnectionIdentifier.Group})

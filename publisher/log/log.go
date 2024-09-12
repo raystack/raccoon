@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/pkg/logger"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
 	"github.com/turtleDev/protoraw"

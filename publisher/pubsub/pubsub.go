@@ -11,7 +11,7 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"github.com/googleapis/gax-go/v2/apierror"
-	"github.com/raystack/raccoon/metrics"
+	"github.com/raystack/raccoon/pkg/metrics"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
 	"google.golang.org/grpc/codes"

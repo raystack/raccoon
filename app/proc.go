@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/raystack/raccoon/config"
-	"github.com/raystack/raccoon/logger"
+	"github.com/raystack/raccoon/pkg/logger"
 )
 
 // Run the server

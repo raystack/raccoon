@@ -157,7 +157,7 @@ Raccoon provides fine-grained metrics that denote latency. That gives clues as t
 
 ### Dashboard
 
-There is a pre-built [grafana dashboard](https://github.com/raystack/raccoon/tree/dashboards/raccoon.json) available with support for Prometheus data source.
+There is a pre-built [grafana dashboard](https://github.com/raystack/raccoon/blob/main/grafana.json) available with support for Prometheus data source.
 
 If you're running the statsd + telegraf setup, you can configure telegraf to push metrics to Prometheus.
 

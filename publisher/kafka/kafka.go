@@ -9,8 +9,8 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 
 	"github.com/raystack/raccoon/config"
-	"github.com/raystack/raccoon/logger"
-	"github.com/raystack/raccoon/metrics"
+	"github.com/raystack/raccoon/pkg/logger"
+	"github.com/raystack/raccoon/pkg/metrics"
 	pb "github.com/raystack/raccoon/proto"
 	"github.com/raystack/raccoon/publisher"
 )

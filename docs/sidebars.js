@@ -20,9 +20,9 @@ module.exports = {
       items: [
         "clients/overview",
         "clients/golang",
-        "clients/java",
-        "clients/javascript",
         "clients/python",
+        "clients/javascript",
+        "clients/java",
       ],
     },
     {

@@ -16,6 +16,17 @@ module.exports = {
     },
     {
       type: "category",
+      label: "Clients",
+      items: [
+        "clients/overview",
+        "clients/golang",
+        "clients/java",
+        "clients/javascript",
+        "clients/python",
+      ],
+    },
+    {
+      type: "category",
       label: "Concepts",
       items: [
         "concepts/architecture",

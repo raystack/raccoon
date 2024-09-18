@@ -359,6 +359,70 @@ $ node main.mjs
 
 ```mdx-code-block
 </TabItem>
+<TabItem value='python'>
+```
+Raccoon's python client requires a python version >= `3.9`. See [installation instructions on python's website](https://docs.python.org/3.9/using/unix.html#getting-and-installing-the-latest-version-of-python) for more information.
+
+Create a new folder called `python-raccoon-example` and initialise a [virtual environment](https://docs.python.org/3/library/venv.html) inside it.
+
+(setting up a virtual environment is optional. It's used here to keep the dependencies localised to our example.)
+
+```bash
+$ mkdir python-raccoon-example
+$ cd python-raccoon-example
+$ python3 -m venv venv
+$ source venv/bin/activate
+```
+
+Install the raccoon client using pip
+
+```bash
+(venv) $ pip install raccoon_client
+```
+
+Now we'll create the main program that will send events to raccoon server.
+
+Create a `main.py` file and paste the following code into it.
+
+```python
+from raccoon_client.client import Event
+from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest
+from raccoon_client.rest.client import RestClient
+from raccoon_client.rest.option import RestClientConfigBuilder
+from raccoon_client.serde.enum import Serialiser, WireType
+
+def run():
+    config = (
+        RestClientConfigBuilder()
+        .with_url("http://localhost:8080/api/v1/events")
+        .with_serialiser(Serialiser.JSON)
+        .with_wire_type(WireType.JSON)
+        .build()
+    )  
+    rest_client = RestClient(config)
+    event = {"a": "field a", "b": "field b"}
+    topic = "test_topic_2"
+    e = Event(topic, event)
+    req_id, response, raw = rest_client.send([e])
+    print(req_id, response, raw)
+
+if __name__ == "__main__":
+	run()
+```
+
+Finally, run the script
+```bash
+(venv) $ python3 main.py
+```
+
+You can exit the virtual environment by running
+```bash
+(venv) $ deactivate
+$ # notice the lack of (venv) in the prompt
+```
+
+```mdx-code-block
+</TabItem>
 </Tabs>
 ```
 

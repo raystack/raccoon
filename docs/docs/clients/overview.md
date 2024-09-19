@@ -9,6 +9,18 @@ Raccoon provides a suite of client libraries designed to help developers easily 
 - **Ease of Integration**: Designed with simplicity in mind, the clients integrate easily into existing projects with minimal configuration.
 - **Reliability**: Each client includes retry mechanisms and error handling to ensure events are delivered reliably, even in the face of transient failures.
 
+## Wire and Serialization Types
+
+A concept that exists in all the Client libraries is that of wire type and serialization type.
+
+Raccoon's API accepts both JSON and Protobuf requests. These are differentiated by the `Content-Type` header (in case of REST & gRPC protocols) and by `MessageType` for Websocket requests.
+
+`Wire` denotes what the request payload is serialised as. If wire type is `JSON` the request is sent as a JSON-encoded string. If it's `Protobuf` the request is the serialized bytes of [`SendEventRequest`](https://github.com/raystack/proton/blob/main/raystack/raccoon/v1beta1/raccoon.proto#L23) proto
+
+`Serialization` is how data in individual events is encoded. Just like wire type, it also supports `JSON` and `Protobuf` encoding.
+
+You may use any combination of wire and serialization type that suits your needs.
+
 ## Getting Started
 
 To start using Raccoon's client libraries, check out the detailed installation and usage instructions for each supported language:

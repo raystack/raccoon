@@ -85,6 +85,10 @@ func main() {
 }
 ```
 
+Depending on which protocol client you create, specifying the URL or the address of the server is mandatory.
+
+For `REST` and `Websocket` clients, this can be done via the `WithUrl` option. For `gRPC` server you must use the `WithAddr` option.
+
 #### Sending events
 
 Event's can be sent using `client.Send(events []*raccoon.Event)`. The return signature of the `Send` method depends on the type of Client.
@@ -97,4 +101,4 @@ Event's can be sent using `client.Send(events []*raccoon.Event)`. The return sig
 For `gRPC` and `REST` clients, the response is returned synchronously. For `Websocket` the responses are returned asynchronously via a channel returned by `EventAcks()`.
 
 ### Examples
-You can find examples of clients over different protocols [here](https://github.com/raystack/raccoon/tree/main/clients/go/examples)
+You can find examples of client usage over different protocols [here](https://github.com/raystack/raccoon/tree/main/clients/go/examples)

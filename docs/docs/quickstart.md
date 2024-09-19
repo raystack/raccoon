@@ -36,7 +36,7 @@ $ curl -XPOST "http://localhost:8080/api/v1/events" \
     \"events\": [
         {
             \"type\": \"page\",
-            \"eventBytes\": \"$(echo \"EVENT\" | base64)\"
+            \"event_bytes\": \"$(echo \"EVENT\" | base64)\"
         }
     ]
 }"

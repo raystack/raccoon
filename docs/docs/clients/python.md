@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
 #### Creating a client
 
-Raccoon's Python only supports sending events over Raccoon's HTTP/JSON (REST) API.
+Raccoon's Python client only supports sending events over Raccoon's HTTP/JSON (REST) API.
 
 To create a client, you must pass the `RestClientConfig` object to the client constructor `RestClient`.
 

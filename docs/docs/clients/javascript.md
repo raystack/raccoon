@@ -91,7 +91,7 @@ The following table lists which serializer to use for a given payload type.
 | JSON | `SerializationType.JSON` |
 | Protobuf | `SerializationType.PROTOBUF`|
 
-Once a client is constructed with a specific kind of serializer, you may only pass it events of that specific type. In particular, for `JSON` serialiser the event data must be a javascript ojbect. While for `PROTOBUF` serialiser the event data must be a protobuf message.
+Once a client is constructed with a specific kind of serializer, you may only pass it events of that specific type. In particular, for `JSON` serialiser the event data must be a javascript object. While for `PROTOBUF` serialiser the event data must be a protobuf message.
 
 ## Examples
 You can find examples of client usage [here](https://github.com/raystack/raccoon/tree/main/clients/js/examples)

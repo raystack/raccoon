@@ -73,6 +73,8 @@ config = (
         .build()
 )
 client = RestClient(config)
+
+# use client here
 ```
 #### Publishing events
 

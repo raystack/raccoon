@@ -23,6 +23,7 @@ import (
     raccoon "github.com/raystack/raccoon/clients/go"
     "google.golang.org/protobuf/types/known/timestamppb"
     "github.com/google/uuid"
+    "github.com/raystack/raccoon/clients/go/serializer"
     "github.com/raystack/raccoon/clients/go/testdata"
     "github.com/raystack/raccoon/clients/go/ws"
 )
@@ -31,7 +32,9 @@ func main() {
     client, err := ws.New(
         ws.WithUrl("ws://localhost:8080/api/v1/events"),
         ws.WithHeader("x-user-id", "123"),
-        ws.WithHeader("x-user-type", "ACME"))
+        ws.WithHeader("x-user-type", "ACME"),
+        ws.WithSerializer(serializer.JSON),
+    )
     if err != nil {
         log.Fatal(err)
     }
@@ -99,6 +102,18 @@ Event's can be sent using `client.Send(events []*raccoon.Event)`. The return sig
 | `Websocket` | `Send([]*raccoon.Event) (string, error)` |
 
 For `gRPC` and `REST` clients, the response is returned synchronously. For `Websocket` the responses are returned asynchronously via a channel returned by `EventAcks()`.
+
+`Event` structu has two fields: `Type` and `Data`.
+`Type` denotes the event type. This is used by raccoon to route the event to a specific topic downstream. `Data` field contains the payload. This data is serialised by the `serializer` that's configured on the client. The serializer can be configured by using the `WithSerializer()` option of the respective clients.
+
+The following table lists which serializer to use for a given payload type.
+
+| Message Type | Serializer |
+| --- | --- |
+| JSON | `Serializer.JSON` |
+| Protobuf | `Serializer.PROTO`|
+
+Once a client is constructed with a specific kind of serializer, you may only pass it events of that specific type. In particular, for `JSON` serialiser the event data must be a value that can be encoded by `json.Marshal`. While for `PROTOBUF` serialiser the event data must be a protobuf message.
 
 ### Examples
 You can find examples of client usage over different protocols [here](https://github.com/raystack/raccoon/tree/main/clients/go/examples)

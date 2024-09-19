@@ -19,7 +19,7 @@ $ poetry add raccoon_client
 
 Below is a self contained example of Raccoon's Python client that uses the REST API to publish events
 
-```python title="quickstart.py"
+```python title="quickstart.py" showLineNumbers
 from raccoon_client.client import Event
 from raccoon_client.protos.raystack.raccoon.v1beta1.raccoon_pb2 import SendEventRequest
 from raccoon_client.rest.client import RestClient

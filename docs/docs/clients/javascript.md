@@ -14,7 +14,7 @@ $ npm install --save @raystack/raccoon
 
 Below is a self contained example of Raccoon's Javascript client that uses Raccoon's REST API to publish events.
 
-```javascript title="quickstart.js"
+```javascript title="quickstart.js" showLineNumbers
 import { RaccoonClient, SerializationType, WireType } from '@raystack/raccoon';
 
 const jsonEvents = [

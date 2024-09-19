@@ -14,7 +14,7 @@ $ go get github.com/raystack/raccoon/clients/go
 
 Below is a self contained example of Raccoon's Go client that uses the Websocket API to publish events
 
-```go title="quickstart.go"
+```go title="quickstart.go" showLineNumbers
 package main
 
 import (

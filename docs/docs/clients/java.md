@@ -16,7 +16,7 @@ dependencies {
 ### Quickstart
 
 Below is a self contained example of Raccoon's Java client that uses the REST API to publish events
-```java title="App.java"
+```java title="App.java" showLineNumbers
 package org.example;
 
 import io.odpf.raccoon.client.RestConfig;

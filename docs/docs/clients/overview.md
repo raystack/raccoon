@@ -11,7 +11,7 @@ Raccoon provides a suite of client libraries designed to help developers easily 
 
 ## Wire and Serialization Types
 
-A concept that exists in all the Client libraries is that of wire type and serialization type.
+A concept that exists in all Raccoon Client libraries is that of wire type and serialization type.
 
 Raccoon's API accepts both JSON and Protobuf requests. These are differentiated by the `Content-Type` header (in case of REST & gRPC protocols) and by `MessageType` for Websocket requests.
 
@@ -27,7 +27,7 @@ To start using Raccoon's client libraries, check out the detailed installation a
 
 - [Golang](clients/golang.md)
 - [Python](clients/python.md)
-- [Java](clients/java.md)
 - [JavaScript](clients/javascript.md)
+- [Java](clients/java.md)
 
 By leveraging Raccoon’s clients, you can focus on building your applications while Raccoon efficiently handles the ingestion of your clickstream events.

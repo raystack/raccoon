@@ -4,7 +4,7 @@
 Make sure that Python version `>=3.9` is installed on your system. See [installation instructions](https://docs.python.org/3.9/using/unix.html#getting-and-installing-the-latest-version-of-python) on Python's website for more information.
 
 ## Installation
-Install Raccoon's Python client [pip](https://docs.python.org/3/installing/index.html)
+Install Raccoon's Python client using [pip](https://docs.python.org/3/installing/index.html)
 ```bash
 $ pip install raccoon_client
 ```

@@ -4,7 +4,7 @@
 Make sure that Go >= `1.16` is installed on your system. See [installation instructions](https://go.dev/doc/install) on Go's website for more info.
 
 ## Installation
-Install Raccoon's Go client using
+Install Raccoon's Go client using [go get](https://go.dev/ref/mod#go-get)
 ```bash
 $ go get github.com/raystack/raccoon/clients/go
 ```
@@ -61,9 +61,9 @@ func main() {
 #### Creating a client
 
 Raccoon's API is exposed over 3 different protocols.
-Depending on which protocol you wish to utilise to publish events to Raccoon, you will need to intantiate a different client.
+Depending on which protocol you wish to utilise to publish events to Raccoon, you will need to instantiate a different client.
 
-Following is a table describing which package you should use for a given protocol.
+Following is a table describing which client package you should use for a given protocol.
 
 | Protocol | Package |
 | --- | --- |
@@ -103,17 +103,17 @@ Event's can be sent using `client.Send(events []*raccoon.Event)`. The return sig
 
 For `gRPC` and `REST` clients, the response is returned synchronously. For `Websocket` the responses are returned asynchronously via a channel returned by `EventAcks()`.
 
-`Event` structu has two fields: `Type` and `Data`.
+`Event` struct has two fields: `Type` and `Data`.
 `Type` denotes the event type. This is used by raccoon to route the event to a specific topic downstream. `Data` field contains the payload. This data is serialised by the `serializer` that's configured on the client. The serializer can be configured by using the `WithSerializer()` option of the respective clients.
 
 The following table lists which serializer to use for a given payload type.
 
 | Message Type | Serializer |
 | --- | --- |
-| JSON | `Serializer.JSON` |
-| Protobuf | `Serializer.PROTO`|
+| JSON | `serializer.JSON` |
+| Protobuf | `serializer.PROTO`|
 
-Once a client is constructed with a specific kind of serializer, you may only pass it events of that specific type. In particular, for `JSON` serialiser the event data must be a value that can be encoded by `json.Marshal`. While for `PROTOBUF` serialiser the event data must be a protobuf message.
+Once a client is constructed with a specific kind of serializer, you may only pass it events of that specific type. In particular, for `JSON` serialiser the event data must be a value that can be encoded by [`json.Marshal`](https://pkg.go.dev/encoding/json#Marshal). While for `PROTOBUF` serialiser the event data must be a protobuf message.
 
 ### Examples
 You can find examples of client usage over different protocols [here](https://github.com/raystack/raccoon/tree/main/clients/go/examples)

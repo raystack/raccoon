@@ -4,7 +4,7 @@
 Make sure that Nodejs >= `20.0` is installed on your system. See [installation instructions](https://nodejs.org/en/download/package-manager) on Nodejs's website for more info.
 
 ## Installation
-Install Raccoon's Javascript client using npm
+Install Raccoon's Javascript client using [npm](https://docs.npmjs.com/cli/v10/commands/npm)
 ```javascript
 $ npm install --save @raystack/raccoon
 ```

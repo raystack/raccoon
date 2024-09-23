@@ -7,7 +7,8 @@ This document will guide you on how to get Raccoon server running on your system
 Here's a minimal setup that runs Raccoon with `log` publisher. 
 
 ```bash
-$ docker run raystack/raccoon server \
+$ docker run --rm -p 8080:8080 \
+  raystack/raccoon server \
   --publisher.type "log" \
   --server.websocket.conn.id.header "x-user-id"
 ```

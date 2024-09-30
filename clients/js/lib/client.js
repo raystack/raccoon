@@ -10,6 +10,7 @@ import createProtoMarshaller from './wire/proto_wire.js';
 import createJsonMarshaller from './wire/json_wire.js';
 import { raystack, google } from '../protos/proton_compiled.js';
 import EventEmitter from 'events';
+import WebSocket from 'ws';
 
 const NANOSECONDS_PER_MILLISECOND = 1e6;
 
@@ -65,7 +66,6 @@ class RaccoonClient extends EventEmitter {
     }
 
     initializeWebSocket() {
-        const WebSocket = require('ws');
         this.wsClient = new WebSocket(this.url);
         this.wsClient.on('open', () => {
             this.logger.info('WebSocket connection established');
@@ -75,8 +75,9 @@ class RaccoonClient extends EventEmitter {
         });
         this.wsClient.on('message', (data) => {
             try {
+                const response = JSON.parse(data);
                 const sendEventResponse = this.marshaller.unmarshal(
-                    data,
+                    response,
                     raystack.raccoon.v1beta1.SendEventResponse
                 );
                 this.emit('ack', sendEventResponse.toJSON());

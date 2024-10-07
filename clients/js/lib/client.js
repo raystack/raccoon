@@ -55,7 +55,7 @@ class RaccoonClient extends EventEmitter {
         this.timeout = options.timeout || 1000;
         this.uuidGenerator = () => uuidv4();
         this.protocol = options.protocol || 'rest';
-        
+
         if (this.protocol === 'rest') {
             this.httpClient = axios.create();
         } else if (this.protocol === 'ws') {
@@ -131,13 +131,12 @@ class RaccoonClient extends EventEmitter {
             );
 
             this.logger.info(`ended request, url: ${this.url}, req-id: ${requestId}`);
-            
 
             if (this.protocol !== 'rest') {
                 return {
-                    reqId: requestId,
+                    reqId: requestId
                 };
-            } 
+            }
 
             const sendEventResponse = this.marshaller.unmarshal(
                 response,
@@ -148,7 +147,6 @@ class RaccoonClient extends EventEmitter {
                 response: sendEventResponse.toJSON(),
                 error: null
             };
-
         } catch (error) {
             this.logger.error(`error, url: ${this.url}, req-id: ${requestId}, ${error}`);
             throw new Error(`req-id: ${requestId}, error: ${error}`);

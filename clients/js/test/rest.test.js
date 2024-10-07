@@ -1,6 +1,6 @@
 // eslint-disable-next-line
 import { jest } from '@jest/globals';
-import { RaccoonClient, SerializationType, WireType } from '../lib/rest.js';
+import { RaccoonClient, SerializationType, WireType } from '../lib/client.js';
 import { raystack, google } from '../protos/proton_compiled.js';
 
 const mockHTTPClient = {

@@ -4,8 +4,7 @@
 Make sure that Nodejs >= `20.0` is installed on your system. See [installation instructions](https://nodejs.org/en/download/package-manager) on Nodejs's website for more info.
 
 ## Installation
-Install Raccoon's Javascript client using [npm](https://docs.npmjs.com/cli/v10/commands/npm)
-```javascript
+Install Raccoon's Javascript client using [npm](https://docs.npmjs.com/cli/v10/commands/npm)```javascript
 $ npm install --save @raystack/raccoon
 ```
 ## Usage
@@ -64,7 +63,8 @@ To create the client, use `new RaccoonClient(options)`. `options` is javascript 
 | retryMax | The maximum number of retry attempts for failed requests (default: `3`) |
 | retryWait | The time in milliseconds to wait between retry attempts (default: `1000`)| 
 | timeout | The timeout in milliseconds (default: `1000`)|
-| logger | Logger object for logging (default: `global.console`)
+| logger | Logger object for logging (default: `global.console`)|
+| protocol | The protocol to use, either 'rest' or 'ws' (default: 'rest') |
 
 #### Publishing events
 To publish events, create an array of objects and pass it to `RaccoonClient#send()`. The return value is a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
@@ -92,6 +92,29 @@ The following table lists which serializer to use for a given payload type.
 | Protobuf | `SerializationType.PROTOBUF`|
 
 Once a client is constructed with a specific kind of serializer, you may only pass it events of that specific type. In particular, for `JSON` serialiser the event data must be a javascript object. While for `PROTOBUF` serialiser the event data must be a protobuf message.
+
+#### Working with WebSocket
+
+When using the websocket protocol, the response from the server is not returned immediately. Instead, the client is notified of the event's status via an `ack` event. You can subscribe to the `ack` event with `client.on('ack', callback)`. You can select the protocol by setting the `protocol` option in the client constructor. Here's an example:
+
+```js
+const client = new RaccoonClient({
+    protocol: 'ws',
+    url: 'ws://localhost:8080/api/v1/events',
+    serializationType: SerializationType.JSON,
+    wireType: WireType.JSON,
+});
+
+client.on('ack', (event) => {
+    console.log('Response received:', event); // event is of type SendEventResponse
+});
+
+client.send(events)
+    .then(result => console.log('Request ID:', result.reqID))
+    .catch(err => console.error(err))
+```
+
+
 
 ## Examples
 You can find examples of client usage [here](https://github.com/raystack/raccoon/tree/main/clients/js/examples)

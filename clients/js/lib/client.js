@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import EventEmitter from 'events';
+import WebSocket from 'ws';
 
 import createJsonSerializer from './serializer/json_serializer.js';
 import createProtobufSerializer from './serializer/proto_serializer.js';
@@ -12,7 +14,7 @@ import { raystack, google } from '../protos/proton_compiled.js';
 
 const NANOSECONDS_PER_MILLISECOND = 1e6;
 
-class RaccoonClient {
+class RaccoonClient extends EventEmitter {
     /**
      * Creates a new instance of the RaccoonClient.
      *
@@ -26,9 +28,11 @@ class RaccoonClient {
      * @param {string} [options.url=''] - The base URL for the API requests.
      * @param {string} [options.logger=''] - Logger object for logging.
      * @param {number} [options.timeout=1000] - The timeout in milliseconds.
+     * @param {string} [options.protocol='rest'] - The protocol to use, either 'rest' or 'ws'.
      * @returns {RaccoonClient} A new instance of the RaccoonClient.
      */
     constructor(options = {}) {
+        super();
         if (!Object.values(SerializationType).includes(options.serializationType)) {
             throw new Error(`Invalid serializationType: ${options.serializationType}`);
         }
@@ -50,7 +54,37 @@ class RaccoonClient {
         this.logger = options.logger || console;
         this.timeout = options.timeout || 1000;
         this.uuidGenerator = () => uuidv4();
-        this.httpClient = axios.create();
+        this.protocol = options.protocol || 'rest';
+
+        if (this.protocol === 'rest') {
+            this.httpClient = axios.create();
+        } else if (this.protocol === 'ws') {
+            this.initializeWebSocket();
+        } else {
+            throw new Error(`Invalid protocol: ${this.protocol}`);
+        }
+    }
+
+    initializeWebSocket() {
+        this.wsClient = new WebSocket(this.url);
+        this.wsClient.on('open', () => {
+            this.logger.info('WebSocket connection established');
+        });
+        this.wsClient.on('error', (error) => {
+            this.logger.error('WebSocket error:', error);
+        });
+        this.wsClient.on('message', (data) => {
+            try {
+                const response = JSON.parse(data);
+                const sendEventResponse = this.marshaller.unmarshal(
+                    response,
+                    raystack.raccoon.v1beta1.SendEventResponse
+                );
+                this.emit('ack', sendEventResponse.toJSON());
+            } catch (error) {
+                this.logger.error('Error processing WebSocket message:', error);
+            }
+        });
     }
 
     /**
@@ -96,12 +130,18 @@ class RaccoonClient {
                 this.logger
             );
 
+            this.logger.info(`ended request, url: ${this.url}, req-id: ${requestId}`);
+
+            if (this.protocol !== 'rest') {
+                return {
+                    reqId: requestId
+                };
+            }
+
             const sendEventResponse = this.marshaller.unmarshal(
                 response,
                 raystack.raccoon.v1beta1.SendEventResponse
             );
-
-            this.logger.info(`ended request, url: ${this.url}, req-id: ${requestId}`);
             return {
                 reqId: requestId,
                 response: sendEventResponse.toJSON(),
@@ -114,6 +154,17 @@ class RaccoonClient {
     }
 
     async executeRequest(raccoonRequest) {
+        switch (this.protocol) {
+            case 'rest':
+                return this.executeRestRequest(raccoonRequest);
+            case 'ws':
+                return this.executeWebSocketRequest(raccoonRequest);
+            default:
+                throw new Error(`Unsupported protocol: ${this.protocol}`);
+        }
+    }
+
+    async executeRestRequest(raccoonRequest) {
         this.headers['Content-Type'] = this.marshaller.getContentType();
         const response = await this.httpClient.post(this.url, raccoonRequest, {
             headers: this.headers,
@@ -121,6 +172,14 @@ class RaccoonClient {
             responseType: this.marshaller.getResponseType()
         });
         return response.data;
+    }
+
+    async executeWebSocketRequest(raccoonRequest) {
+        if (this.wsClient.readyState !== WebSocket.OPEN) {
+            throw new Error('WebSocket is not open');
+        }
+
+        this.wsClient.send(raccoonRequest);
     }
 }
 

@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import EventEmitter from 'events';
+import WebSocket from 'ws';
 
 import createJsonSerializer from './serializer/json_serializer.js';
 import createProtobufSerializer from './serializer/proto_serializer.js';
@@ -9,8 +11,6 @@ import WireType from './types/wire_type.js';
 import createProtoMarshaller from './wire/proto_wire.js';
 import createJsonMarshaller from './wire/json_wire.js';
 import { raystack, google } from '../protos/proton_compiled.js';
-import EventEmitter from 'events';
-import WebSocket from 'ws';
 
 const NANOSECONDS_PER_MILLISECOND = 1e6;
 
